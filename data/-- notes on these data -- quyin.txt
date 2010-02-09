@@ -1,0 +1,3 @@
+1. the keyphraseness file seems not sorted;
+2. the sense file is sorted based on the surface forms;
+3. in the sense file words are not pre-processed (contains capital letters, not stemmed, etc.)
