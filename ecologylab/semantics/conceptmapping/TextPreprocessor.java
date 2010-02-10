@@ -7,9 +7,10 @@ import ecologylab.semantics.model.text.PorterStemmer;
 
 public class TextPreprocessor
 {
+	private static Pattern pattern = Pattern.compile("[^a-zA-Z0-9]+");
+	
 	public static String filter(String s)
 	{
-		Pattern pattern = Pattern.compile("[^a-zA-Z0-9]"); 
 		Matcher matcher = pattern.matcher(s);
 		String result = matcher.replaceAll(" ");
 		return result;
