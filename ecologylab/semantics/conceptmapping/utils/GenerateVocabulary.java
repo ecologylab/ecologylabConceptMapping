@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import ecologylab.semantics.conceptmapping.Term;
+import ecologylab.semantics.conceptmapping.TextPreprocessor;
 
 /**
  * @author quyin
@@ -66,7 +67,7 @@ public class GenerateVocabulary
 
 			Keyphrase kp = new Keyphrase();
 			kp.term.surface = line.substring(first_space + 1);
-			kp.term.normForm = null; // TODO stem each word
+			kp.term.normForm = TextPreprocessor.preprocess(line);
 			String str_kpn = line.substring(0, first_space);
 			kp.keyphraseness = Float.valueOf(str_kpn);
 
@@ -87,7 +88,7 @@ public class GenerateVocabulary
 
 			Sense sense = new Sense();
 			sense.term.surface = parts[1];
-			sense.term.normForm = null; // TODO stem each word
+			sense.term.normForm = TextPreprocessor.preprocess(line);
 			sense.occurrence = Integer.valueOf(parts[0]);
 			sense.sense = parts[2];
 
