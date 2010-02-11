@@ -21,7 +21,7 @@ import ecologylab.semantics.conceptmapping.TextPreprocessor;
  * @author quyin
  * 
  */
-public class GenerateVocabulary
+public class Vocabulary
 {
 	public static class Keyphrase
 	{
@@ -63,7 +63,7 @@ public class GenerateVocabulary
 
 			Keyphrase kp = new Keyphrase();
 			kp.term.surface = line.substring(first_space + 1);
-			kp.term.normForm = TextPreprocessor.preprocess(kp.term.surface);
+			kp.term.normForm = TextPreprocessor.joinTokenNormForms(TextPreprocessor.preprocess(kp.term.surface));
 			String str_kpn = line.substring(0, first_space);
 			kp.keyphraseness = Float.valueOf(str_kpn);
 
@@ -92,7 +92,7 @@ public class GenerateVocabulary
 
 			Sense sense = new Sense();
 			sense.term.surface = parts[1];
-			sense.term.normForm = TextPreprocessor.preprocess(sense.term.surface);
+			sense.term.normForm = TextPreprocessor.joinTokenNormForms(TextPreprocessor.preprocess(sense.term.surface));
 			sense.occurrence = Integer.valueOf(parts[0]);
 			sense.sense = parts[2];
 
@@ -121,10 +121,10 @@ public class GenerateVocabulary
 		});
 
 		System.out.println("matching ...");
-		PrintWriter pw1 = new PrintWriter("keyphrases.txt");
-		PrintWriter pw2 = new PrintWriter("senses.txt");
-		PrintWriter pw3 = new PrintWriter("keyphrase-only.txt");
-		PrintWriter pw4 = new PrintWriter("sense-only.txt");
+		PrintWriter pw1 = new PrintWriter("data/keyphrases.txt");
+		PrintWriter pw2 = new PrintWriter("data/senses.txt");
+		PrintWriter pw3 = new PrintWriter("data/keyphrase-only.txt");
+		PrintWriter pw4 = new PrintWriter("data/sense-only.txt");
 
 		int i = 0, j = 0;
 		Keyphrase kp = null;
@@ -151,7 +151,7 @@ public class GenerateVocabulary
 			{
 				compare = kp.term.normForm.compareTo(s.term.normForm);
 			}
-			
+
 			if (compare == 0)
 			{
 				pw1.format("%s|%s|%f\n", kp.term.normForm, kp.term.surface, kp.keyphraseness);
@@ -177,6 +177,18 @@ public class GenerateVocabulary
 		pw4.close();
 	}
 
+	public void generateVocabulary(String keyphrasenessFilepath, String sensesFilepath)
+			throws FileNotFoundException, IOException
+	{
+
+		System.out.println("reading keyphrases file ...");
+		readKeyphraseFile(keyphrasenessFilepath);
+		System.out.println("reading senses file ...");
+		readSenseFile(sensesFilepath);
+		System.out.println("matching surface names ...");
+		matchSurfaceNames();
+	}
+
 	/**
 	 * @param args
 	 * @throws Exception
@@ -193,12 +205,7 @@ public class GenerateVocabulary
 		String kp_filepath = args[0];
 		String sense_filepath = args[1];
 
-		GenerateVocabulary gv = new GenerateVocabulary();
-		System.out.println("reading keyphrases file ...");
-		gv.readKeyphraseFile(kp_filepath);
-		System.out.println("reading senses file ...");
-		gv.readSenseFile(sense_filepath);
-		System.out.println("matching surface names ...");
-		gv.matchSurfaceNames();
+		Vocabulary gv = new Vocabulary();
+		gv.generateVocabulary(kp_filepath, sense_filepath);
 	}
 }
