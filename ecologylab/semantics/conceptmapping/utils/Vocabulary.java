@@ -9,13 +9,16 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import ecologylab.semantics.conceptmapping.Term;
 import ecologylab.semantics.conceptmapping.TextPreprocessor;
+import ecologylab.semantics.conceptmapping.Token;
+import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.ling.Sentence;
 
 /**
  * @author quyin
@@ -25,14 +28,16 @@ public class Vocabulary
 {
 	public static class Keyphrase
 	{
-		public Term		term	= new Term();
+		public String surface;
+		public String normForm;
 
 		public float	keyphraseness;
 	}
 
 	public static class Sense
 	{
-		public Term		term	= new Term();
+		public String surface;
+		public String normForm;
 
 		public int		occurrence;
 
@@ -45,10 +50,9 @@ public class Vocabulary
 
 	/**
 	 * @param kp_filepath
-	 * @throws FileNotFoundException
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	private void readKeyphraseFile(String kp_filepath) throws FileNotFoundException, IOException
+	private void readKeyphraseFile(String kp_filepath) throws Exception
 	{
 		String line;
 		BufferedReader inf = new BufferedReader(new FileReader(new File(kp_filepath)));
@@ -62,8 +66,8 @@ public class Vocabulary
 			}
 
 			Keyphrase kp = new Keyphrase();
-			kp.term.surface = line.substring(first_space + 1);
-			kp.term.normForm = TextPreprocessor.joinTokenNormForms(TextPreprocessor.preprocess(kp.term.surface));
+			kp.surface = line.substring(first_space + 1);
+			kp.normForm = preprocessVocabulary(kp.surface);
 			String str_kpn = line.substring(0, first_space);
 			kp.keyphraseness = Float.valueOf(str_kpn);
 
@@ -74,10 +78,9 @@ public class Vocabulary
 
 	/**
 	 * @param sense_filepath
-	 * @throws FileNotFoundException
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	private void readSenseFile(String sense_filepath) throws FileNotFoundException, IOException
+	private void readSenseFile(String sense_filepath) throws Exception
 	{
 		String line;
 		BufferedReader inf = new BufferedReader(new FileReader(new File(sense_filepath)));
@@ -91,8 +94,8 @@ public class Vocabulary
 			}
 
 			Sense sense = new Sense();
-			sense.term.surface = parts[1];
-			sense.term.normForm = TextPreprocessor.joinTokenNormForms(TextPreprocessor.preprocess(sense.term.surface));
+			sense.surface = parts[1];
+			sense.normForm = preprocessVocabulary(sense.surface);
 			sense.occurrence = Integer.valueOf(parts[0]);
 			sense.sense = parts[2];
 
@@ -108,7 +111,7 @@ public class Vocabulary
 		{
 			public int compare(Keyphrase kp1, Keyphrase kp2)
 			{
-				return kp1.term.normForm.compareTo(kp2.term.normForm);
+				return kp1.normForm.compareTo(kp2.normForm);
 			}
 		});
 		System.out.println("sorting senses ...");
@@ -116,7 +119,7 @@ public class Vocabulary
 		{
 			public int compare(Sense s1, Sense s2)
 			{
-				return s1.term.normForm.compareTo(s2.term.normForm);
+				return s1.normForm.compareTo(s2.normForm);
 			}
 		});
 
@@ -149,24 +152,24 @@ public class Vocabulary
 			}
 			if (kp != null && s != null)
 			{
-				compare = kp.term.normForm.compareTo(s.term.normForm);
+				compare = kp.normForm.compareTo(s.normForm);
 			}
 
 			if (compare == 0)
 			{
-				pw1.format("%s|%s|%f\n", kp.term.normForm, kp.term.surface, kp.keyphraseness);
-				pw2.format("%s|%s|%d|%s\n", s.term.normForm, s.term.surface, s.occurrence, s.sense);
+				pw1.format("%s|%s|%f\n", kp.normForm, kp.surface, kp.keyphraseness);
+				pw2.format("%s|%s|%d|%s\n", s.normForm, s.surface, s.occurrence, s.sense);
 				i++;
 				j++;
 			}
 			else if (compare < 0)
 			{
-				pw3.format("%s|%s|%f\n", kp.term.normForm, kp.term.surface, kp.keyphraseness);
+				pw3.format("%s|%s|%f\n", kp.normForm, kp.surface, kp.keyphraseness);
 				i++;
 			}
 			else if (compare > 0)
 			{
-				pw4.format("%s|%s|%d|%s\n", s.term.normForm, s.term.surface, s.occurrence, s.sense);
+				pw4.format("%s|%s|%d|%s\n", s.normForm, s.surface, s.occurrence, s.sense);
 				j++;
 			}
 		}
@@ -178,7 +181,7 @@ public class Vocabulary
 	}
 
 	public void generateVocabulary(String keyphrasenessFilepath, String sensesFilepath)
-			throws FileNotFoundException, IOException
+			throws Exception
 	{
 
 		System.out.println("reading keyphrases file ...");
@@ -187,6 +190,17 @@ public class Vocabulary
 		readSenseFile(sensesFilepath);
 		System.out.println("matching surface names ...");
 		matchSurfaceNames();
+	}
+	
+	private String preprocessVocabulary(String phrase) throws Exception
+	{
+		String result = "";
+		List<Token> tokens = TextPreprocessor.preprocess(phrase, false);
+		for (Token tk : tokens)
+		{
+			result += tk.normForm;
+		}
+		return result;
 	}
 
 	/**

@@ -7,13 +7,27 @@ package ecologylab.semantics.conceptmapping;
  */
 public class Token
 {
-	public Term term = new Term();
-	public float keyphraseness;
-	public String sense;
+	public String	passage;
+
+	public int		offsetBegin;
+
+	public int		offsetEnd;
+
+	public String	surface;
+
+	public String	normForm;
+
+	public String	posTag;
+
+	public float	keyphraseness;
 	
+	public boolean chosenAsKeyphrase;
+
+	public String	sense;
+
 	@Override
 	public String toString()
 	{
-		return term.surface + "|" + term.normForm;
+		return surface + "|" + normForm +"|" + offsetBegin + "|" + offsetEnd + "|" + posTag;
 	}
 }
