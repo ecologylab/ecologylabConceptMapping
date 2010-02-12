@@ -26,6 +26,14 @@ import edu.stanford.nlp.ling.Sentence;
  */
 public class Vocabulary
 {
+	public static final String	DATA_SENSE_ONLY_TXT	= "data/sense-only.txt";
+
+	public static final String	DATA_KEYPHRASE_ONLY_TXT	= "data/keyphrase-only.txt";
+
+	public static final String	DATA_SENSES_TXT	= "data/senses.txt";
+
+	public static final String	DATA_KEYPHRASES_TXT	= "data/keyphrases.txt";
+
 	public static class Keyphrase
 	{
 		public String surface;
@@ -124,10 +132,10 @@ public class Vocabulary
 		});
 
 		System.out.println("matching ...");
-		PrintWriter pw1 = new PrintWriter("data/keyphrases.txt");
-		PrintWriter pw2 = new PrintWriter("data/senses.txt");
-		PrintWriter pw3 = new PrintWriter("data/keyphrase-only.txt");
-		PrintWriter pw4 = new PrintWriter("data/sense-only.txt");
+		PrintWriter pw1 = new PrintWriter(DATA_KEYPHRASES_TXT);
+		PrintWriter pw2 = new PrintWriter(DATA_SENSES_TXT);
+		PrintWriter pw3 = new PrintWriter(DATA_KEYPHRASE_ONLY_TXT);
+		PrintWriter pw4 = new PrintWriter(DATA_SENSE_ONLY_TXT);
 
 		int i = 0, j = 0;
 		Keyphrase kp = null;
@@ -198,11 +206,30 @@ public class Vocabulary
 		List<Token> tokens = TextPreprocessor.preprocess(phrase, false);
 		for (Token tk : tokens)
 		{
-			result += tk.normForm;
+			result += tk.normForm + " ";
 		}
-		return result;
+		return result.trim();
 	}
+	
+	public void loadSenses(String sense_filepath) throws NumberFormatException, IOException, Exception
+	{
+		senses = new ArrayList<Sense>();
+		String line;
+		BufferedReader inf = new BufferedReader(new FileReader(new File(sense_filepath)));
+		while ((line = inf.readLine()) != null)
+		{
+			String[] parts = line.split("\\|");
+			Sense s = new Sense();
+			s.normForm = parts[0];
+			s.surface = parts[1];
+			s.occurrence = Integer.valueOf(parts[2]);
+			s.sense = parts[2];
 
+			senses.add(s);
+		}
+		inf.close();
+	}
+	
 	/**
 	 * @param args
 	 * @throws Exception

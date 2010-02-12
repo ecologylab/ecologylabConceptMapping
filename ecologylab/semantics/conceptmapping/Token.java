@@ -7,7 +7,8 @@ package ecologylab.semantics.conceptmapping;
  */
 public class Token
 {
-	public String	passage;
+	// basic information about the token
+	public String	context;
 
 	public int		offsetBegin;
 
@@ -18,12 +19,6 @@ public class Token
 	public String	normForm;
 
 	public String	posTag;
-
-	public float	keyphraseness;
-	
-	public boolean chosenAsKeyphrase;
-
-	public String	sense;
 
 	@Override
 	public String toString()

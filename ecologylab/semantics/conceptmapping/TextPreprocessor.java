@@ -90,7 +90,7 @@ public class TextPreprocessor extends MaxentTagger
 				tk.normForm = stem(filter(tk.surface.toLowerCase()));
 				if (tk.normForm != null && tk.normForm != "")
 				{
-					tk.passage = text;
+					tk.context = text;
 					tk.offsetBegin = label.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class);
 					tk.offsetEnd = label.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
 					tk.posTag = "";
