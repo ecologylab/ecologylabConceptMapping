@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import ecologylab.semantics.conceptmapping.utils.Vocabulary;
 
@@ -47,7 +49,16 @@ public class KeyphraseExtractor
 
 	public List<Keyphrase> extractKeyphrases(List<Token> tokens)
 	{
-		List<Keyphrase> results = new ArrayList<Keyphrase>();
+		SortedSet<Keyphrase> results = new TreeSet<Keyphrase>(new Comparator<Keyphrase>()
+		{
+
+			@Override
+			public int compare(Keyphrase o1, Keyphrase o2)
+			{
+				return -Float.compare(o1.keyphraseness, o2.keyphraseness);
+			}
+
+		});
 
 		int i = 0;
 		while (i < tokens.size())
@@ -80,23 +91,13 @@ public class KeyphraseExtractor
 			i++;
 		}
 
-		Collections.sort(results, new Comparator<Keyphrase>()
-		{
-
-			@Override
-			public int compare(Keyphrase o1, Keyphrase o2)
-			{
-				return -Float.compare(o1.keyphraseness, o2.keyphraseness);
-			}
-
-		});
-
 		int n = (int) Math.round(tokens.size() * DEFAULT_KEYPHRASE_FRACTION);
-		if (results.size() > n)
+		List<Keyphrase> ret = new ArrayList<Keyphrase>(results);
+		if (ret.size() > n)
 		{
-			results = results.subList(0, n);
+			return ret.subList(0, n);
 		}
-		return results;
+		return ret;
 	}
 
 	protected String getPhrase(List<Token> tokens, int offsetBegin, int offsetEnd)
