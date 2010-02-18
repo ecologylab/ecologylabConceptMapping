@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/ecologylabConceptMapping/ecologylab/semantics/conceptmapping/utils/Vocabulary.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ecologylab.semantics.conceptmapping.utils.Vocabulary"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="data/keyPhrasenessScore.2007 data/wiki.allsenses.counts.moreThan5.noredirects.txt"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ecologylabConceptMapping"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms256m -Xmx1024m -Xincgc"/>
+</launchConfiguration>
