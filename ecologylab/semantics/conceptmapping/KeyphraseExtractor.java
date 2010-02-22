@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +15,7 @@ import ecologylab.semantics.conceptmapping.utils.Vocabulary;
 
 public class KeyphraseExtractor
 {
-	public static final double											DEFAULT_KEYPHRASE_FRACTION			= 0.1;
+	public static final double											DEFAULT_KEYPHRASE_FRACTION			= 0.06;
 
 	public static final int													KNOWN_MAX_KEYPHRASE_WORD_COUNT	= 7;
 
@@ -107,16 +106,18 @@ public class KeyphraseExtractor
 			result += tokens.get(i).normForm + " ";
 		return result.trim();
 	}
-	
+
 	public static void main(String[] args) throws Exception
 	{
-		String text = "West End theatre is a popular term for mainstream professional theatre staged in the large theatres of London's \"Theatreland\".[1]  Along with New York's Broadway theatre, West End theatre is usually considered to represent the highest level of commercial theatre in the English speaking world. Seeing a West End show is a common tourist activity in London.[1]\nTotal attendances first surpassed 12 million in 2002, and in June 2005 The Times reported that this record might be beaten in 2005. Total attendance numbers surpassed 13 million in 2007,[2] setting a new record for the West End. Factors behind high ticket sales in the first half of 2005 included new hit musicals such as Billy Elliot, The Producers and Mary Poppins and the high number of film stars appearing. Since the late 1990s there has been an increase in the number of American screen actors on the London stage, and in 2005 these included Brooke Shields, Val Kilmer, Rob Lowe, David Schwimmer and Kevin Spacey.";
+		BufferedReader br = new BufferedReader(new FileReader("data/test-keyword-extractor.txt"));
+		String text = br.readLine();
 		List<Token> tokens = TextPreprocessor.preprocess(text, false);
 		KeyphraseExtractor kpe = new KeyphraseExtractor();
 		List<Keyphrase> kps = kpe.extractKeyphrases(tokens);
 		for (Keyphrase kp : kps)
 		{
-			System.out.println(kpe.getPhrase(tokens, kp.offsetBegin, kp.offsetEnd) + ":" + kp.keyphraseness);
+			System.out.println(kpe.getPhrase(tokens, kp.offsetBegin, kp.offsetEnd) + ":"
+					+ kp.keyphraseness);
 		}
 	}
 }
