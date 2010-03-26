@@ -5,43 +5,44 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import ecologylab.net.ParsedURL;
+import ecologylab.semantics.actions.NestedSemanticActionsTranslationScope;
 import ecologylab.semantics.conceptmapping.generated.GeneratedMetadataTranslationScope;
 import ecologylab.semantics.conceptmapping.generated.WikipediaPage;
 import ecologylab.semantics.metadata.Metadata;
 import ecologylab.semantics.metametadata.MetaMetadataRepository;
+import ecologylab.semantics.metametadata.MetaMetadataTranslationScope;
 import ecologylab.semantics.metametadata.example.MetadataCollector;
+import ecologylab.semantics.metametadata.example.MyInfoCollector;
+import ecologylab.xml.TranslationScope;
 
 public class WikipediaPageParsing
 {
 	public void parse() throws InterruptedException, IOException
 	{
-		WikiPageInfoCollector infoCollector = new WikiPageInfoCollector("mmdRepo.xml",
-				MetaMetadataRepository.META_METADATA_TSCOPE, GeneratedMetadataTranslationScope.get());
-		infoCollector.addListener(MetadataCollector.get());
+		Preparation.addSemanticAction(CreateConceptOutlinkSemanticAction.class, AnalyzeParagraphSemanticAction.class);
 
-		BufferedReader br = new BufferedReader(new FileReader("Z:\\wikipedia-en-html\\html.lst"));
+		MyInfoCollector infoCollector = new MyInfoCollector(".", GeneratedMetadataTranslationScope
+				.get());
+
+		BufferedReader br = new BufferedReader(new FileReader("Z:\\wikipedia-en-html\\test.lst"));
 		String line;
 		while ((line = br.readLine()) != null)
 		{
+			if (line.trim().isEmpty())
+				break;
+			
 			String url = "http://localhost/wiki" + line.substring(2);
 			System.out.println(url);
 			ParsedURL purl = ParsedURL.getAbsolute(url);
 
 			infoCollector.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
-
-			while (MetadataCollector.get().list().size() <= 0)
-				; // wait
-
-			for (Metadata metadata : MetadataCollector.get().list())
-			{
-				System.out.println(metadata.toString());
-				if (metadata instanceof WikipediaPage)
-				{
-					WikipediaPage page = (WikipediaPage) metadata;
-					System.out.println("title = " + page.getTitle());
-				}
-			}
+			
+			Thread.sleep(2000);
 		}
+		
+		Thread.sleep(60000);
+		
+		infoCollector.getDownloadMonitor().stop();
 	}
 
 	public static void main(String[] args) throws InterruptedException, IOException

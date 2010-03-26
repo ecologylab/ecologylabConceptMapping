@@ -52,7 +52,7 @@ extends  Document
 {
 
 	@xml_collection("paragraphs") private ArrayList<Paragraph>	paragraphs;
-	@xml_collection("outlinks") private ArrayList<Anchor>	outlinks;
+	@xml_collection("outlinks") private ArrayList<Outlink>	outlinks;
 	@xml_collection("categories") private ArrayList<Category>	categories;
 
 /**
@@ -109,12 +109,12 @@ return this.paragraphs;
 	Lazy Evaluation for outlinks
 **/ 
 
-public  ArrayList<Anchor>	outlinks()
+public  ArrayList<Outlink>	outlinks()
 {
- ArrayList<Anchor>	result	=this.outlinks;
+ ArrayList<Outlink>	result	=this.outlinks;
 if(result == null)
 {
-result = new  ArrayList<Anchor>();
+result = new  ArrayList<Outlink>();
 this.outlinks	=	 result;
 }
 return result;
@@ -124,7 +124,7 @@ return result;
 	Set the value of field outlinks
 **/ 
 
-public void setOutlinks(  ArrayList<Anchor> outlinks )
+public void setOutlinks(  ArrayList<Outlink> outlinks )
 {
 this.outlinks = outlinks ;
 }
@@ -133,7 +133,7 @@ this.outlinks = outlinks ;
 	Get the value of field outlinks
 **/ 
 
-public  ArrayList<Anchor> getOutlinks(){
+public  ArrayList<Outlink> getOutlinks(){
 return this.outlinks;
 }
 

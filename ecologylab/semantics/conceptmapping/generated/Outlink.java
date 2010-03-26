@@ -34,7 +34,7 @@ import ecologylab.semantics.conceptmapping.generated.*;
 
 @xml_inherit
 
-public class Anchor extends Metadata{
+public class Outlink extends Metadata{
 
 
 /**
@@ -59,7 +59,7 @@ public class Anchor extends Metadata{
 	Constructor
 **/ 
 
-public Anchor()
+public Outlink()
 {
  super();
 }
@@ -68,7 +68,7 @@ public Anchor()
 	Constructor
 **/ 
 
-public Anchor(MetaMetadata metaMetadata)
+public Outlink(MetaMetadata metaMetadata)
 {
 super(metaMetadata);
 }

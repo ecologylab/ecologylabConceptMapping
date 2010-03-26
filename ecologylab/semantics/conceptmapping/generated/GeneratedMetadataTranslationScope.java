@@ -51,7 +51,7 @@ public class GeneratedMetadataTranslationScope extends  DefaultMetadataTranslati
 {protected static final Class TRANSLATIONS[]=
 	{Paragraph.class,
 
-Anchor.class,
+Outlink.class,
 
 Category.class,
 

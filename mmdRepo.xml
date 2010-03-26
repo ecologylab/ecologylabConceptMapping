@@ -2,16 +2,23 @@
 	default_user_agent_name="chrome_2" package="ecologylab.semantics.conceptmapping.generated"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<user_agents>
-		<user_agent name="ie_5" string="Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0"/>
-		<user_agent name="firefox_2" string="Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.7) Gecko/20070914 Firefox/2.0.0.7"/>
-		<user_agent name="firefox_3_5" string="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.2) Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)"/>
-		<user_agent name="chrome_2" string="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/530.5 (KHTML, like Gecko) Chrome/2.0.172.43 Safari/530.5"/>
-		<user_agent name="google_bot_0" string="Googlebot/2.1 (+http://www.google.com/bot.html)"/>
-		<user_agent name="google_bot_1" default="true" string="Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"/>
-		<user_agent name="google_bot_2" string="Googlebot/2.1 (+http://www.googlebot.com/bot.html)"/>
-		<user_agent name="opera_9" string="Opera/9.25 (Windows NT 6.0; U; en)"/>
+		<user_agent name="ie_5"
+			string="Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0" />
+		<user_agent name="firefox_2"
+			string="Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.7) Gecko/20070914 Firefox/2.0.0.7" />
+		<user_agent name="firefox_3_5"
+			string="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.2) Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)" />
+		<user_agent name="chrome_2"
+			string="Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/530.5 (KHTML, like Gecko) Chrome/2.0.172.43 Safari/530.5" />
+		<user_agent name="google_bot_0"
+			string="Googlebot/2.1 (+http://www.google.com/bot.html)" />
+		<user_agent name="google_bot_1" default="true"
+			string="Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" />
+		<user_agent name="google_bot_2"
+			string="Googlebot/2.1 (+http://www.googlebot.com/bot.html)" />
+		<user_agent name="opera_9" string="Opera/9.25 (Windows NT 6.0; U; en)" />
 	</user_agents>
-	
+
 	<!--
 		+++++++++++++++++++++++++++++++++ Builtin Primitive Base Types
 		+++++++++++++++++++++++++++++++++
@@ -44,39 +51,60 @@
 		this mmd has been adapted to use with locally hosted of wikipedia
 		articles. -yin qu
 	-->
-	<meta_metadata name="wikipedia_page" extends="document" parser="xpath" url_path_tree="http://localhost/wiki/" package="ecologylab.semantics.conceptmapping.generated" comment="An article on local wikipedia">
-		<meta_metadata_field name="title" xpath="//h1[@class='firstHeading']" />
-		<meta_metadata_field name="paragraphs" collection="ArrayList" xpath="//div[@id='bodyContent']/p" child_type="paragraph">
-			<meta_metadata_field name="paragraph_text" scalar_type="String" xpath="string(.)" />
-		</meta_metadata_field>
-		<meta_metadata_field name="outlinks" collection="ArrayList" xpath="//div[@id='bodyContent']//a" child_type="anchor">
-			<meta_metadata_field name="surface" scalar_type="String" xpath="string(.)" />
-			<meta_metadata_field name="concept" scalar_type="String" xpath="./@title" />
-			<meta_metadata_field name="link" scalar_type="ParsedURL" xpath="./@href" />
-		</meta_metadata_field>
-		<meta_metadata_field name="categories" collection="ArrayList" xpath="//div[@id='mw-normal-catlinks']/span/a" child_type="category">
-			<meta_metadata_field name="cat_name" scalar_type="String" xpath="./@title" />
-			<meta_metadata_field name="cat_link" scalar_type="ParsedURL" xpath="./@href" />
+	<meta_metadata name="wikipedia_page" extends="document"
+		parser="xpath" url_path_tree="http://localhost/wiki/"
+		package="ecologylab.semantics.conceptmapping.generated" comment="An article on local wikipedia">
+		
+		<meta_metadata_field name="title"
+			xpath="//h1[@class='firstHeading']" />
+			
+		<meta_metadata_field name="paragraphs" collection="ArrayList"
+			xpath="//div[@id='bodyContent']/p[string-length(.)>0]" child_type="paragraph">
+			<meta_metadata_field name="paragraph_text"
+				scalar_type="String" xpath="string(.)" />
 		</meta_metadata_field>
 		
+		<meta_metadata_field name="outlinks" collection="ArrayList"
+			xpath="//div[@id='bodyContent']/p/a[@title]" child_type="outlink">
+			<meta_metadata_field name="surface" scalar_type="String"
+				xpath="string(.)" />
+			<meta_metadata_field name="concept" scalar_type="String"
+				xpath="./@title" />
+			<meta_metadata_field name="link" scalar_type="ParsedURL"
+				xpath="./@href" />
+		</meta_metadata_field>
+		
+		<meta_metadata_field name="categories" collection="ArrayList"
+			xpath="//div[@id='mw-normal-catlinks']/span/a" child_type="category">
+			<meta_metadata_field name="cat_name" scalar_type="String"
+				xpath="./@title" />
+			<meta_metadata_field name="cat_link" scalar_type="ParsedURL"
+				xpath="./@href" />
+		</meta_metadata_field>
+
 		<semantic_actions>
-		    <get_field name="outlinks" />
-		    <for_each collection="outlinks" as="outlink">
-		        <get_field name="surface" object="outlink" />
-		        <get_field name="concept" object="outlink" />
-		        <get_field name="link" object="outlink" />
-		        <create_concept_outlink>
-		            <arg value="surface" name="surface" />
-		            <arg value="concept" name="concept" />
-		            <arg value="link" name="link" />
-		        </create_concept_outlink>
-		    </for_each>
+			<!--
+				get_field semantic action brings information from metadata structure
+				to current context for use
+			-->
+			<get_field name="outlinks" />
+			<for_each collection="outlinks" as="outlink">
+				<get_field object="outlink" name="surface" />
+				<get_field object="outlink" name="concept" />
+				<get_field object="outlink" name="link" />
+				<create_concept_outlink object="outlink">
+					<arg value="surface" name="surface" />
+					<arg value="concept" name="concept" />
+					<arg value="link" name="link" />
+				</create_concept_outlink>
+			</for_each>
+			
 			<get_field name="paragraphs" />
 			<for_each collection="paragraphs" as="para">
-			    <get_field name="paragraph_text" object="para" />
-			    <analyze_paragraph>
-			        <arg value="paragraph_text" name="paragraph_text" />
-			    </analyze_paragraph>
+				<get_field name="paragraph_text" object="para" />
+				<analyze_paragraph>
+					<arg value="paragraph_text" name="paragraph_text" />
+				</analyze_paragraph>
 			</for_each>
 		</semantic_actions>
 	</meta_metadata>
