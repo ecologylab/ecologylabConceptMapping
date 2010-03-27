@@ -15,7 +15,7 @@ public class ItemList extends ElementState
 	@xml_collection
 	// @xml_scope(ItemTScope.ITEM_TSCOPE)
 	@xml_classes({ItemList.class, Item.class, Item1.class, Item2.class})
-	private ArrayList<Item> list;
+	private ArrayList list;
 	
 	public ArrayList<Item> getList()
 	{
