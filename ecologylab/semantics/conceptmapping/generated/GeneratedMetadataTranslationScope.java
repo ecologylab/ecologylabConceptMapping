@@ -37,7 +37,6 @@ import ecologylab.xml.ElementState.xml_tag;
 import ecologylab.semantics.metadata.builtins.Media;
  import ecologylab.semantics.metadata.builtins.Image;
 import ecologylab.semantics.metametadata.MetaMetadataRepository;
-import ecologylab.semantics.generated.library.*;
 import ecologylab.semantics.conceptmapping.generated.*;
 
 
