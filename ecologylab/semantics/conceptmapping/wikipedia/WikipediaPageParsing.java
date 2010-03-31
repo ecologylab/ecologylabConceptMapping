@@ -35,14 +35,14 @@ public class WikipediaPageParsing
 
 			infoCollector.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
 
-			Thread.sleep(500);
+			// Thread.sleep(500);
 		}
 		br.close();
 
 		while (infoCollector.getDownloadMonitor().toDownloadSize() > 0)
 		{
 			System.out.println("waiting for all the tasks done ...");
-			Thread.sleep(5000);
+			Thread.sleep(1000);
 		}
 
 		ConceptPool.get().save();
