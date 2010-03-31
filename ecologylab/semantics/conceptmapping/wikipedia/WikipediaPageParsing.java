@@ -5,43 +5,42 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import ecologylab.net.ParsedURL;
-import ecologylab.semantics.actions.NestedSemanticActionsTranslationScope;
 import ecologylab.semantics.conceptmapping.generated.GeneratedMetadataTranslationScope;
-import ecologylab.semantics.conceptmapping.generated.WikipediaPage;
-import ecologylab.semantics.metadata.Metadata;
-import ecologylab.semantics.metametadata.MetaMetadataRepository;
-import ecologylab.semantics.metametadata.MetaMetadataTranslationScope;
-import ecologylab.semantics.metametadata.example.MetadataCollector;
 import ecologylab.semantics.metametadata.example.MyInfoCollector;
-import ecologylab.xml.TranslationScope;
 
 public class WikipediaPageParsing
 {
 	public void parse() throws InterruptedException, IOException
 	{
-		Preparation.addSemanticAction(CreateConceptOutlinkSemanticAction.class, AnalyzeParagraphSemanticAction.class);
+		Preparation.addSemanticAction(CreateConceptSemanticAction.class,
+				AddConceptOutlinkSemanticAction.class, AddConceptCategorySemanticAction.class,
+				FinishConceptSemanticAction.class);
 
 		MyInfoCollector infoCollector = new MyInfoCollector(".", GeneratedMetadataTranslationScope
 				.get());
 
-		BufferedReader br = new BufferedReader(new FileReader("Z:\\wikipedia-en-html\\test.lst"));
+		BufferedReader br = new BufferedReader(new FileReader("Z:\\wikipedia-en-html\\test2.lst"));
 		String line;
 		while ((line = br.readLine()) != null)
 		{
 			if (line.trim().isEmpty())
 				break;
-			
+
 			String url = "http://localhost/wiki" + line.substring(2);
 			System.out.println(url);
 			ParsedURL purl = ParsedURL.getAbsolute(url);
 
 			infoCollector.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
-			
-			Thread.sleep(2000);
+		}
+
+		while (infoCollector.getDownloadMonitor().toDownloadSize() > 0)
+		{
+			System.out.println("waiting for all the tasks done ...");
+			Thread.sleep(1000);
 		}
 		
-		Thread.sleep(60000);
-		
+		ConceptPool.get().save();
+
 		infoCollector.getDownloadMonitor().stop();
 	}
 

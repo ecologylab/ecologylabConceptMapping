@@ -19,7 +19,8 @@ public class Preparation
 	{
 		MetadataCompiler compiler = new MetadataCompiler(args);
 
-		addSemanticAction(CreateConceptOutlinkSemanticAction.class, AnalyzeParagraphSemanticAction.class);
+		addSemanticAction(CreateConceptSemanticAction.class, AddConceptOutlinkSemanticAction.class,
+				AddConceptCategorySemanticAction.class, FinishConceptSemanticAction.class);
 
 		compiler.compile(".", ".");
 	}

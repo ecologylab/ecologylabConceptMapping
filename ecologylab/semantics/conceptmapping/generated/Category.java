@@ -41,13 +41,7 @@ public class Category extends Metadata{
 	null
 **/ 
 
-	 @xml_nested private MetadataString	catName;
-
-/**
-	null
-**/ 
-
-	 @xml_nested private MetadataParsedURL	catLink;
+	 @xml_nested private MetadataString	category;
 
 /**
 	Constructor
@@ -68,118 +62,60 @@ super(metaMetadata);
 }
 
 /**
-	Lazy Evaluation for catName
+	Lazy Evaluation for category
 **/ 
 
-public MetadataString	catName()
+public MetadataString	category()
 {
-MetadataString	result	=this.catName;
+MetadataString	result	=this.category;
 if(result == null)
 {
 result = new MetadataString();
-this.catName	=	 result;
+this.category	=	 result;
 }
 return result;
 }
 
 /**
-	Gets the value of the field catName
+	Gets the value of the field category
 **/ 
 
-public String getCatName(){
-return catName().getValue();
+public String getCategory(){
+return category().getValue();
 }
 
 /**
-	Sets the value of the field catName
+	Sets the value of the field category
 **/ 
 
-public void setCatName( String catName )
+public void setCategory( String category )
 {
-this.catName().setValue(catName);
+this.category().setValue(category);
 }
 
 /**
-	The heavy weight setter method for field catName
+	The heavy weight setter method for field category
 **/ 
 
-public void hwSetCatName( String catName )
+public void hwSetCategory( String category )
 {
-this.catName().setValue(catName);
+this.category().setValue(category);
 rebuildCompositeTermVector();
  }
 /**
-	 Sets the catName directly
+	 Sets the category directly
 **/ 
 
-public void setCatNameMetadata(MetadataString catName)
-{	this.catName = catName;
+public void setCategoryMetadata(MetadataString category)
+{	this.category = category;
 }
 /**
-	Heavy Weight Direct setter method for catName
+	Heavy Weight Direct setter method for category
 **/ 
 
-public void hwSetCatNameMetadata(MetadataString catName)
-{	 if(this.catName!=null && this.catName.getValue()!=null && hasTermVector())
-		 termVector().remove(this.catName.termVector());
-	 this.catName = catName;
-	rebuildCompositeTermVector();
-}
-/**
-	Lazy Evaluation for catLink
-**/ 
-
-public MetadataParsedURL	catLink()
-{
-MetadataParsedURL	result	=this.catLink;
-if(result == null)
-{
-result = new MetadataParsedURL();
-this.catLink	=	 result;
-}
-return result;
-}
-
-/**
-	Gets the value of the field catLink
-**/ 
-
-public ParsedURL getCatLink(){
-return catLink().getValue();
-}
-
-/**
-	Sets the value of the field catLink
-**/ 
-
-public void setCatLink( ParsedURL catLink )
-{
-this.catLink().setValue(catLink);
-}
-
-/**
-	The heavy weight setter method for field catLink
-**/ 
-
-public void hwSetCatLink( ParsedURL catLink )
-{
-this.catLink().setValue(catLink);
-rebuildCompositeTermVector();
- }
-/**
-	 Sets the catLink directly
-**/ 
-
-public void setCatLinkMetadata(MetadataParsedURL catLink)
-{	this.catLink = catLink;
-}
-/**
-	Heavy Weight Direct setter method for catLink
-**/ 
-
-public void hwSetCatLinkMetadata(MetadataParsedURL catLink)
-{	 if(this.catLink!=null && this.catLink.getValue()!=null && hasTermVector())
-		 termVector().remove(this.catLink.termVector());
-	 this.catLink = catLink;
+public void hwSetCategoryMetadata(MetadataString category)
+{	 if(this.category!=null && this.category.getValue()!=null && hasTermVector())
+		 termVector().remove(this.category.termVector());
+	 this.category = category;
 	rebuildCompositeTermVector();
 }}

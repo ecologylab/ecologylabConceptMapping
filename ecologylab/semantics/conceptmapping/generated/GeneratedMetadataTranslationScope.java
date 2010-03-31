@@ -49,9 +49,7 @@ This is the tranlation scope class for generated files
 
 public class GeneratedMetadataTranslationScope extends  DefaultMetadataTranslationSpace
 {protected static final Class TRANSLATIONS[]=
-	{Paragraph.class,
-
-Outlink.class,
+	{Outlink.class,
 
 Category.class,
 

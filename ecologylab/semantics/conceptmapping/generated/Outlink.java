@@ -47,13 +47,7 @@ public class Outlink extends Metadata{
 	null
 **/ 
 
-	 @xml_nested private MetadataString	concept;
-
-/**
-	null
-**/ 
-
-	 @xml_nested private MetadataParsedURL	link;
+	 @xml_nested private MetadataString	targetConcept;
 
 /**
 	Constructor
@@ -132,118 +126,60 @@ public void hwSetSurfaceMetadata(MetadataString surface)
 	rebuildCompositeTermVector();
 }
 /**
-	Lazy Evaluation for concept
+	Lazy Evaluation for targetConcept
 **/ 
 
-public MetadataString	concept()
+public MetadataString	targetConcept()
 {
-MetadataString	result	=this.concept;
+MetadataString	result	=this.targetConcept;
 if(result == null)
 {
 result = new MetadataString();
-this.concept	=	 result;
+this.targetConcept	=	 result;
 }
 return result;
 }
 
 /**
-	Gets the value of the field concept
+	Gets the value of the field targetConcept
 **/ 
 
-public String getConcept(){
-return concept().getValue();
+public String getTargetConcept(){
+return targetConcept().getValue();
 }
 
 /**
-	Sets the value of the field concept
+	Sets the value of the field targetConcept
 **/ 
 
-public void setConcept( String concept )
+public void setTargetConcept( String targetConcept )
 {
-this.concept().setValue(concept);
+this.targetConcept().setValue(targetConcept);
 }
 
 /**
-	The heavy weight setter method for field concept
+	The heavy weight setter method for field targetConcept
 **/ 
 
-public void hwSetConcept( String concept )
+public void hwSetTargetConcept( String targetConcept )
 {
-this.concept().setValue(concept);
+this.targetConcept().setValue(targetConcept);
 rebuildCompositeTermVector();
  }
 /**
-	 Sets the concept directly
+	 Sets the targetConcept directly
 **/ 
 
-public void setConceptMetadata(MetadataString concept)
-{	this.concept = concept;
+public void setTargetConceptMetadata(MetadataString targetConcept)
+{	this.targetConcept = targetConcept;
 }
 /**
-	Heavy Weight Direct setter method for concept
+	Heavy Weight Direct setter method for targetConcept
 **/ 
 
-public void hwSetConceptMetadata(MetadataString concept)
-{	 if(this.concept!=null && this.concept.getValue()!=null && hasTermVector())
-		 termVector().remove(this.concept.termVector());
-	 this.concept = concept;
-	rebuildCompositeTermVector();
-}
-/**
-	Lazy Evaluation for link
-**/ 
-
-public MetadataParsedURL	link()
-{
-MetadataParsedURL	result	=this.link;
-if(result == null)
-{
-result = new MetadataParsedURL();
-this.link	=	 result;
-}
-return result;
-}
-
-/**
-	Gets the value of the field link
-**/ 
-
-public ParsedURL getLink(){
-return link().getValue();
-}
-
-/**
-	Sets the value of the field link
-**/ 
-
-public void setLink( ParsedURL link )
-{
-this.link().setValue(link);
-}
-
-/**
-	The heavy weight setter method for field link
-**/ 
-
-public void hwSetLink( ParsedURL link )
-{
-this.link().setValue(link);
-rebuildCompositeTermVector();
- }
-/**
-	 Sets the link directly
-**/ 
-
-public void setLinkMetadata(MetadataParsedURL link)
-{	this.link = link;
-}
-/**
-	Heavy Weight Direct setter method for link
-**/ 
-
-public void hwSetLinkMetadata(MetadataParsedURL link)
-{	 if(this.link!=null && this.link.getValue()!=null && hasTermVector())
-		 termVector().remove(this.link.termVector());
-	 this.link = link;
+public void hwSetTargetConceptMetadata(MetadataString targetConcept)
+{	 if(this.targetConcept!=null && this.targetConcept.getValue()!=null && hasTermVector())
+		 termVector().remove(this.targetConcept.termVector());
+	 this.targetConcept = targetConcept;
 	rebuildCompositeTermVector();
 }}

@@ -51,7 +51,6 @@ public class  WikipediaPage
 extends  Document
 {
 
-	@xml_collection("paragraphs") private ArrayList<Paragraph>	paragraphs;
 	@xml_collection("outlinks") private ArrayList<Outlink>	outlinks;
 	@xml_collection("categories") private ArrayList<Category>	categories;
 
@@ -71,38 +70,6 @@ public WikipediaPage()
 public WikipediaPage(MetaMetadata metaMetadata)
 {
 super(metaMetadata);
-}
-
-/**
-	Lazy Evaluation for paragraphs
-**/ 
-
-public  ArrayList<Paragraph>	paragraphs()
-{
- ArrayList<Paragraph>	result	=this.paragraphs;
-if(result == null)
-{
-result = new  ArrayList<Paragraph>();
-this.paragraphs	=	 result;
-}
-return result;
-}
-
-/**
-	Set the value of field paragraphs
-**/ 
-
-public void setParagraphs(  ArrayList<Paragraph> paragraphs )
-{
-this.paragraphs = paragraphs ;
-}
-
-/**
-	Get the value of field paragraphs
-**/ 
-
-public  ArrayList<Paragraph> getParagraphs(){
-return this.paragraphs;
 }
 
 /**
