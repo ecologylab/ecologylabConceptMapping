@@ -52,7 +52,7 @@
 		articles. -yin qu
 	-->
 	<meta_metadata name="wikipedia_page" extends="document"
-		parser="xpath" url_path_tree="http://localhost/wiki/"
+		parser="xpath" url_path_tree="http://achilles/wiki/"
 		package="ecologylab.semantics.conceptmapping.generated" comment="An article on local wikipedia">
 		
 		<meta_metadata_field name="title"
