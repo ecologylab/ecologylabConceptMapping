@@ -12,7 +12,7 @@ import ecologylab.semantics.metametadata.example.MyInfoCollector;
 
 public class WikipediaPageParsing
 {
-	public void parse() throws InterruptedException, IOException
+	public void parse(String inputFilePath) throws InterruptedException, IOException
 	{
 		Preparation.addSemanticAction(CreateConceptSemanticAction.class,
 				AddConceptOutlinkSemanticAction.class, AddConceptCategorySemanticAction.class,
@@ -21,7 +21,7 @@ public class WikipediaPageParsing
 		MyInfoCollector infoCollector = new MyInfoCollector(".", GeneratedMetadataTranslationScope
 				.get());
 
-		BufferedReader br = new BufferedReader(new FileReader("Z:\\wikipedia-en-html\\html.lst"));
+		BufferedReader br = new BufferedReader(new FileReader(inputFilePath));
 		String line;
 		while ((line = br.readLine()) != null)
 		{
@@ -35,13 +35,14 @@ public class WikipediaPageParsing
 
 			infoCollector.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
 
-			Thread.sleep(1000);
+			Thread.sleep(500);
 		}
+		br.close();
 
 		while (infoCollector.getDownloadMonitor().toDownloadSize() > 0)
 		{
 			System.out.println("waiting for all the tasks done ...");
-			Thread.sleep(1000);
+			Thread.sleep(5000);
 		}
 
 		ConceptPool.get().save();
@@ -84,7 +85,15 @@ public class WikipediaPageParsing
 
 	public static void main(String[] args) throws InterruptedException, IOException
 	{
+		if (args.length != 1)
+		{
+			System.err.println("1st argument: <wiki-page-list-file-path>");
+			return;
+		}
+		
+		String listFilePath = args[0];
+		
 		WikipediaPageParsing parsing = new WikipediaPageParsing();
-		parsing.parse();
+		parsing.parse(listFilePath);
 	}
 }

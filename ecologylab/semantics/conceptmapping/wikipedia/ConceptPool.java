@@ -38,7 +38,7 @@ public class ConceptPool extends ElementState
 
 	// current
 	private Concept	current	= null;
-	
+
 	public Concept getCurrent()
 	{
 		return current;
@@ -54,13 +54,16 @@ public class ConceptPool extends ElementState
 
 	public void endNewConcept()
 	{
-		pool.add(current);
-		current = null;
-		
-		// save buffered concepts
-		if (pool.size() >= bufferSize)
+		if (current.getName() != null)
 		{
-			save();
+			pool.add(current);
+			current = null;
+
+			// save buffered concepts
+			if (pool.size() >= bufferSize)
+			{
+				save();
+			}
 		}
 
 		System.out.println("finished.");
@@ -71,7 +74,7 @@ public class ConceptPool extends ElementState
 	{
 		if (WikipediaPageParsing.isSpecialPage(targetConceptName))
 			return;
-		
+
 		Concept.Outlink outlink = new Concept.Outlink(surface, targetConceptName);
 		current.addOutlink(outlink);
 	}
@@ -85,7 +88,7 @@ public class ConceptPool extends ElementState
 	{
 		if (pool.size() <= 0)
 			return;
-		
+
 		end = start + pool.size() - 1;
 		try
 		{
@@ -108,9 +111,9 @@ public class ConceptPool extends ElementState
 	// singleton
 	private ConceptPool()
 	{
-		
+
 	}
-	
+
 	private static ConceptPool	the	= null;
 
 	public static ConceptPool get()
