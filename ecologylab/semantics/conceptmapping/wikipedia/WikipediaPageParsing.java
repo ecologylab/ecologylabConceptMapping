@@ -12,15 +12,17 @@ import ecologylab.semantics.metametadata.example.MyInfoCollector;
 
 public class WikipediaPageParsing
 {
-	public void parse(String inputFilePath) throws InterruptedException, IOException
+	public final int fullSize = 2000;
+	
+	public void parse(String inputFilePath, int nDownloadThread) throws InterruptedException, IOException
 	{
 		Preparation.addSemanticAction(CreateConceptSemanticAction.class,
 				AddConceptOutlinkSemanticAction.class, AddConceptCategorySemanticAction.class,
 				FinishConceptSemanticAction.class);
 
 		MyInfoCollector infoCollector = new MyInfoCollector(".", GeneratedMetadataTranslationScope
-				.get());
-
+				.get(), nDownloadThread);
+		
 		BufferedReader br = new BufferedReader(new FileReader(inputFilePath));
 		String line;
 		while ((line = br.readLine()) != null)
@@ -33,6 +35,11 @@ public class WikipediaPageParsing
 				continue;
 			ParsedURL purl = ParsedURL.getAbsolute(url);
 
+			if (infoCollector.getDownloadMonitor().toDownloadSize() > fullSize)
+			{
+				while (infoCollector.getDownloadMonitor().toDownloadSize() > fullSize / 5)
+					;
+			}
 			infoCollector.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
 
 			// Thread.sleep(500);
@@ -85,15 +92,16 @@ public class WikipediaPageParsing
 
 	public static void main(String[] args) throws InterruptedException, IOException
 	{
-		if (args.length != 1)
+		if (args.length != 2)
 		{
-			System.err.println("1st argument: <wiki-page-list-file-path>");
+			System.err.println("arguments: <wiki-page-list-file-path> <count-of-download-thread>");
 			return;
 		}
 		
 		String listFilePath = args[0];
+		int nDownloadThread = Integer.valueOf(args[1]);
 		
 		WikipediaPageParsing parsing = new WikipediaPageParsing();
-		parsing.parse(listFilePath);
+		parsing.parse(listFilePath, nDownloadThread);
 	}
 }

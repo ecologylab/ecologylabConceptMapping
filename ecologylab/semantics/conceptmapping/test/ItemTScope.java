@@ -7,7 +7,7 @@ public class ItemTScope
 	public static final String	ITEM_TSCOPE	= "item_tscope";
 
 	static final Class[]				CLASSES			=
-																	{ ItemList.class, Item.class, Item1.class, Item2.class };
+																					{ ItemList.class, Item.class, Item1.class, Item2.class };
 
 	public static TranslationScope get()
 	{

@@ -20,7 +20,7 @@ public class ConceptPool extends ElementState
 	private Lock								lock				= new ReentrantLock();
 
 	// pool
-	public int									bufferSize	= 100;
+	public int									bufferSize	= 1000;
 
 	@xml_attribute
 	private int									start				= 1;

@@ -5,5 +5,8 @@ import ecologylab.xml.xml_inherit;
 @xml_inherit
 public class Item1 extends Item
 {
-
+	public Item1()
+	{
+		super();
+	}
 }
