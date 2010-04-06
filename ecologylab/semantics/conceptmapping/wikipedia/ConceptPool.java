@@ -20,7 +20,7 @@ public class ConceptPool extends ElementState
 	private Lock								lock				= new ReentrantLock();
 
 	// pool
-	public int									bufferSize	= 1000;
+	public int									bufferSize	= 10000;
 
 	@xml_attribute
 	private int									start				= 1;
@@ -72,7 +72,7 @@ public class ConceptPool extends ElementState
 
 	public void addOutlink(String surface, String targetConceptName)
 	{
-		if (WikipediaPageParsing.isSpecialPage(targetConceptName))
+		if (URLListFilter.isSpecialPage(targetConceptName))
 			return;
 
 		Concept.Outlink outlink = new Concept.Outlink(surface, targetConceptName);

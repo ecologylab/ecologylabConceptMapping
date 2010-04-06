@@ -1,22 +1,23 @@
-package ecologylab.semantics.conceptmapping.wikipedia;
+package ecologylab.semantics.conceptmapping.wikipedia.metametadata;
 
-import java.util.ArrayList;
 import java.util.Map;
 
-import ecologylab.net.ParsedURL;
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.actions.SemanticActionStandardMethods;
+import ecologylab.semantics.conceptmapping.wikipedia.ConceptPool;
 import ecologylab.xml.xml_inherit;
 import ecologylab.xml.ElementState.xml_tag;
 
 @xml_inherit
-@xml_tag("create_concept")
-public class CreateConceptSemanticAction extends SemanticAction implements SemanticActionStandardMethods
+@xml_tag("add_concept_category")
+public class AddConceptCategorySemanticAction extends SemanticAction implements
+		SemanticActionStandardMethods
 {
+
 	@Override
 	public String getActionName()
 	{
-		return "create_concept";
+		return "add_concept_category";
 	}
 
 	@Override
@@ -27,10 +28,9 @@ public class CreateConceptSemanticAction extends SemanticAction implements Seman
 	@Override
 	public Object handle(Object obj, Map<String, Object> args)
 	{
-		String title = (String) args.get("title");
-		ParsedURL purl = (ParsedURL) args.get("location");
+		String categoryName = (String) args.get("category");
 		
-		ConceptPool.get().beginNewConcept(title, purl);
+		ConceptPool.get().addCategory(categoryName);
 		return null;
 	}
 }

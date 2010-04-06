@@ -8,6 +8,11 @@ import java.util.regex.Pattern;
 
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.conceptmapping.generated.GeneratedMetadataTranslationScope;
+import ecologylab.semantics.conceptmapping.wikipedia.metametadata.AddConceptCategorySemanticAction;
+import ecologylab.semantics.conceptmapping.wikipedia.metametadata.AddConceptOutlinkSemanticAction;
+import ecologylab.semantics.conceptmapping.wikipedia.metametadata.CreateConceptSemanticAction;
+import ecologylab.semantics.conceptmapping.wikipedia.metametadata.FinishConceptSemanticAction;
+import ecologylab.semantics.conceptmapping.wikipedia.metametadata.Utils;
 import ecologylab.semantics.metametadata.example.MyInfoCollector;
 
 public class WikipediaPageParsing
@@ -16,7 +21,7 @@ public class WikipediaPageParsing
 	
 	public void parse(String inputFilePath, int nDownloadThread) throws InterruptedException, IOException
 	{
-		Preparation.addSemanticAction(CreateConceptSemanticAction.class,
+		Utils.addSemanticAction(CreateConceptSemanticAction.class,
 				AddConceptOutlinkSemanticAction.class, AddConceptCategorySemanticAction.class,
 				FinishConceptSemanticAction.class);
 
@@ -31,7 +36,7 @@ public class WikipediaPageParsing
 				break;
 
 			String url = "http://achilles/wiki" + line.substring(2);
-			if (isSpecialPage(url))
+			if (URLListFilter.isSpecialPage(url))
 				continue;
 			ParsedURL purl = ParsedURL.getAbsolute(url);
 
@@ -41,8 +46,6 @@ public class WikipediaPageParsing
 					;
 			}
 			infoCollector.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
-
-			// Thread.sleep(500);
 		}
 		br.close();
 
@@ -58,37 +61,7 @@ public class WikipediaPageParsing
 		infoCollector.getDownloadMonitor().stop();
 	}
 
-	private static String[]	specialPageBeginnings	=
-																								{ "index.html", "Image~", "User~", "User_talk~",
-			"Talk~", "Category~", "Category_talk~", "Template~", "Template_talk~", "Image_talk~",
-			"Wikipedia_talk~", "Wikipedia~"					};
 
-	private static String[]	specialPageEndings		=
-																								{ "(disambiguation).html" };
-
-	private static Pattern	specialPagePattern		= Pattern
-																										.compile("[A-Za-z0-9'_]*[Ll]ist_of_[A-Za-z0-9'_]+~");
-
-	public static boolean isSpecialPage(String url)
-	{
-		int i = url.lastIndexOf('/');
-		String pageName = url.substring(i + 1);
-
-		for (String beginning : specialPageBeginnings)
-		{
-			if (pageName.startsWith(beginning))
-				return true;
-		}
-		
-		for (String ending : specialPageEndings)
-		{
-			if (pageName.endsWith(ending))
-				return true;
-		}
-
-		Matcher m = specialPagePattern.matcher(url);
-		return m.matches();
-	}
 
 	public static void main(String[] args) throws InterruptedException, IOException
 	{
