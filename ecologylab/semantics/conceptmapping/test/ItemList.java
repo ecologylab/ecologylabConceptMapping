@@ -13,6 +13,8 @@ public class ItemList extends ElementState
 {
 	@xml_nowrap
 	@xml_collection
+//  @xml_collection("item")
+//  @xml_collection("item1")
   @xml_scope(ItemTScope.ITEM_TSCOPE)
 //	@xml_classes({ItemList.class, Item.class, Item1.class, Item2.class})
 	private ArrayList<Item>	list;
@@ -47,7 +49,7 @@ public class ItemList extends ElementState
 
 		for (Item i : il.getList())
 		{
-			System.out.println(((Item1)i).getClassName());
+			System.out.println(i.getClassName());
 		}
 	}
 }
