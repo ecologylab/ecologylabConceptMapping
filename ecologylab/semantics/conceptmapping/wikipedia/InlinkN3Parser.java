@@ -23,6 +23,7 @@ public class InlinkN3Parser
 		if (!m.matches())
 		{
 			System.err.println("cannot parse line: " + line);
+			return null;
 		}
 
 		Inlink il = new Inlink();

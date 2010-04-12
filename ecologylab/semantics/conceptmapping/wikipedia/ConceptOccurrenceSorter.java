@@ -13,13 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ecologylab.semantics.conceptmapping.wikipedia.SurfaceN3Parser.Surface;
+import ecologylab.semantics.conceptmapping.wikipedia.InlinkN3Parser.Inlink;
 
-public class SurfaceCommonnessSorter
+public class ConceptOccurrenceSorter
 {
 	protected class Item
 	{
-		public String surface;
+		public String concept;
 		public int count;
 	}
 	
@@ -27,24 +27,24 @@ public class SurfaceCommonnessSorter
 	
 	public void process(String inFilePath, String outFilePath) throws IOException
 	{
-		SurfaceN3Parser parser = new SurfaceN3Parser();
+		InlinkN3Parser parser = new InlinkN3Parser();
 		
 		BufferedReader br = new BufferedReader(new FileReader(inFilePath));
 		String line = null;
 		while ((line = br.readLine()) != null)
 		{
 			line.trim();
-			Surface s = parser.parse(line);
-			if (items.containsKey(s.surfaceName))
+			Inlink il = parser.parse(line);
+			if (items.containsKey(il.toConcept))
 			{
-				items.get(s.surfaceName).count++;
+				items.get(il.toConcept).count++;
 			}
 			else
 			{
 				Item it = new Item();
-				it.surface = s.surfaceName;
+				it.concept = il.toConcept;
 				it.count = 1;
-				items.put(s.surfaceName, it);
+				items.put(il.toConcept, it);
 			}
 		}
 		br.close();
@@ -65,7 +65,7 @@ public class SurfaceCommonnessSorter
 		PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(outFilePath)));
 		for (Item item : list)
 		{
-			pw.format("%s\t%d\n", item.surface, item.count);
+			pw.format("%s\t%d\n", item.concept, item.count);
 		}
 		pw.close();
 	}
@@ -74,11 +74,11 @@ public class SurfaceCommonnessSorter
 	{
 		if (args.length != 2)
 		{
-			System.err.println("usage: <input-surface-n3-file> <output-sorted-surfaces-file>");
+			System.err.println("usage: <input-inlink-n3-file> <output-occurrence-sorted-concepts-file>");
 			return;
 		}
 		
-		SurfaceCommonnessSorter scs = new SurfaceCommonnessSorter();
-		scs.process(args[0], args[1]);
+		ConceptOccurrenceSorter ccr = new ConceptOccurrenceSorter();
+		ccr.process(args[0], args[1]);
 	}
 }

@@ -21,6 +21,7 @@ public class SurfaceN3Parser
 		if (!m.matches())
 		{
 			System.err.println("cannot parse line: " + line);
+			return null;
 		}
 
 		Surface s = new Surface();
@@ -37,7 +38,7 @@ public class SurfaceN3Parser
 
 	public static void main(String[] args)
 	{
-		String test = "[esc:words \"!!! (chk chk chk)\"] esc:surface_of [esc:name \"!!!\"] .";
+		String test = "[esc:words \"pl:GÃ³rnoslÄski OkrÄg PrzemysÅowy\"] esc:surface_of [esc:name \"pl:GÃ³rnoslÄski_OkrÄg_PrzemysÅowy\"] .";
 
 		SurfaceN3Parser p = new SurfaceN3Parser();
 		Surface s = p.parse(test);
