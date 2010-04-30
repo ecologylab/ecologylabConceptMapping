@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia;
+package ecologylab.semantics.conceptmapping.wikipedia.dbprepare;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -11,20 +11,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ecologylab.semantics.conceptmapping.wikipedia.InlinkN3Parser.Inlink;
+import ecologylab.semantics.conceptmapping.wikipedia.StringPool;
+import ecologylab.semantics.conceptmapping.wikipedia.dbprepare.InlinkN3Parser.Inlink;
 
 public class RelatednessExtractor
 {
 
-	public int												reportEvery	= 1000000;
+	public int										reportEvery	= 1000000;
 
-	private InlinkN3Parser						parser			= new InlinkN3Parser();
+	private InlinkN3Parser				parser			= new InlinkN3Parser();
 
-	private Map<String, Set<String>>	mci					= new HashMap<String, Set<String>>();
+	private Map<String, List<String>>	mci					= new HashMap<String, List<String>>();
 
-	private String										inlinksFilePath;
+	private String								inlinksFilePath;
 
-	private String										relatednessFilePath;
+	private String								relatednessFilePath;
 
 	public RelatednessExtractor(String inlinksFilePath, String relatednessFilePath)
 			throws FileNotFoundException, IOException
@@ -67,14 +68,23 @@ public class RelatednessExtractor
 
 		System.out.println("reading inlink data ...");
 		String line;
+		int i = 0;
+		int step = 1000000;
 		while ((line = br.readLine()) != null)
 		{
 			line = line.trim();
 			Inlink il = parser.parse(line);
 			if (il != null)
 			{
-				Set<String> inlinks = mapTryGet(mci, il.toConcept, new HashSet<String>());
+				List<String> inlinks = mapTryGet(mci, il.toConcept, new ArrayList<String>());
 				inlinks.add(il.fromConcept);
+			}
+
+			i++;
+			if (i % step == 0)
+			{
+				System.out.format("%d lines processed ...\n", i);
+				System.gc();
 			}
 		}
 		System.out.format("%d concepts loaded.\n", mci.size());
@@ -86,8 +96,8 @@ public class RelatednessExtractor
 		if (!mci.containsKey(c1) || !mci.containsKey(c2))
 			return 0;
 
-		Set<String> set1 = mci.get(c1);
-		Set<String> set2 = mci.get(c2);
+		List<String> set1 = mci.get(c1);
+		List<String> set2 = mci.get(c2);
 		Set<String> intersection = new HashSet<String>(set1);
 		intersection.retainAll(set2);
 

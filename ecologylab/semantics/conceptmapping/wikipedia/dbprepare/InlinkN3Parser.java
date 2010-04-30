@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia;
+package ecologylab.semantics.conceptmapping.wikipedia.dbprepare;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

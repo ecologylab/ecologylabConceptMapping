@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia;
+package ecologylab.semantics.conceptmapping.wikipedia.dbprepare;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -6,8 +6,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import ecologylab.semantics.conceptmapping.wikipedia.SurfaceN3Parser.Surface;
+import ecologylab.semantics.conceptmapping.wikipedia.StringPool;
+import ecologylab.semantics.conceptmapping.wikipedia.dbprepare.SurfaceN3Parser.Surface;
 
+/**
+ * This class is used to extract commonness given the sorted surface file.
+ * 
+ * @author quyin
+ *
+ */
 public class CommonnessExtractor
 {
 	private SurfaceN3Parser				parser	= new SurfaceN3Parser();

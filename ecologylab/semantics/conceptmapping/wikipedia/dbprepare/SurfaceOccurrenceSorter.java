@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia;
+package ecologylab.semantics.conceptmapping.wikipedia.dbprepare;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -13,13 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ecologylab.semantics.conceptmapping.wikipedia.InlinkN3Parser.Inlink;
+import ecologylab.semantics.conceptmapping.wikipedia.dbprepare.SurfaceN3Parser.Surface;
 
-public class ConceptOccurrenceSorter
+public class SurfaceOccurrenceSorter
 {
 	protected class Item
 	{
-		public String concept;
+		public String surface;
 		public int count;
 	}
 	
@@ -27,24 +27,24 @@ public class ConceptOccurrenceSorter
 	
 	public void process(String inFilePath, String outFilePath) throws IOException
 	{
-		InlinkN3Parser parser = new InlinkN3Parser();
+		SurfaceN3Parser parser = new SurfaceN3Parser();
 		
 		BufferedReader br = new BufferedReader(new FileReader(inFilePath));
 		String line = null;
 		while ((line = br.readLine()) != null)
 		{
 			line.trim();
-			Inlink il = parser.parse(line);
-			if (items.containsKey(il.toConcept))
+			Surface s = parser.parse(line);
+			if (items.containsKey(s.surfaceName))
 			{
-				items.get(il.toConcept).count++;
+				items.get(s.surfaceName).count++;
 			}
 			else
 			{
 				Item it = new Item();
-				it.concept = il.toConcept;
+				it.surface = s.surfaceName;
 				it.count = 1;
-				items.put(il.toConcept, it);
+				items.put(s.surfaceName, it);
 			}
 		}
 		br.close();
@@ -65,7 +65,7 @@ public class ConceptOccurrenceSorter
 		PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(outFilePath)));
 		for (Item item : list)
 		{
-			pw.format("%s\t%d\n", item.concept, item.count);
+			pw.format("%s\t%d\n", item.surface, item.count);
 		}
 		pw.close();
 	}
@@ -74,11 +74,11 @@ public class ConceptOccurrenceSorter
 	{
 		if (args.length != 2)
 		{
-			System.err.println("usage: <input-inlink-n3-file> <output-occurrence-sorted-concepts-file>");
+			System.err.println("usage: <input-surface-n3-file> <output-occurrence-sorted-surfaces-file>");
 			return;
 		}
 		
-		ConceptOccurrenceSorter ccr = new ConceptOccurrenceSorter();
-		ccr.process(args[0], args[1]);
+		SurfaceOccurrenceSorter scs = new SurfaceOccurrenceSorter();
+		scs.process(args[0], args[1]);
 	}
 }
