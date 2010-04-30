@@ -138,10 +138,10 @@ public class DatabaseConnector
 
 	public static void main(String[] args) throws IOException
 	{
-		DatabaseConnector fc = new DatabaseConnector();
-		fc.convertInlink("C:/run/sorted/sorted-inlinks.n3");
-		fc.convertCommonness("C:/run/commonness/commonness.tsv");
-		fc.convertKeyphraseness("S:/quyin/rada's data and processed/keyPhrasenessScore.2007");
+		DatabaseConnector dc = new DatabaseConnector();
+		dc.convertInlink("C:/run/sorted/sorted-inlinks.n3");
+		dc.convertCommonness("C:/run/commonness/commonness.tsv");
+		dc.convertKeyphraseness("S:/quyin/rada's data and processed/keyPhrasenessScore.2007");
 	}
 
 }
