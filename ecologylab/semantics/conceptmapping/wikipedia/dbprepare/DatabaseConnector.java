@@ -7,11 +7,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import ecologylab.semantics.conceptmapping.wikipedia.dbprepare.InlinkN3Parser.Inlink;
 
 public class DatabaseConnector
 {
+	private Connection				db;
+
 	private PreparedStatement	inlinkUpdateStatement;
 
 	private PreparedStatement	commonnessUpdateStatement;
@@ -110,6 +113,45 @@ public class DatabaseConnector
 		br.close();
 	}
 
+	public void createIndexes()
+	{
+		// executeSql("CREATE INDEX inlinks_toconcept_index ON inlinks (to_concept);");
+		// executeSql("CREATE INDEX inlinks_fromconcept_index ON inlinks (from_concept);");
+		executeSql("CREATE INDEX inlinks_surface_index ON inlinks (surface);");
+		executeSql("CREATE INDEX commonness_surface_index ON commonness (surface);");
+		executeSql("CREATE INDEX commonness_concept_index ON commonness (concept);");
+		executeSql("CREATE INDEX keyphraseness_surface_index ON keyphraseness (surface);");
+	}
+
+	private Statement	st;
+
+	private boolean executeSql(String sql)
+	{
+		if (st == null)
+		{
+			try
+			{
+				st = db.createStatement();
+			}
+			catch (SQLException e)
+			{
+				System.err.println("cannot create statement. message: " + e.getMessage());
+				return false;
+			}
+		}
+		
+		try
+		{
+			System.out.println("executing: " + sql);
+			return st.execute(sql);
+		}
+		catch (SQLException e)
+		{
+			System.err.println("cannot execute SQL statement: " + sql + ", message: " + e.getMessage());
+			return false;
+		}
+	}
+
 	public DatabaseConnector()
 	{
 		try
@@ -120,7 +162,7 @@ public class DatabaseConnector
 			String username = "quyin";
 			String password = "quyindbpwd";
 
-			Connection db = DriverManager.getConnection(url, username, password);
+			db = DriverManager.getConnection(url, username, password);
 
 			inlinkUpdateStatement = db.prepareStatement("INSERT INTO inlinks VALUES (?, ?, ?, ?)");
 			commonnessUpdateStatement = db.prepareStatement("INSERT INTO commonness VALUES (?, ?, ?)");
@@ -139,9 +181,10 @@ public class DatabaseConnector
 	public static void main(String[] args) throws IOException
 	{
 		DatabaseConnector dc = new DatabaseConnector();
-		dc.convertInlink("C:/run/sorted/sorted-inlinks.n3");
-		dc.convertCommonness("C:/run/commonness/commonness.tsv");
-		dc.convertKeyphraseness("S:/quyin/rada's data and processed/keyPhrasenessScore.2007");
+		// dc.convertInlink("C:/run/sorted/sorted-inlinks.n3");
+		// dc.convertCommonness("C:/run/commonness/commonness.tsv");
+		// dc.convertKeyphraseness("S:/quyin/rada's data and processed/keyPhrasenessScore.2007");
+		dc.createIndexes();
 	}
 
 }
