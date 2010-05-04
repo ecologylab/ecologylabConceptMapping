@@ -1,142 +1,83 @@
 package ecologylab.semantics.conceptmapping.wikipedia.dbprepare;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import ecologylab.semantics.conceptmapping.wikipedia.StringPool;
-import ecologylab.semantics.conceptmapping.wikipedia.dbprepare.SurfaceN3Parser.Surface;
+import ecologylab.semantics.conceptmapping.wikipedia.db.DatabaseAdapter;
+import ecologylab.semantics.conceptmapping.wikipedia.utils.CollectionUtils;
 
 /**
  * This class is used to extract commonness given the sorted surface file.
  * 
  * @author quyin
- *
+ * 
  */
 public class CommonnessExtractor
 {
-	private SurfaceN3Parser				parser	= new SurfaceN3Parser();
 
-	private String								surface;
+	private DatabaseAdapter	da;
 
-	private Map<String, Integer>	mcc			= new HashMap<String, Integer>();
+	private String					unambiSurfaceFilePath;
 
-	private String								sortedSurfacesFilePath;
+	private String					ambiSurfaceFilePath;
 
-	private String								unambiSurfaceFilePath;
-
-	private String								ambiSurfaceFilePath;
-
-	private String								commonnessFilePath;
-
-	public CommonnessExtractor()
+	public CommonnessExtractor(DatabaseAdapter databaseAdapter, String unambiSurfaceFilePath,
+			String ambiSurfaceFilePath)
 	{
-		this("sorted-surfaces.n3");
-	}
+		if (databaseAdapter != null)
+			this.da = databaseAdapter;
+		else
+			this.da = DatabaseAdapter.get("commonness-extractor");
 
-	public CommonnessExtractor(String sortedSurfacesFilePath)
-	{
-		this(sortedSurfacesFilePath, "unambi-surfaces.lst", "ambi-surfaces.lst", "commonness.tsv");
-	}
-
-	public CommonnessExtractor(String sortedSurfacesFilePath, String unambiSurfaceFilePath,
-			String ambiSurfaceFilePath, String commonnessFilePath)
-	{
-		this.sortedSurfacesFilePath = sortedSurfacesFilePath;
 		this.unambiSurfaceFilePath = unambiSurfaceFilePath;
 		this.ambiSurfaceFilePath = ambiSurfaceFilePath;
-		this.commonnessFilePath = commonnessFilePath;
 	}
 
-	public void extract() throws IOException
+	public void extract(String surface) throws SQLException
 	{
-		BufferedReader br = new BufferedReader(new FileReader(sortedSurfacesFilePath));
-
-		boolean firstLine = true;
-		String line = br.readLine();
-		do
+		Map<String, Integer> cc = getConceptCountForSurface(surface);
+		int n = CollectionUtils.sum(cc.values());
+		for (String concept : cc.keySet())
 		{
-			if (line == null)
-			{
-				processSurface();
-				break;
-			}
-
-			line = line.trim();
-			Surface sf = parser.parse(line);
-			if (sf != null)
-			{
-				if (firstLine)
-				{
-					surface = sf.surfaceName;
-				}
-
-				if (!firstLine && !sf.surfaceName.equals(surface))
-				{
-					processSurface();
-
-					surface = sf.surfaceName;
-					mcc.clear();
-					processConcept(sf);
-				}
-				else
-				{
-					processConcept(sf);
-				}
-				firstLine = false;
-			}
-
-			line = br.readLine();
+			double commonness = cc.get(concept) / (double) n;
+			insertCommonness(surface, concept, commonness);
 		}
-		while (true);
-		br.close();
 
-		StringPool.closeAll();
-	}
-
-	private void processSurface()
-	{
-		if (mcc.size() == 1)
-		{
+		if (cc.size() == 1)
 			StringPool.get(unambiSurfaceFilePath).addLine(surface);
-		}
-		else
-		{
+		if (cc.size() > 1)
 			StringPool.get(ambiSurfaceFilePath).addLine(surface);
-		}
+	}
 
-		int n = 0; // total # of references of this surface
-		for (int k : mcc.values())
-			n += k;
+	private void insertCommonness(String surface, String concept, double commonness)
+			throws SQLException
+	{
+		PreparedStatement pst = da.getPreparedStatement("INSERT INTO commonness VALUES (?, ?, ?)");
+		pst.setString(1, surface);
+		pst.setString(2, concept);
+		pst.setDouble(3, commonness);
+		pst.executeUpdate();
+	}
 
-		for (String concept : mcc.keySet())
+	private Map<String, Integer> getConceptCountForSurface(String surface) throws SQLException
+	{
+		Map<String, Integer> cc = new HashMap<String, Integer>();
+
+		PreparedStatement pst = da
+				.getPreparedStatement("SELECT to_concept, count(*) FROM inlinks WHERE surface=? GROUP BY to_concept ORDER BY to_concept;");
+		pst.setString(1, surface);
+		ResultSet rs = (ResultSet) pst.executeQuery();
+		while (rs.next())
 		{
-			float commonness = (float) mcc.get(concept) / n;
-			String s = String.format("%s\t%s\t%f", surface, concept, commonness);
-			StringPool.get(commonnessFilePath).addLine(s);
+			String concept = rs.getString("to_concept");
+			int count = rs.getInt("count");
+			cc.put(concept, count);
 		}
+		return cc;
 	}
 
-	private void processConcept(Surface sf)
-	{
-		int cc = mapTryGet(mcc, sf.concept, 0);
-		mcc.put(sf.concept, cc + 1);
-	}
-
-	private <TKey, TValue> TValue mapTryGet(Map<TKey, TValue> map, TKey key, TValue defaultValue)
-	{
-		if (map.containsKey(key))
-			return map.get(key);
-		map.put(key, defaultValue);
-		return defaultValue;
-	}
-
-	public static void main(String[] args) throws IOException
-	{
-		CommonnessExtractor ce = new CommonnessExtractor(
-				"C:/Users/quyin/run/common-surfaces/sorted-surfaces.n3");
-		ce.extract();
-	}
 }
