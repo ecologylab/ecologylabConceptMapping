@@ -60,7 +60,12 @@ public class DisambiguationFeatureExtractor
 
 	public static final double	w_ar	= 0.5;
 
-	private DatabaseAdapter			da		= DatabaseAdapter.get(this.getClass().getName());
+	protected DatabaseAdapter			da		= DatabaseAdapter.get(this.getClass().getName());
+	
+	public DatabaseAdapter getDatabaseAdapter()
+	{
+		return da;
+	}
 
 	public List<DisambiguationInstance> processASurfaceOccurrence(String surface, Context C) throws SQLException
 	{
@@ -108,7 +113,7 @@ public class DisambiguationFeatureExtractor
 		return instances;
 	}
 
-	private double getAverageRelatedness(Item it, Context C) throws SQLException
+	protected double getAverageRelatedness(Item it, Context C) throws SQLException
 	{
 		double sumR = 0;
 		for (Context.Item item : C.items)
@@ -148,7 +153,7 @@ public class DisambiguationFeatureExtractor
 		}
 	}
 
-	private void storeInstances(DisambiguationInstance... instances)
+	protected void storeInstances(DisambiguationInstance... instances)
 	{
 		for (DisambiguationInstance inst : instances)
 		{
@@ -156,7 +161,7 @@ public class DisambiguationFeatureExtractor
 		}
 	}
 
-	private List<Context> getContexts(String surface) throws SQLException
+	protected List<Context> getContexts(String surface) throws SQLException
 	{
 		List<Context> contexts = new ArrayList<Context>();
 		List<String> fromConcepts = queryFromConceptsForSurface(surface);
@@ -168,7 +173,7 @@ public class DisambiguationFeatureExtractor
 		return contexts;
 	}
 
-	private List<String> querySenses(String surface) throws SQLException
+	protected List<String> querySenses(String surface) throws SQLException
 	{
 		PreparedStatement st = da
 				.getPreparedStatement("SELECT concept FROM commonness WHERE surface=?");
@@ -183,7 +188,7 @@ public class DisambiguationFeatureExtractor
 		return rst;
 	}
 
-	private List<String> queryFromConceptsForSurface(String surface) throws SQLException
+	protected List<String> queryFromConceptsForSurface(String surface) throws SQLException
 	{
 		PreparedStatement st = da
 				.getPreparedStatement("SELECT DISTINCT from_concept FROM inlinks WHERE surface=?;");
@@ -198,7 +203,7 @@ public class DisambiguationFeatureExtractor
 		return rst;
 	}
 
-	private ResultSet queryContext(String fromConcept) throws SQLException
+	protected ResultSet queryContext(String fromConcept) throws SQLException
 	{
 		PreparedStatement st = da
 				.getPreparedStatement("SELECT DISTINCT to_concept, surface FROM inlinks WHERE from_concept=?;");
@@ -207,7 +212,7 @@ public class DisambiguationFeatureExtractor
 		return st.executeQuery();
 	}
 
-	private double queryCommonness(String surface, String concept) throws SQLException
+	protected double queryCommonness(String surface, String concept) throws SQLException
 	{
 		PreparedStatement st = da
 				.getPreparedStatement("SELECT commonness FROM commonness WHERE surface=? AND concept=?;");
@@ -230,7 +235,7 @@ public class DisambiguationFeatureExtractor
 		return commonness;
 	}
 
-	private double queryKeyphraseness(String surface) throws SQLException
+	protected double queryKeyphraseness(String surface) throws SQLException
 	{
 		PreparedStatement st = da
 				.getPreparedStatement("SELECT keyphraseness FROM keyphraseness WHERE surface=?;");
@@ -251,7 +256,7 @@ public class DisambiguationFeatureExtractor
 		return keyphraseness;
 	}
 
-	private double queryRelatedness(String concept1, String concept2) throws SQLException
+	protected double queryRelatedness(String concept1, String concept2) throws SQLException
 	{
 		if (concept1.equals(concept2))
 			return 0;
@@ -273,7 +278,7 @@ public class DisambiguationFeatureExtractor
 		return (Math.log(smax) - Math.log(s)) / (Math.log(W) - Math.log(smin));
 	}
 
-	private Set<String> queryFromConceptsForConcept(String toConcept) throws SQLException
+	protected Set<String> queryFromConceptsForConcept(String toConcept) throws SQLException
 	{
 		PreparedStatement st = da
 				.getPreparedStatement("SELECT DISTINCT from_concept FROM inlinks WHERE to_concept=?;");

@@ -24,9 +24,9 @@ public class DatabasePreparer
 
 	public void prepare() throws IOException, SQLException
 	{
-		createTables();
+		// createTables();
 		// convertInlink(inlinkFilepath);
-		generateSurfaceTable();
+		// generateSurfaceTable();
 		// convertKeyphraseness(keyphrasenessFilepath);
 		calculateCommonness();
 		createIndexes();
@@ -35,8 +35,8 @@ public class DatabasePreparer
 	public void createTables() throws SQLException
 	{
 		// da.executeSql("CREATE TABLE inlinks (i INTEGER NOT NULL DEFAULT 0, to_concept VARCHAR NOT NULL, from_concept VARCHAR NOT NULL, surface VARCHAR NOT NULL);");
-		// da.executeSql("CREATE TABLE keyphraseness (surface VARCHAR NOT NULL, keyphraseness DOUBLE NOT NULL DEFAULT 0);");
-		da.executeSql("CREATE TABLE commonness (surface VARCHAR NOT NULL, concept VARCHAR NOT NULL, commonness DOUBLE NOT NULL DEFAULT 0);");
+		// da.executeSql("CREATE TABLE keyphraseness (surface VARCHAR NOT NULL, keyphraseness DOUBLE PRECISION NOT NULL DEFAULT 0);");
+		da.executeSql("CREATE TABLE commonness (surface VARCHAR NOT NULL, concept VARCHAR NOT NULL, commonness DOUBLE PRECISION NOT NULL DEFAULT 0);");
 	}
 
 	public void convertInlink(String inN3Filepath) throws IOException

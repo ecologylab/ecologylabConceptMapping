@@ -89,7 +89,7 @@ public class DatabaseAdapter
 	{
 		Statement st = db.createStatement();
 		ResultSet rs = st.executeQuery(sql);
-		st.close();
+		// st.close(); // will cause a 'This ResultSet is closed' exception.
 		return rs;
 	}
 
