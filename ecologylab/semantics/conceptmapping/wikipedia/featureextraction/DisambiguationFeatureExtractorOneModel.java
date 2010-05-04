@@ -1,5 +1,8 @@
 package ecologylab.semantics.conceptmapping.wikipedia.featureextraction;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
@@ -12,9 +15,12 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 
 	public static final int	N	= 100;
 
-	public DisambiguationFeatureExtractorOneModel()
+	private PrintWriter			out;
+
+	public DisambiguationFeatureExtractorOneModel(String resultFilepath) throws IOException
 	{
 		super();
+		out = new PrintWriter(new FileWriter(resultFilepath));
 	}
 
 	public void extract(String... ambiSurfaces)
@@ -52,24 +58,33 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 			String s = String.format("%s,%f,%f,%f#%s->%s", inst.target, inst.commonness,
 					inst.contextualRelatedness, inst.contextQuality, inst.surface, inst.concept);
 			System.out.println(s);
+			out.println(s);
 		}
 	}
 
 	public static void main(String[] args)
 	{
-		DisambiguationFeatureExtractorOneModel extractor = new DisambiguationFeatureExtractorOneModel();
-		List<String> surfaces = DatabaseUtils.getSurfaces(extractor.getDatabaseAdapter());
-		assert (surfaces.size() > N);
-
-		Set<String> testingSurfaces = new HashSet<String>();
-		while (testingSurfaces.size() < N)
+		try
 		{
-			int k = (int) (surfaces.size() * Math.random());
-			String surface = surfaces.get(k);
-			testingSurfaces.add(surface);
-		}
+			DisambiguationFeatureExtractorOneModel extractor = new DisambiguationFeatureExtractorOneModel(
+					"onemodel-features.dat");
+			List<String> surfaces = DatabaseUtils.getSurfaces(extractor.getDatabaseAdapter());
+			assert (surfaces.size() > N);
 
-		extractor.extract(testingSurfaces.toArray(new String[0]));
+			Set<String> testingSurfaces = new HashSet<String>();
+			while (testingSurfaces.size() < N)
+			{
+				int k = (int) (surfaces.size() * Math.random());
+				String surface = surfaces.get(k);
+				testingSurfaces.add(surface);
+			}
+
+			extractor.extract(testingSurfaces.toArray(new String[0]));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 }
