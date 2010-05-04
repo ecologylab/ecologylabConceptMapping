@@ -1,14 +1,15 @@
 package ecologylab.semantics.conceptmapping.wikipedia.featureextraction;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import ecologylab.semantics.conceptmapping.wikipedia.utils.DatabaseUtils;
 
 public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatureExtractor
 {
@@ -61,14 +62,29 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 			out.println(s);
 		}
 	}
+	
+	public static List<String> readAmbiguousSurfaces(String ambiSurfacesFilepath) throws IOException
+	{
+		List<String> rst = new ArrayList<String>();
+		
+		BufferedReader br = new BufferedReader(new FileReader(ambiSurfacesFilepath));
+		String line = null;
+		while ((line = br.readLine()) != null)
+		{
+			line = line.trim();
+			if (line.isEmpty())
+				continue;
+			rst.add(line);
+		}
+		
+		return rst;
+	}
 
 	public static void main(String[] args)
 	{
 		try
 		{
-			DisambiguationFeatureExtractorOneModel extractor = new DisambiguationFeatureExtractorOneModel(
-					"onemodel-features.dat");
-			List<String> surfaces = DatabaseUtils.getSurfaces(extractor.getDatabaseAdapter());
+			List<String> surfaces = readAmbiguousSurfaces("C:/run/commonness/ambi-surfaces.lst");
 			assert (surfaces.size() > N);
 
 			Set<String> testingSurfaces = new HashSet<String>();
@@ -79,6 +95,8 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 				testingSurfaces.add(surface);
 			}
 
+			DisambiguationFeatureExtractorOneModel extractor = new DisambiguationFeatureExtractorOneModel(
+					"onemodel-features.dat");
 			extractor.extract(testingSurfaces.toArray(new String[0]));
 		}
 		catch (Exception e)
