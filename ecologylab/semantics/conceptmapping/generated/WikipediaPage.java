@@ -8,36 +8,26 @@ This is a generated code. DO NOT edit or modify it.
 
 
 
-import ecologylab.semantics.metadata.scalar.MetadataString;
-import ecologylab.semantics.metadata.scalar.MetadataParsedURL;
-import ecologylab.semantics.metadata.scalar.MetadataStringBuilder;
-import ecologylab.semantics.metadata.DebugMetadata;
-import ecologylab.semantics.metadata.scalar.MetadataInteger;
-import ecologylab.semantics.metadata.scalar.MetadataString;
-import ecologylab.semantics.metadata.builtins.Document;
-import ecologylab.semantics.metadata.builtins.Media;
-import ecologylab.semantics.metadata.scalar.MetadataParsedURL;
-import ecologylab.semantics.metadata.DebugMetadata;
-import ecologylab.semantics.metadata.scalar.MetadataStringBuilder;
-import ecologylab.semantics.metadata.builtins.Image;
-import ecologylab.semantics.metadata.Metadata;
-import ecologylab.semantics.metadata.scalar.MetadataInteger;
-import ecologylab.semantics.metadata.builtins.Entity;
-
- import java.util.*;
-import ecologylab.semantics.metametadata.MetaMetadata;
-import ecologylab.net.ParsedURL;
 import ecologylab.generic.HashMapArrayList;
-import ecologylab.xml.xml_inherit;
-import ecologylab.xml.types.element.Mappable;
-import ecologylab.semantics.metadata.DefaultMetadataTranslationSpace;
-import ecologylab.xml.TranslationScope;
-import ecologylab.xml.ElementState.xml_tag;
- import ecologylab.semantics.metadata.builtins.Document;
-import ecologylab.semantics.metadata.builtins.Media;
- import ecologylab.semantics.metadata.builtins.Image;
-import ecologylab.semantics.metametadata.MetaMetadataRepository;
+import ecologylab.net.ParsedURL;
 import ecologylab.semantics.conceptmapping.generated.*;
+import ecologylab.semantics.generated.library.*;
+import ecologylab.semantics.metadata.Metadata;
+import ecologylab.semantics.metadata.MetadataBuiltinsTranslationScope;
+import ecologylab.semantics.metadata.builtins.*;
+import ecologylab.semantics.metadata.builtins.DebugMetadata;
+import ecologylab.semantics.metadata.builtins.Document;
+import ecologylab.semantics.metadata.builtins.Entity;
+import ecologylab.semantics.metadata.builtins.Image;
+import ecologylab.semantics.metadata.builtins.Media;
+import ecologylab.semantics.metadata.scalar.*;
+import ecologylab.semantics.metametadata.MetaMetadata;
+import ecologylab.semantics.metametadata.MetaMetadataRepository;
+import ecologylab.xml.ElementState.xml_tag;
+import ecologylab.xml.TranslationScope;
+import ecologylab.xml.types.element.Mappable;
+import ecologylab.xml.xml_inherit;
+import java.util.*;
 
 
 /**
@@ -50,8 +40,8 @@ public class  WikipediaPage
 extends  Document
 {
 
-	@xml_collection("outlinks") private ArrayList<Outlink>	outlinks;
-	@xml_collection("categories") private ArrayList<Category>	categories;
+	@xml_collection("outlink") private ArrayList<Outlink>	outlinks;
+	@xml_collection("category") private ArrayList<Category>	categories;
 
 /**
 	Constructor

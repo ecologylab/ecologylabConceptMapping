@@ -3,11 +3,8 @@ package ecologylab.semantics.conceptmapping.wikipedia;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import ecologylab.net.ParsedURL;
-import ecologylab.semantics.conceptmapping.generated.GeneratedMetadataTranslationScope;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.AddConceptCategorySemanticAction;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.AddConceptOutlinkSemanticAction;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.CreateConceptSemanticAction;
@@ -25,8 +22,7 @@ public class WikipediaPageParsing
 				AddConceptOutlinkSemanticAction.class, AddConceptCategorySemanticAction.class,
 				FinishConceptSemanticAction.class);
 
-		MyInfoCollector infoCollector = new MyInfoCollector(".", GeneratedMetadataTranslationScope
-				.get(), nDownloadThread);
+		MyInfoCollector infoCollector = new MyInfoCollector(".");
 		
 		BufferedReader br = new BufferedReader(new FileReader(inputFilePath));
 		String line;

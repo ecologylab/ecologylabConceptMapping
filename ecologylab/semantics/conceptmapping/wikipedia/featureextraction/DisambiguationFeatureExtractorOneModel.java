@@ -14,7 +14,7 @@ import java.util.Set;
 public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatureExtractor
 {
 
-	public static final int	N	= 100;
+	public static final int	N	= 10000;
 
 	private PrintWriter			out;
 
@@ -22,6 +22,11 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 	{
 		super();
 		out = new PrintWriter(new FileWriter(resultFilepath));
+	}
+	
+	public void close()
+	{
+		out.close();
 	}
 
 	public void extract(String... ambiSurfaces)
@@ -32,6 +37,7 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 			{
 				List<Context> contexts = getContexts(s);
 				assert (contexts.size() > 0);
+				out.println("#contexts: " + contexts.size());
 				Context C = contexts.get(0);
 				try
 				{
@@ -76,6 +82,7 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 				continue;
 			rst.add(line);
 		}
+		br.close();
 		
 		return rst;
 	}
@@ -98,6 +105,7 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 			DisambiguationFeatureExtractorOneModel extractor = new DisambiguationFeatureExtractorOneModel(
 					"onemodel-features.dat");
 			extractor.extract(testingSurfaces.toArray(new String[0]));
+			extractor.close();
 		}
 		catch (Exception e)
 		{
