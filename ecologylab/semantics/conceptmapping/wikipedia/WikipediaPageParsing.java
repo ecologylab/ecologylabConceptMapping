@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import ecologylab.net.ParsedURL;
+import ecologylab.semantics.conceptmapping.generated.GeneratedMetadataTranslationScope;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.AddConceptCategorySemanticAction;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.AddConceptOutlinkSemanticAction;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.CreateConceptSemanticAction;
@@ -22,7 +23,7 @@ public class WikipediaPageParsing
 				AddConceptOutlinkSemanticAction.class, AddConceptCategorySemanticAction.class,
 				FinishConceptSemanticAction.class);
 
-		MyInfoCollector infoCollector = new MyInfoCollector(".");
+		MyInfoCollector infoCollector = new MyInfoCollector(".", GeneratedMetadataTranslationScope.get());
 		
 		BufferedReader br = new BufferedReader(new FileReader(inputFilePath));
 		String line;

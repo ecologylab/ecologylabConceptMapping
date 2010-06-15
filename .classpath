@@ -6,6 +6,5 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabFundamental"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabSemanticsExample"/>
 	<classpathentry kind="lib" path="lib/postgresql-8.4-701.jdbc4.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabGeneratedSemantics"/>
 	<classpathentry kind="output" path=""/>
 </classpath>

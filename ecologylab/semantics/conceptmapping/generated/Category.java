@@ -2,8 +2,6 @@ package ecologylab.semantics.conceptmapping.generated;
 
 import ecologylab.generic.HashMapArrayList;
 import ecologylab.net.ParsedURL;
-import ecologylab.semantics.conceptmapping.generated.*;
-import ecologylab.semantics.generated.library.*;
 import ecologylab.semantics.metadata.Metadata;
 import ecologylab.semantics.metadata.MetadataBuiltinsTranslationScope;
 import ecologylab.semantics.metadata.builtins.*;

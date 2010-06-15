@@ -10,8 +10,6 @@ This is a generated code. DO NOT edit or modify it.
 
 import ecologylab.generic.HashMapArrayList;
 import ecologylab.net.ParsedURL;
-import ecologylab.semantics.conceptmapping.generated.*;
-import ecologylab.semantics.generated.library.*;
 import ecologylab.semantics.metadata.Metadata;
 import ecologylab.semantics.metadata.MetadataBuiltinsTranslationScope;
 import ecologylab.semantics.metadata.builtins.*;
