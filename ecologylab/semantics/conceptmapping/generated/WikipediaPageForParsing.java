@@ -34,7 +34,7 @@ import java.util.*;
 
 @xml_inherit
 
-public class  WikipediaPage
+public class  WikipediaPageForParsing
 extends  Document
 {
 
@@ -45,7 +45,7 @@ extends  Document
 	Constructor
 **/ 
 
-public WikipediaPage()
+public WikipediaPageForParsing()
 {
  super();
 }
@@ -54,7 +54,7 @@ public WikipediaPage()
 	Constructor
 **/ 
 
-public WikipediaPage(MetaMetadata metaMetadata)
+public WikipediaPageForParsing(MetaMetadata metaMetadata)
 {
 super(metaMetadata);
 }

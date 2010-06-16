@@ -5,12 +5,12 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import ecologylab.net.ParsedURL;
+import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.conceptmapping.generated.GeneratedMetadataTranslationScope;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.AddConceptCategorySemanticAction;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.AddConceptOutlinkSemanticAction;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.CreateConceptSemanticAction;
 import ecologylab.semantics.conceptmapping.wikipedia.metametadata.FinishConceptSemanticAction;
-import ecologylab.semantics.conceptmapping.wikipedia.metametadata.Utils;
 import ecologylab.semantics.metametadata.example.MyInfoCollector;
 
 public class WikipediaPageParsing
@@ -19,7 +19,7 @@ public class WikipediaPageParsing
 	
 	public void parse(String inputFilePath, int nDownloadThread) throws InterruptedException, IOException
 	{
-		Utils.addSemanticAction(CreateConceptSemanticAction.class,
+		SemanticAction.register(CreateConceptSemanticAction.class,
 				AddConceptOutlinkSemanticAction.class, AddConceptCategorySemanticAction.class,
 				FinishConceptSemanticAction.class);
 

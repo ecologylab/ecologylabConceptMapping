@@ -40,7 +40,7 @@ public class GeneratedMetadataTranslationScope
 
 Category.class,
 
-WikipediaPage.class,
+WikipediaPageForParsing.class,
 
 
 };
