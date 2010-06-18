@@ -1,0 +1,8 @@
+{
+    "id":"disambi",
+    "defs":[ {"type":"string"},
+        {"type":"float"},
+        {"type":"float"},
+        {"type":"float"} ],
+    "target_indexes":[0]
+}
