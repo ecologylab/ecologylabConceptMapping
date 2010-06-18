@@ -3,6 +3,7 @@ package ecologylab.semantics.conceptmapping.model.tuning;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
@@ -76,7 +77,7 @@ public class Tuning
 			}
 		}
 		
-		configs.clear();
+		configs = new ArrayList<Configuration>();
 		for (int i = 0; i < dtCtrls.length; ++i)
 		{
 			for (int j = 0; j < svmCtrls.length; ++j)
