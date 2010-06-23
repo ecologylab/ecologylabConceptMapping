@@ -131,8 +131,7 @@ public class Tuning
 		
 		for (int i = 0; i < numPairs; ++i)
 		{
-			Tuning t = new Tuning("disambi-tuning.txt");
-			// Tuning t = new Tuning("accuracy-pairs." + (i+1) + ".txt");
+			Tuning t = new Tuning("tuning." + (i+1) + ".txt");
 			t.tune();
 		}
 	}
