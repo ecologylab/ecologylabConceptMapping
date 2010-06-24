@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.model.tuning;
+package ecologylab.semantics.conceptmapping.learning;
 
 import java.io.IOException;
 import java.io.PrintStream;

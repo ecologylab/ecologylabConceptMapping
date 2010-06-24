@@ -7,6 +7,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabSemanticsExample"/>
 	<classpathentry kind="lib" path="lib/postgresql-8.4-701.jdbc4.jar"/>
 	<classpathentry kind="lib" path="lib/json.jar"/>
+	<classpathentry kind="lib" path="lib/libsvm.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/qmlt"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
