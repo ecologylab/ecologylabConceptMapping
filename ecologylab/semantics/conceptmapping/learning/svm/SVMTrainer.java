@@ -1,9 +1,7 @@
 package ecologylab.semantics.conceptmapping.learning.svm;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -109,7 +107,7 @@ public class SVMTrainer
 		param.eps = 1e-3;
 		param.p = 0.1;
 		param.shrinking = 1;
-		param.probability = 0;
+		param.probability = 1; // we need probability as disambiguation confidence
 		param.nr_weight = 0;
 		param.weight_label = new int[0];
 		param.weight = new double[0];
@@ -124,46 +122,11 @@ public class SVMTrainer
 
 	protected void preprocessData(String outputParameterFilePath) throws IOException
 	{
-		double[] means = new double[numAttributes];
-		double[] stds = new double[numAttributes];
-
-		for (int i = 0; i < numAttributes; ++i)
-		{
-			means[i] = getMean(x, i);
-			stds[i] = getStd(x, i, means[i]);
-		}
-
-		BufferedWriter bw = new BufferedWriter(new FileWriter(outputParameterFilePath));
-		bw.write("means:");
-		for (int i = 0; i < numAttributes; ++i)
-			bw.write((i == 0 ? "" : ",") + means[i]);
-		bw.newLine();
-		bw.write("stds:");
-		for (int i = 0; i < numAttributes; ++i)
-			bw.write((i == 0 ? "" : ",") + stds[i]);
-		bw.newLine();
-		bw.close();
-	}
-
-	protected double getStd(List<svm_node[]> instances, int i, double mean)
-	{
-		double sum_sqr = 0;
-		for (svm_node[] instance : instances)
-		{
-			double d = instance[i].value - mean;
-			sum_sqr += d * d;
-		}
-		return sum_sqr / instances.size();
-	}
-
-	protected double getMean(List<svm_node[]> instances, int i)
-	{
-		double sum = 0;
-		for (svm_node[] instance : instances)
-		{
-			sum += instance[i].value;
-		}
-		return sum / instances.size();
+		SVMGaussianNormalization gn = new SVMGaussianNormalization(numAttributes);
+		gn.generateParameters(x);
+		gn.save(outputParameterFilePath);
+		for (svm_node[] inst : x)
+			gn.normalize(inst);
 	}
 
 	protected void readData(String dataFilePath) throws IOException
