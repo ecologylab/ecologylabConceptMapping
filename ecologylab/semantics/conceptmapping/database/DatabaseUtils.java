@@ -1,11 +1,11 @@
-package ecologylab.semantics.conceptmapping.wikipedia.utils;
+package ecologylab.semantics.conceptmapping.database;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ecologylab.semantics.conceptmapping.wikipedia.db.DatabaseAdapter;
+import ecologylab.semantics.conceptmapping.database.DatabaseAdapter;
 
 public class DatabaseUtils
 {

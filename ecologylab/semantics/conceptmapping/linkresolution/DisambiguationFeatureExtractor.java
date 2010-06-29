@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia.featureextraction;
+package ecologylab.semantics.conceptmapping.linkresolution;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,8 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ecologylab.semantics.conceptmapping.wikipedia.db.DatabaseAdapter;
-import ecologylab.semantics.conceptmapping.wikipedia.featureextraction.DisambiguationFeatureExtractor.Context.Item;
+import ecologylab.semantics.conceptmapping.linkresolution.DisambiguationFeatureExtractor.Context.Item;
+import ecologylab.semantics.conceptmapping.database.DatabaseAdapter;
 
 /**
  * This class extracts features for sense disambiguation, for each pair of (surface, concept).

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ecologylab.semantics.conceptmapping.wikipedia.featureextraction;
+package ecologylab.semantics.conceptmapping.linkresolution;
 
 public class DisambiguationInstance
 {

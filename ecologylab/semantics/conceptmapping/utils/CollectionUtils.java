@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia.utils;
+package ecologylab.semantics.conceptmapping.utils;
 
 import java.util.Collection;
 

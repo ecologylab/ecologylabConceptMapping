@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia.featureextraction;
+package ecologylab.semantics.conceptmapping.linkresolution;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia.dbprepare;
+package ecologylab.semantics.conceptmapping.database;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ecologylab.semantics.conceptmapping.wikipedia.StringPool;
-import ecologylab.semantics.conceptmapping.wikipedia.db.DatabaseAdapter;
-import ecologylab.semantics.conceptmapping.wikipedia.utils.CollectionUtils;
+import ecologylab.semantics.conceptmapping.database.DatabaseAdapter;
+import ecologylab.semantics.conceptmapping.utils.CollectionUtils;
 
 /**
  * This class is used to extract commonness given the sorted surface file.

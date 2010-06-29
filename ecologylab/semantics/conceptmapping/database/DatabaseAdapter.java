@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia.db;
+package ecologylab.semantics.conceptmapping.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

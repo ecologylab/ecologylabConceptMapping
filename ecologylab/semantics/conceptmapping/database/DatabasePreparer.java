@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.wikipedia.dbprepare;
+package ecologylab.semantics.conceptmapping.database;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,8 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ecologylab.semantics.conceptmapping.wikipedia.db.DatabaseAdapter;
-import ecologylab.semantics.conceptmapping.wikipedia.dbprepare.InlinkN3Parser.Inlink;
+import ecologylab.semantics.conceptmapping.database.InlinkN3Parser.Inlink;
+import ecologylab.semantics.conceptmapping.database.DatabaseAdapter;
 
 public class DatabasePreparer
 {
