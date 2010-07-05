@@ -11,16 +11,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatureExtractor
+public class FeatureExtractorEx extends FeatureExtractor
 {
 
 	public static final int	N	= 10000;
 
 	private PrintWriter			out;
 
-	public DisambiguationFeatureExtractorOneModel(String resultFilepath) throws IOException
+	public FeatureExtractorEx(String resultFilepath, String... ambiSurfaces) throws IOException
 	{
-		super();
+		super(ambiSurfaces);
 		out = new PrintWriter(new FileWriter(resultFilepath));
 	}
 	
@@ -29,7 +29,7 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 		out.close();
 	}
 
-	public void extract(String... ambiSurfaces)
+	protected void extract(String... ambiSurfaces)
 	{
 		for (String s : ambiSurfaces)
 		{
@@ -41,9 +41,9 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 				Context C = contexts.get(0);
 				try
 				{
-					List<DisambiguationInstance> insts = processASurfaceOccurrence(s, C);
+					List<LinkResInstance> insts = processASurfaceOccurrence(s, C);
 					if (insts != null)
-						storeInstances(insts.toArray(new DisambiguationInstance[0]));
+						storeInstances(insts.toArray(new LinkResInstance[0]));
 				}
 				catch (SQLException e)
 				{
@@ -58,9 +58,9 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 		}
 	}
 
-	protected void storeInstances(DisambiguationInstance... instances)
+	protected void storeInstances(LinkResInstance... instances)
 	{
-		for (DisambiguationInstance inst : instances)
+		for (LinkResInstance inst : instances)
 		{
 			String s = String.format("%s,%f,%f,%f#%s->%s", inst.target, inst.commonness,
 					inst.contextualRelatedness, inst.contextQuality, inst.surface, inst.concept);
@@ -69,7 +69,7 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 		}
 	}
 	
-	public static List<String> readAmbiguousSurfaces(String ambiSurfacesFilepath) throws IOException
+	private static List<String> readAmbiguousSurfaces(String ambiSurfacesFilepath) throws IOException
 	{
 		List<String> rst = new ArrayList<String>();
 		
@@ -102,7 +102,7 @@ public class DisambiguationFeatureExtractorOneModel extends DisambiguationFeatur
 				testingSurfaces.add(surface);
 			}
 
-			DisambiguationFeatureExtractorOneModel extractor = new DisambiguationFeatureExtractorOneModel(
+			FeatureExtractorEx extractor = new FeatureExtractorEx(
 					"onemodel-features.dat");
 			extractor.extract(testingSurfaces.toArray(new String[0]));
 			extractor.close();

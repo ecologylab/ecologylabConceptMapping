@@ -8,7 +8,7 @@
 			<mm_scalar_field name="paragraph_text" xpath="string(.)" />
 			<mm_collection_field name="anchors" child_type="anchor" xpath=".//a[string-length(./@title)>0]">
 				<mm_scalar_field name="link" xpath="./@href" /> <!-- not used -->
-				<mm_scalar_field name="anchor_text" xpath="string(.)" /> <!-- surface -->
+				<mm_scalar_field name="anchor_text" xpath="." /> <!-- surface -->
 				<mm_scalar_field name="target_concept" scalar_type="String" xpath="./@title" />
 			</mm_collection_field>
 		</mm_collection_field>
@@ -18,7 +18,7 @@
 			<mm_scalar_field name="cat_link" xpath="./@href" />
 		</mm_collection_field>
 
-		<!-- semantic actions used to collect outlinks and category information -->
+		<!-- semantic actions used to collect outlinks and category information - - >
 		<semantic_actions>
 			<get_field name="title" />
 			<get_field name="location" />
@@ -50,6 +50,7 @@
 
 			<finish_concept />
 		</semantic_actions>
+		-->
 		
 		<!--  semantic actions used to parse the whole article for link detection -->
 		<semantic_actions>

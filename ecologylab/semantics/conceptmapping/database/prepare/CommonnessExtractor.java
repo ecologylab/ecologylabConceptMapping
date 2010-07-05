@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.database;
+package ecologylab.semantics.conceptmapping.database.prepare;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

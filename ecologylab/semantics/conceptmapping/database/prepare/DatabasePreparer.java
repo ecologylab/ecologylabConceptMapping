@@ -1,4 +1,4 @@
-package ecologylab.semantics.conceptmapping.database;
+package ecologylab.semantics.conceptmapping.database.prepare;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import ecologylab.semantics.conceptmapping.database.InlinkN3Parser.Inlink;
+import ecologylab.semantics.conceptmapping.database.prepare.InlinkN3Parser.Inlink;
 import ecologylab.semantics.conceptmapping.database.DatabaseAdapter;
 
 public class DatabasePreparer
@@ -21,6 +21,15 @@ public class DatabasePreparer
 	private CommonnessExtractor	commonnessExtractor;
 
 	private InlinkN3Parser			inlinkParser	= new InlinkN3Parser();
+
+	public DatabasePreparer(String inlinkFilepath, String keyphrasenessFilepath,
+			String unambiSurfacesFilepath, String ambiSurfacesFilepath)
+	{
+		this.inlinkFilepath = inlinkFilepath;
+		this.keyphrasenessFilepath = keyphrasenessFilepath;
+		this.commonnessExtractor = new CommonnessExtractor(da, unambiSurfacesFilepath,
+				ambiSurfacesFilepath);
+	}
 
 	public void prepare() throws IOException, SQLException
 	{
@@ -134,15 +143,6 @@ public class DatabasePreparer
 
 		da.executeSql("CREATE INDEX surfaces_surface_index ON surfaces (surface);");
 		da.executeSql("CREATE INDEX surfaces_occurrence_index ON surfaces (occurrence);");
-	}
-
-	public DatabasePreparer(String inlinkFilepath, String keyphrasenessFilepath,
-			String unambiSurfacesFilepath, String ambiSurfacesFilepath)
-	{
-		this.inlinkFilepath = inlinkFilepath;
-		this.keyphrasenessFilepath = keyphrasenessFilepath;
-		this.commonnessExtractor = new CommonnessExtractor(da, unambiSurfacesFilepath,
-				ambiSurfacesFilepath);
 	}
 
 	public static void main(String[] args) throws IOException, SQLException
