@@ -8,13 +8,17 @@ public class WikiFeatureExtractor extends FeatureExtractor
 	public WikiFeatureExtractor(String text)
 	{
 		super(text);
-		// TODO Auto-generated constructor stub
+	}
+
+	protected void init(String text)
+	{
+		ngGen = new WikiNGramGenerator(text);
 	}
 
 	@Override
 	protected void addAnchors()
 	{
-		// TODO
+		anchors = ((WikiNGramGenerator) ngGen).anchors;
 	}
 	
 }

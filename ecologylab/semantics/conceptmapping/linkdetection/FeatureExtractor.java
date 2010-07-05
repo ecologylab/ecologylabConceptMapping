@@ -20,11 +20,11 @@ import ecologylab.semantics.conceptmapping.database.DatabaseUtils;
  */
 public class FeatureExtractor
 {
-	DatabaseAdapter								da;
+	protected DatabaseAdapter			da;
 
-	DatabaseUtils									utils;
+	protected DatabaseUtils				utils;
 
-	NGramGenerator								ngGen;
+	protected NGramGenerator			ngGen;
 
 	protected String							context;
 
@@ -40,15 +40,20 @@ public class FeatureExtractor
 	{
 		da = DatabaseAdapter.get(this.getClass().getName());
 		utils = DatabaseUtils.get(da);
-		ngGen = new NGramGenerator(text);
+		initNGramGenerator(text);
 		context = ngGen.context;
 		ngrams = ngGen.ngrams;
-
+		
 		filterNGrams();
 		addAnchors();
-		disambiguation();
 		extractFeatures();
+		disambiguation();
 		extractLocationFeatures();
+	}
+
+	protected void initNGramGenerator(String text)
+	{
+		ngGen = new NGramGenerator(text);
 	}
 
 	/**
@@ -75,7 +80,7 @@ public class FeatureExtractor
 	protected void addAnchors()
 	{
 		anchors = new ArrayList<WikiAnchor>();
-		
+
 		for (Gram gram : surfaces)
 		{
 			try
@@ -98,13 +103,16 @@ public class FeatureExtractor
 
 	}
 
-	protected void disambiguation()
+	/**
+	 * Extract keyphraseness, relatedness and commonness features which are used by disambiguation.
+	 */
+	protected void extractFeatures()
 	{
 		// TODO Auto-generated method stub
 
 	}
 
-	protected void extractFeatures()
+	protected void disambiguation()
 	{
 		// TODO Auto-generated method stub
 
