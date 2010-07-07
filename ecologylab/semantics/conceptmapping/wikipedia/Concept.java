@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import ecologylab.net.ParsedURL;
 import ecologylab.xml.ElementState;
-import ecologylab.xml.XMLTranslationException;
+import ecologylab.xml.SIMPLTranslationException;
 import ecologylab.xml.simpl_inherit;
 
 @simpl_inherit
@@ -82,7 +82,7 @@ public class Concept extends ElementState
 		this.categoryNames = new ArrayList<String>();
 	}
 	
-	public static void main(String[] args) throws XMLTranslationException, IOException
+	public static void main(String[] args) throws SIMPLTranslationException, IOException
 	{
 		Outlink o = new Outlink("surface", "target");
 		Concept c = new Concept("concept", ParsedURL.getAbsolute("http://tempurl/"));

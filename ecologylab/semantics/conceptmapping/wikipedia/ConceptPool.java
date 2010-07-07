@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import ecologylab.net.ParsedURL;
 import ecologylab.xml.ElementState;
-import ecologylab.xml.XMLTranslationException;
+import ecologylab.xml.SIMPLTranslationException;
 import ecologylab.xml.simpl_inherit;
 import ecologylab.xml.ElementState.xml_tag;
 
@@ -96,7 +96,7 @@ public class ConceptPool extends ElementState
 			start += pool.size();
 			pool.clear();
 		}
-		catch (XMLTranslationException e)
+		catch (SIMPLTranslationException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
