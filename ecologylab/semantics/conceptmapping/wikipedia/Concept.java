@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import ecologylab.net.ParsedURL;
-import ecologylab.xml.ElementState;
-import ecologylab.xml.SIMPLTranslationException;
-import ecologylab.xml.simpl_inherit;
+import ecologylab.serialization.ElementState;
+import ecologylab.serialization.SIMPLTranslationException;
+import ecologylab.serialization.simpl_inherit;
 
 @simpl_inherit
 public class Concept extends ElementState

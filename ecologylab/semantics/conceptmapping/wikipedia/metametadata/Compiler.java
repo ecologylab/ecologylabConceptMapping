@@ -2,7 +2,7 @@ package ecologylab.semantics.conceptmapping.wikipedia.metametadata;
 
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.tools.MetadataCompiler;
-import ecologylab.xml.SIMPLTranslationException;
+import ecologylab.serialization.SIMPLTranslationException;
 
 public class Compiler
 {

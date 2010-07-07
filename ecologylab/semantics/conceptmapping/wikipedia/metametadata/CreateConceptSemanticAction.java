@@ -7,8 +7,8 @@ import ecologylab.net.ParsedURL;
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.actions.SemanticActionStandardMethods;
 import ecologylab.semantics.conceptmapping.wikipedia.ConceptPool;
-import ecologylab.xml.simpl_inherit;
-import ecologylab.xml.ElementState.xml_tag;
+import ecologylab.serialization.simpl_inherit;
+import ecologylab.serialization.ElementState.xml_tag;
 
 @simpl_inherit
 @xml_tag("create_concept")
