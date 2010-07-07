@@ -5,10 +5,10 @@ import java.util.Map;
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.actions.SemanticActionStandardMethods;
 import ecologylab.semantics.conceptmapping.wikipedia.ConceptPool;
-import ecologylab.xml.xml_inherit;
+import ecologylab.xml.simpl_inherit;
 import ecologylab.xml.ElementState.xml_tag;
 
-@xml_inherit
+@simpl_inherit
 @xml_tag("finish_concept")
 public class FinishConceptSemanticAction extends SemanticAction implements SemanticActionStandardMethods
 {

@@ -7,22 +7,22 @@ import java.util.ArrayList;
 import ecologylab.net.ParsedURL;
 import ecologylab.xml.ElementState;
 import ecologylab.xml.XMLTranslationException;
-import ecologylab.xml.xml_inherit;
+import ecologylab.xml.simpl_inherit;
 
-@xml_inherit
+@simpl_inherit
 public class Concept extends ElementState
 {
-	@xml_inherit
+	@simpl_inherit
 	public static class Outlink extends ElementState
 	{
-		@xml_attribute
+		@simpl_scalar
 		private String surface;
 		public String getSurface()
 		{
 			return surface;
 		}
 		
-		@xml_attribute
+		@simpl_scalar
 		private String targetConceptName;
 		public String getTargetConceptName()
 		{
@@ -37,21 +37,21 @@ public class Concept extends ElementState
 		}
 	}
 	
-	@xml_attribute
+	@simpl_scalar
 	private String name;
 	public String getName()
 	{
 		return name;
 	}
 	
-	@xml_attribute
+	@simpl_scalar
 	private ParsedURL purl;
 	public ParsedURL getPurl()
 	{
 		return purl;
 	}
 	
-	@xml_collection("outlink")
+	@simpl_collection("outlink")
 	private ArrayList<Outlink> outlinks;
 	public ArrayList<Outlink> getOutlinks()
 	{
@@ -62,7 +62,7 @@ public class Concept extends ElementState
 		outlinks.add(outlink);
 	}
 	
-	@xml_collection("category_name")
+	@simpl_collection("category_name")
 	private ArrayList<String> categoryNames;
 	public ArrayList<String> getCategoryNames()
 	{
@@ -88,6 +88,6 @@ public class Concept extends ElementState
 		Concept c = new Concept("concept", ParsedURL.getAbsolute("http://tempurl/"));
 		c.addCategoryName("cat1");
 		
-		c.translateToXML(new File("output.xml"));
+		c.serialize(new File("output.xml"));
 	}
 }

@@ -9,10 +9,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import ecologylab.net.ParsedURL;
 import ecologylab.xml.ElementState;
 import ecologylab.xml.XMLTranslationException;
-import ecologylab.xml.xml_inherit;
+import ecologylab.xml.simpl_inherit;
 import ecologylab.xml.ElementState.xml_tag;
 
-@xml_inherit
+@simpl_inherit
 @xml_tag("concepts")
 public class ConceptPool extends ElementState
 {
@@ -22,13 +22,13 @@ public class ConceptPool extends ElementState
 	// pool
 	public int									bufferSize	= 10000;
 
-	@xml_attribute
+	@simpl_scalar
 	private int									start				= 1;
 
-	@xml_attribute
+	@simpl_scalar
 	private int									end;
 
-	@xml_collection("concept")
+	@simpl_collection("concept")
 	private ArrayList<Concept>	pool				= new ArrayList<Concept>();
 
 	public ArrayList<Concept> getPool()
@@ -92,7 +92,7 @@ public class ConceptPool extends ElementState
 		end = start + pool.size() - 1;
 		try
 		{
-			this.translateToXML(new File(String.valueOf(start) + ".xml"));
+			this.serialize(new File(String.valueOf(start) + ".xml"));
 			start += pool.size();
 			pool.clear();
 		}

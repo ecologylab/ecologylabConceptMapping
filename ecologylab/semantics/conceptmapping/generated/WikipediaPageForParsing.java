@@ -8,38 +8,25 @@ This is a generated code. DO NOT edit or modify it.
 
 
 
-import ecologylab.generic.HashMapArrayList;
-import ecologylab.net.ParsedURL;
-import ecologylab.semantics.metadata.Metadata;
-import ecologylab.semantics.metadata.MetadataBuiltinsTranslationScope;
-import ecologylab.semantics.metadata.builtins.*;
-import ecologylab.semantics.metadata.builtins.DebugMetadata;
+import java.util.ArrayList;
+
 import ecologylab.semantics.metadata.builtins.Document;
-import ecologylab.semantics.metadata.builtins.Entity;
-import ecologylab.semantics.metadata.builtins.Image;
-import ecologylab.semantics.metadata.builtins.Media;
-import ecologylab.semantics.metadata.scalar.*;
 import ecologylab.semantics.metametadata.MetaMetadata;
-import ecologylab.semantics.metametadata.MetaMetadataRepository;
-import ecologylab.xml.ElementState.xml_tag;
-import ecologylab.xml.TranslationScope;
-import ecologylab.xml.types.element.Mappable;
-import ecologylab.xml.xml_inherit;
-import java.util.*;
+import ecologylab.xml.simpl_inherit;
 
 
 /**
 	An article on local wikipedia
 **/ 
 
-@xml_inherit
+@simpl_inherit
 
 public class  WikipediaPageForParsing
 extends  Document
 {
 
-	@xml_collection("outlink") private ArrayList<Outlink>	outlinks;
-	@xml_collection("category") private ArrayList<Category>	categories;
+	@simpl_collection("outlink") private ArrayList<Outlink>	outlinks;
+	@simpl_collection("category") private ArrayList<Category>	categories;
 
 /**
 	Constructor
