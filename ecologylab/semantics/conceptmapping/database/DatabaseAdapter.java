@@ -12,15 +12,15 @@ import java.util.Map;
 public class DatabaseAdapter
 {
 
-	private static Map<String, DatabaseAdapter>	dbs	= new HashMap<String, DatabaseAdapter>();
+	private static DatabaseAdapter	da	= null;
 
-	public static DatabaseAdapter get(String id)
+	public static DatabaseAdapter get()
 	{
-		if (!dbs.containsKey(id))
+		if (da == null)
 		{
 			try
 			{
-				dbs.put(id, new DatabaseAdapter());
+				da = new DatabaseAdapter();
 			}
 			catch (ClassNotFoundException e)
 			{
@@ -34,10 +34,10 @@ public class DatabaseAdapter
 			}
 		}
 
-		return dbs.get(id);
+		return da;
 	}
 
-	private Connection	db;
+	private Connection	conn;
 
 	private DatabaseAdapter() throws ClassNotFoundException, SQLException
 	{
@@ -47,7 +47,7 @@ public class DatabaseAdapter
 		String username = "quyin";
 		String password = "quyindbpwd";
 
-		db = DriverManager.getConnection(url, username, password);
+		conn = DriverManager.getConnection(url, username, password);
 	}
 
 	private Map<String, PreparedStatement>	prepSts	= new HashMap<String, PreparedStatement>();
@@ -58,7 +58,7 @@ public class DatabaseAdapter
 		{
 			try
 			{
-				prepSts.put(sql, db.prepareStatement(sql));
+				prepSts.put(sql, conn.prepareStatement(sql));
 			}
 			catch (SQLException e)
 			{
@@ -71,7 +71,7 @@ public class DatabaseAdapter
 
 	public boolean executeSql(String sql) throws SQLException
 	{
-		Statement st = db.createStatement();
+		Statement st = conn.createStatement();
 		boolean rst = st.execute(sql);
 		st.close();
 		return rst;
@@ -79,7 +79,7 @@ public class DatabaseAdapter
 
 	public int executeUpdateSql(String sql) throws SQLException
 	{
-		Statement st = db.createStatement();
+		Statement st = conn.createStatement();
 		int rst = st.executeUpdate(sql);
 		st.close();
 		return rst;
@@ -87,7 +87,7 @@ public class DatabaseAdapter
 
 	public ResultSet executeQuerySql(String sql) throws SQLException
 	{
-		Statement st = db.createStatement();
+		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(sql);
 		// st.close(); // will cause a 'This ResultSet is closed' exception.
 		return rs;

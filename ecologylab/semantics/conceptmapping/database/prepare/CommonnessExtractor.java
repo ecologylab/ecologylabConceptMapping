@@ -31,7 +31,7 @@ public class CommonnessExtractor
 		if (databaseAdapter != null)
 			this.da = databaseAdapter;
 		else
-			this.da = DatabaseAdapter.get("commonness-extractor");
+			this.da = DatabaseAdapter.get();
 
 		this.unambiSurfaceFilePath = unambiSurfaceFilePath;
 		this.ambiSurfaceFilePath = ambiSurfaceFilePath;

@@ -18,27 +18,9 @@ public class SVMTrainer
 	/**
 	 * Number of attributes, i.e. dimensionality of x. NOT including label
 	 */
-	public int									numAttributes	= 3;
+	public int									numAttributes;
 
-	/**
-	 * Positive label value
-	 */
-	public String								posLabel			= "true";
-
-	/**
-	 * Negative label value
-	 */
-	public String								negLabel			= "false";
-
-	/**
-	 * The parameter C (cost) in SVM model
-	 */
-	public double								C							= 8;
-
-	/**
-	 * The parameter gamma (RBF kernel shape) in SVM model
-	 */
-	public double								gamma					= 2;
+	protected String						outputModelFilePath;
 
 	protected List<Double>			y;
 
@@ -58,7 +40,8 @@ public class SVMTrainer
 	 * @param C
 	 * @param gamma
 	 * @param dataFilePath
-	 *          The training set, in the format like "true,1.0,2.0,3.0 # comments"
+	 *          The training set, in the format like "1,1.0,2.0,3.0 # comments". The first field (1
+	 *          herein the example) must be an integer indicating the class label.
 	 * @param outputParameterFilePath
 	 *          Data pre-processing parameter file path. These parameters are generated during
 	 *          training, and will be used in predicting
@@ -66,21 +49,17 @@ public class SVMTrainer
 	 *          The output SVM model, in libsvm format
 	 * @throws IOException
 	 */
-	public SVMTrainer(int numAttributes, String posLabel, String negLabel, double C, double gamma,
-			String dataFilePath, String outputParameterFilePath, String outputModelFilePath)
-			throws IOException
+	public SVMTrainer(int numAttributes, String dataFilePath, String outputParameterFilePath,
+			String outputModelFilePath) throws IOException
 	{
 		this.numAttributes = numAttributes;
-		this.posLabel = posLabel;
-		this.negLabel = negLabel;
-		this.C = C;
-		this.gamma = gamma;
+		this.outputModelFilePath = outputModelFilePath;
+
 		readData(dataFilePath);
 		preprocessData(outputParameterFilePath);
-		train(outputModelFilePath);
 	}
 
-	protected void train(String outputModelFilePath) throws IOException
+	public void train(double C, double gamma) throws IOException
 	{
 		assert y.size() == x.size() : "data error: x.size() != y.size()";
 
@@ -107,7 +86,7 @@ public class SVMTrainer
 		param.eps = 1e-3;
 		param.p = 0.1;
 		param.shrinking = 1;
-		param.probability = 1; // we need probability as disambiguation confidence
+		param.probability = 1; // probability model by default
 		param.nr_weight = 0;
 		param.weight_label = new int[0];
 		param.weight = new double[0];
@@ -149,12 +128,7 @@ public class SVMTrainer
 			String[] parts = line.split(",");
 			assert parts.length == numAttributes + 1 : "unknown format: " + line;
 
-			if (parts[0].equals(posLabel))
-				y.add(1.0);
-			else if (parts[0].equals(negLabel))
-				y.add(-1.0);
-			else
-				y.add(0.0);
+			y.add(Double.parseDouble(parts[0]));
 
 			svm_node[] newInstance = new svm_node[numAttributes];
 			for (int i = 0; i < numAttributes; ++i)
@@ -170,8 +144,9 @@ public class SVMTrainer
 
 	public static void main(String[] args) throws IOException
 	{
-		SVMTrainer t = new SVMTrainer(3, "true", "false", 8, 2, "data/disambi.qmlt.dat",
+		SVMTrainer t = new SVMTrainer(3, "data/disambi-training.dat",
 				"model/disambi.gaussian_normalization.params", "model/disambi.svm.model");
+		t.train(8.0, 2.0);
 	}
 
 }

@@ -12,7 +12,7 @@ import ecologylab.semantics.conceptmapping.database.DatabaseAdapter;
 
 public class DatabasePreparer
 {
-	private DatabaseAdapter			da						= DatabaseAdapter.get("database-preparer");
+	private DatabaseAdapter			da						= DatabaseAdapter.get();
 
 	private String							inlinkFilepath;
 
