@@ -5,19 +5,24 @@ package ecologylab.semantics.concept.detect;
 
 public class DisambiguationInstance
 {
-	public final String	surface;
 
-	public final String	concept;
+	public static final int	posClassIntLabel	= 1;
 
-	public double				commonness;
+	public static final int	negClassIntLabel	= -1;
 
-	public double				contextualRelatedness;
+	public final String			surface;
 
-	public double				contextQuality;
+	public final String			concept;
 
-	public boolean			isThisSense;						// target of the binary classification problem
+	public double						commonness;
 
-	public double				positiveConfidence;
+	public double						contextualRelatedness;
+
+	public double						contextQuality;
+
+	public boolean					isThisSense;						// target of the binary classification problem
+
+	public double						positiveConfidence;
 
 	public DisambiguationInstance(String surface, String concept)
 	{
@@ -33,4 +38,5 @@ public class DisambiguationInstance
 				concept, commonness, contextualRelatedness, contextQuality, isThisSense);
 		return s;
 	}
+
 }

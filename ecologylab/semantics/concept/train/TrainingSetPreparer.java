@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+import ecologylab.semantics.concept.detect.DetectionFeatureExtractor;
 import ecologylab.semantics.concept.detect.Detector;
 import ecologylab.semantics.concept.detect.DisambiguationFeatureExtractor;
 import ecologylab.semantics.concept.detect.DisambiguationInstance;
@@ -15,9 +16,7 @@ import ecologylab.semantics.concept.text.WikiNGramGenerator;
 public class TrainingSetPreparer extends Detector
 {
 
-	protected WikiNGramGenerator	wikiNgGen;
-	
-	protected DisambiguationFeatureExtractor dfe;
+	protected WikiNGramGenerator							wikiNgGen;
 
 	public TrainingSetPreparer(String wikiHtmlText) throws SQLException
 	{
@@ -54,7 +53,7 @@ public class TrainingSetPreparer extends Detector
 
 	private void generateTrainingSetForDisambiguation()
 	{
-		dfe = new DisambiguationFeatureExtractor();
+		DisambiguationFeatureExtractor dfe = new DisambiguationFeatureExtractor();
 		try
 		{
 			BufferedWriter bw = new BufferedWriter(new FileWriter("data/disambiguation-training.dat"));
@@ -64,11 +63,17 @@ public class TrainingSetPreparer extends Detector
 				List<String> concepts = dbUtils.querySenses(surface);
 				for (String concept : concepts)
 				{
-					
+					DisambiguationInstance inst = dfe.extract(wikiNgGen.anchors, surface, concept);
+					bw.write(String.format("%d,%f,%f,%f # %s -> %s\n",
+							concept.equals(anchor.concept) ? DisambiguationInstance.posClassIntLabel : DisambiguationInstance.negClassIntLabel,
+							inst.commonness,
+							inst.contextualRelatedness,
+							inst.contextQuality,
+							inst.surface,
+							inst.concept));
 				}
-				DisambiguationInstance inst = disambiguators.get(anchor.surface).disambiguatedInstance;
-				// bw.write(String.format("%d,%f,%f,%f # %s -> %s\n",)
 			}
+			bw.close();
 		}
 		catch (IOException e)
 		{
@@ -85,8 +90,7 @@ public class TrainingSetPreparer extends Detector
 	@Override
 	protected void detect()
 	{
-		// TODO Auto-generated method stub
-		super.detect();
+		// TODO
 	}
 
 }

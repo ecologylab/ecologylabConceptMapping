@@ -19,8 +19,6 @@ public class Disambiguator
 
 	public static final String		modelFilePath					= "model/disambi.svm.prob.model";
 
-	public static final int				posClassIntegerLabel	= 1;
-
 	protected DatabaseUtils				dbUtils								= new DatabaseUtils();
 
 	public String									disambiguatedConcept;
@@ -46,8 +44,10 @@ public class Disambiguator
 				DisambiguationInstance inst = def.extract(context, surface, concept);
 				svm_node[] instance = constructSVMInstance(inst);
 				Map<Integer, Double> result = new HashMap<Integer, Double>();
-				pred.predict(instance, result);
-				double confid = result.get(posClassIntegerLabel);
+				int p = pred.predict(instance, result);
+				double confid = result.get(DisambiguationInstance.posClassIntLabel);
+				inst.isThisSense = (p == DisambiguationInstance.posClassIntLabel);
+				inst.positiveConfidence = confid;
 				if (confid > confidence)
 				{
 					confidence = confid;

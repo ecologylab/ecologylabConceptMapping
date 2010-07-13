@@ -2,27 +2,31 @@ package ecologylab.semantics.concept.detect;
 
 public class DetectionInstance
 {
-	public String		surface;
+	public static final int	posClassIntLabel	= 1;
 
-	public String		concept;
+	public static final int	negClassIntLabel	= -1;
 
-	public double		keyphraseness;
+	public String						surface;
 
-	public double		contextualRelatedness;
+	public String						concept;
 
-	public double		averageRelatedness;
+	public double						keyphraseness;
 
-	public double		dismabiguationConfidence;
+	public double						contextualRelatedness;
 
-	public double		occurrence;							// number of occurrence
+	public double						averageRelatedness;
 
-	public double		frequency;
+	public double						dismabiguationConfidence;
+
+	public double						occurrence;							// number of occurrence
+
+	public double						frequency;
 
 	// public double generality;
 
-	public boolean	isLinked;								// target for the binary classification problem
+	public boolean					isLinked;								// target for the binary classification problem
 
-	public double		confidence;
+	public double						positiveConfidence;
 
 	public DetectionInstance(String surface, String concept)
 	{

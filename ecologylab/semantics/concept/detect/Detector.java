@@ -29,8 +29,6 @@ import ecologylab.semantics.concept.text.WikiAnchor;
 public class Detector
 {
 
-	public static final int								posClassIntegerLabel	= 1;
-
 	public static final String						parameterFilePath			= null;
 
 	public static final String						modelFilePath					= null;
@@ -169,8 +167,11 @@ public class Detector
 				SVMPredicter pred;
 				pred = new SVMPredicter(parameterFilePath, modelFilePath);
 				Map<Integer, Double> results = new HashMap<Integer, Double>();
-				pred.predict(instance, results);
-				if (results.get(posClassIntegerLabel) > threshold)
+				int p = pred.predict(instance, results);
+				double confid = results.get(DetectionInstance.posClassIntLabel);
+				inst.isLinked = (p == DetectionInstance.posClassIntLabel);
+				inst.positiveConfidence = confid;
+				if (confid > threshold)
 					detectedConcepts.put(surface, disambiguator.disambiguatedConcept);
 			}
 			catch (IOException e)
