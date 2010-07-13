@@ -2,10 +2,11 @@ package ecologylab.semantics.concept.detect;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import libsvm.svm_node;
 
@@ -28,21 +29,23 @@ import ecologylab.semantics.concept.text.WikiAnchor;
 public class Detector
 {
 
-	private static final String						parameterFilePath	= null;
+	public static final int								posClassIntegerLabel	= 1;
 
-	private static final String						modelFilePath			= null;
+	public static final String						parameterFilePath			= null;
 
-	private static final Double						threshold					= 0.5;
+	public static final String						modelFilePath					= null;
 
-	protected DatabaseUtils								dbUtils						= new DatabaseUtils();
+	public static final Double						threshold							= 0.5;
+
+	protected DatabaseUtils								dbUtils								= new DatabaseUtils();
 
 	protected NGramGenerator							ngGen;
 
-	protected List<String>								surfaces;
+	protected Set<String>									surfaces;
 
-	protected List<String>								unambiSurfaces;
+	protected Set<String>									unambiSurfaces;
 
-	protected List<WikiAnchor>						context;
+	protected Map<String, WikiAnchor>			context;
 
 	protected Map<String, Disambiguator>	disambiguators;
 
@@ -72,7 +75,7 @@ public class Detector
 	 */
 	protected void findSurfaces()
 	{
-		unambiSurfaces = new ArrayList<String>();
+		unambiSurfaces = new HashSet<String>();
 
 		for (String gram : ngGen.ngrams.keySet())
 		{
@@ -103,15 +106,18 @@ public class Detector
 	 */
 	protected void generateContext()
 	{
-		context = new ArrayList<WikiAnchor>();
+		context = new HashMap<String, WikiAnchor>();
 
 		for (String surface : unambiSurfaces)
 		{
 			try
 			{
 				String sense = dbUtils.querySenses(surface).get(0);
-				WikiAnchor anchor = new WikiAnchor(ngGen.ngrams.get(surface), sense);
-				context.add(anchor);
+				if (!context.containsKey(sense))
+				{
+					WikiAnchor anchor = new WikiAnchor(surface, sense);
+					context.put(sense, anchor);
+				}
 			}
 			catch (SQLException e)
 			{
@@ -164,7 +170,7 @@ public class Detector
 				pred = new SVMPredicter(parameterFilePath, modelFilePath);
 				Map<Integer, Double> results = new HashMap<Integer, Double>();
 				pred.predict(instance, results);
-				if (results.get(1) > threshold)
+				if (results.get(posClassIntegerLabel) > threshold)
 					detectedConcepts.put(surface, disambiguator.disambiguatedConcept);
 			}
 			catch (IOException e)
@@ -180,7 +186,7 @@ public class Detector
 		}
 	}
 
-	private svm_node[] constructSVMInstance(DetectionInstance inst)
+	protected svm_node[] constructSVMInstance(DetectionInstance inst)
 	{
 		svm_node[] instance = new svm_node[6];
 		for (int i = 0; i < instance.length; ++i)

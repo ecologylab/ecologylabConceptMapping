@@ -1,8 +1,6 @@
 package ecologylab.semantics.concept.text;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import ecologylab.semantics.concept.utils.HtmlUtils;
@@ -38,14 +36,11 @@ public class WikiNGramGenerator extends NGramGenerator implements HtmlStrippingL
 	{
 		if (tag.equals("a") && attributes.containsKey("title"))
 		{
-			if (anchors.containsKey(inner))
+			String concept = attributes.get("title");
+			if (!anchors.containsKey(concept))
 			{
-				anchors.get(inner).count++;
-			}
-			else
-			{
-				WikiAnchor anchor = new WikiAnchor(new Gram(inner), attributes.get("title"));
-				anchors.put(inner, anchor);
+				WikiAnchor anchor = new WikiAnchor(inner, concept);
+				anchors.put(concept, anchor);
 			}
 		}
 	}

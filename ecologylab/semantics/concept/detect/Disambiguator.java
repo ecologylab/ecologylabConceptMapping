@@ -19,7 +19,7 @@ public class Disambiguator
 
 	public static final String		modelFilePath					= "model/disambi.svm.prob.model";
 
-	public static final int				positiveIntegerLabel	= 1;
+	public static final int				posClassIntegerLabel	= 1;
 
 	protected DatabaseUtils				dbUtils								= new DatabaseUtils();
 
@@ -31,7 +31,7 @@ public class Disambiguator
 
 	protected SVMPredicter				pred;
 
-	public Disambiguator(List<WikiAnchor> context, String surface) throws IOException
+	public Disambiguator(Map<String, WikiAnchor> context, String surface) throws IOException
 	{
 		disambiguatedConcept = null;
 		confidence = Double.NEGATIVE_INFINITY;
@@ -47,7 +47,7 @@ public class Disambiguator
 				svm_node[] instance = constructSVMInstance(inst);
 				Map<Integer, Double> result = new HashMap<Integer, Double>();
 				pred.predict(instance, result);
-				double confid = result.get(positiveIntegerLabel);
+				double confid = result.get(posClassIntegerLabel);
 				if (confid > confidence)
 				{
 					confidence = confid;

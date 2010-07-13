@@ -1,22 +1,19 @@
 package ecologylab.semantics.concept.text;
 
-public class WikiAnchor extends Gram
+public class WikiAnchor
 {
-	public String	concept; // the concept
+	public String	surface;
 
-	public WikiAnchor(Gram gram)
-	{
-		super(gram);
-	}
+	public String	concept;	// the concept
 
-	public WikiAnchor(Gram gram, String concept)
+	public WikiAnchor(String surface, String concept)
 	{
-		this(gram);
+		this.surface = surface;
 		this.concept = concept;
 	}
 
 	public String toString()
 	{
-		return String.format("[%s => %s]", text, concept);
+		return String.format("[%s -> %s]", surface, concept);
 	}
 }
