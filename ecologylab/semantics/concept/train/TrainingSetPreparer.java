@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import ecologylab.semantics.concept.detect.DetectionFeatureExtractor;
+import ecologylab.semantics.concept.detect.DetectionInstance;
 import ecologylab.semantics.concept.detect.Detector;
 import ecologylab.semantics.concept.detect.DisambiguationFeatureExtractor;
 import ecologylab.semantics.concept.detect.DisambiguationInstance;
@@ -16,7 +17,7 @@ import ecologylab.semantics.concept.text.WikiNGramGenerator;
 public class TrainingSetPreparer extends Detector
 {
 
-	protected WikiNGramGenerator							wikiNgGen;
+	protected WikiNGramGenerator	wikiNgGen;
 
 	public TrainingSetPreparer(String wikiHtmlText) throws SQLException
 	{
@@ -35,13 +36,7 @@ public class TrainingSetPreparer extends Detector
 	protected void generateContext()
 	{
 		super.generateContext();
-		for (WikiAnchor anchor : wikiNgGen.anchors.values())
-		{
-			if (!context.containsKey(anchor.concept))
-			{
-				context.put(anchor.concept, anchor);
-			}
-		}
+		context.addAll(wikiNgGen.context);
 	}
 
 	@Override
@@ -57,40 +52,74 @@ public class TrainingSetPreparer extends Detector
 		try
 		{
 			BufferedWriter bw = new BufferedWriter(new FileWriter("data/disambiguation-training.dat"));
-			for (WikiAnchor anchor : wikiNgGen.anchors.values())
+			for (WikiAnchor anchor : wikiNgGen.context.getAnchors())
 			{
 				String surface = anchor.surface;
-				List<String> concepts = dbUtils.querySenses(surface);
-				for (String concept : concepts)
+				List<String> concepts;
+				try
 				{
-					DisambiguationInstance inst = dfe.extract(wikiNgGen.anchors, surface, concept);
-					bw.write(String.format("%d,%f,%f,%f # %s -> %s\n",
-							concept.equals(anchor.concept) ? DisambiguationInstance.posClassIntLabel : DisambiguationInstance.negClassIntLabel,
-							inst.commonness,
-							inst.contextualRelatedness,
-							inst.contextQuality,
-							inst.surface,
-							inst.concept));
+					concepts = dbUtils.querySenses(surface);
+					for (String concept : concepts)
+					{
+						DisambiguationInstance inst = dfe.extract(wikiNgGen.context, surface, concept);
+						bw.write(String.format("%d,%f,%f,%f # %s -> %s\n",
+								concept.equals(anchor.concept) ? DisambiguationInstance.posClassIntLabel
+										: DisambiguationInstance.negClassIntLabel, inst.commonness,
+								inst.contextualRelatedness, inst.contextQuality, inst.surface, inst.concept));
+					}
+				}
+				catch (SQLException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 			bw.close();
 		}
-		catch (IOException e)
+		catch (IOException e1)
 		{
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
 		}
 	}
 
 	@Override
 	protected void detect()
 	{
-		// TODO
+		DetectionFeatureExtractor dfe = new DetectionFeatureExtractor();
+
+		try
+		{
+			BufferedWriter bw = new BufferedWriter(new FileWriter("data/detection-training.dat"));
+			for (String surface : surfaces)
+			{
+				if (disambiguators.containsKey(surface))
+				{
+					try
+					{
+						assert ngGen.ngrams.containsKey(surface) : "n-gram not found: " + surface;
+						DetectionInstance inst = dfe.extract(ngGen.totalWordCount, ngGen.ngrams.get(surface),
+								context, disambiguators.get(surface));
+						bw.write(String.format("%d,%f,%f,%f,%f,%f,%f # %s -> %s\n", context.getSurfaces()
+								.contains(surface) ? DetectionInstance.posClassIntLabel
+								: DetectionInstance.negClassIntLabel, inst.keyphraseness,
+								inst.contextualRelatedness, inst.averageRelatedness, inst.dismabiguationConfidence,
+								inst.occurrence, inst.frequency, inst.surface, inst.concept));
+					}
+					catch (SQLException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			bw.close();
+		}
+		catch (IOException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 }

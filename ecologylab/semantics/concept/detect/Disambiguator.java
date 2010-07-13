@@ -10,7 +10,7 @@ import libsvm.svm_node;
 
 import ecologylab.semantics.concept.database.DatabaseUtils;
 import ecologylab.semantics.concept.learning.svm.SVMPredicter;
-import ecologylab.semantics.concept.text.WikiAnchor;
+import ecologylab.semantics.concept.text.Context;
 
 public class Disambiguator
 {
@@ -29,7 +29,7 @@ public class Disambiguator
 
 	protected SVMPredicter				pred;
 
-	public Disambiguator(Map<String, WikiAnchor> context, String surface) throws IOException
+	public Disambiguator(Context context, String surface) throws IOException
 	{
 		disambiguatedConcept = null;
 		confidence = Double.NEGATIVE_INFINITY;

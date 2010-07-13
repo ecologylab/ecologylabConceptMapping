@@ -12,8 +12,8 @@ import libsvm.svm_node;
 
 import ecologylab.semantics.concept.database.DatabaseUtils;
 import ecologylab.semantics.concept.learning.svm.SVMPredicter;
+import ecologylab.semantics.concept.text.Context;
 import ecologylab.semantics.concept.text.NGramGenerator;
-import ecologylab.semantics.concept.text.WikiAnchor;
 
 /**
  * Extract features for link detection. Including keyphraseness, contextual / average relatedness,
@@ -29,13 +29,13 @@ import ecologylab.semantics.concept.text.WikiAnchor;
 public class Detector
 {
 
-	public static final String						parameterFilePath			= null;
+	public static final String						parameterFilePath	= null;
 
-	public static final String						modelFilePath					= null;
+	public static final String						modelFilePath			= null;
 
-	public static final Double						threshold							= 0.5;
+	public static final Double						threshold					= 0.5;
 
-	protected DatabaseUtils								dbUtils								= new DatabaseUtils();
+	protected DatabaseUtils								dbUtils						= new DatabaseUtils();
 
 	protected NGramGenerator							ngGen;
 
@@ -43,7 +43,7 @@ public class Detector
 
 	protected Set<String>									unambiSurfaces;
 
-	protected Map<String, WikiAnchor>			context;
+	protected Context											context;
 
 	protected Map<String, Disambiguator>	disambiguators;
 
@@ -104,18 +104,14 @@ public class Detector
 	 */
 	protected void generateContext()
 	{
-		context = new HashMap<String, WikiAnchor>();
+		context = new Context();
 
 		for (String surface : unambiSurfaces)
 		{
 			try
 			{
 				String sense = dbUtils.querySenses(surface).get(0);
-				if (!context.containsKey(sense))
-				{
-					WikiAnchor anchor = new WikiAnchor(surface, sense);
-					context.put(sense, anchor);
-				}
+				context.addUniquely(surface, sense);
 			}
 			catch (SQLException e)
 			{

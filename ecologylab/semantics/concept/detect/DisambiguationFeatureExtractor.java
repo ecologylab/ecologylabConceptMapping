@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ecologylab.semantics.concept.database.DatabaseUtils;
+import ecologylab.semantics.concept.text.Context;
 import ecologylab.semantics.concept.text.WikiAnchor;
 
 /**
@@ -29,14 +30,14 @@ public class DisambiguationFeatureExtractor
 
 	protected DatabaseUtils			dbUtils	= new DatabaseUtils();
 
-	public DisambiguationInstance extract(Map<String, WikiAnchor> context, String surface, String concept)
+	public DisambiguationInstance extract(Context context, String surface, String concept)
 			throws SQLException
 	{
 		DisambiguationInstance instance = new DisambiguationInstance(surface, concept);
 
 		Map<WikiAnchor, Double> weights = new HashMap<WikiAnchor, Double>();
 		instance.contextQuality = 0;
-		for (WikiAnchor anchor : context.values())
+		for (WikiAnchor anchor : context.getAnchors())
 		{
 			if (anchor.surface.equals(surface))
 				continue;
@@ -49,7 +50,7 @@ public class DisambiguationFeatureExtractor
 		}
 
 		instance.contextualRelatedness = 0;
-		for (WikiAnchor anchor : context.values())
+		for (WikiAnchor anchor : context.getAnchors())
 		{
 			if (anchor.surface.equals(surface))
 				continue;
@@ -63,10 +64,10 @@ public class DisambiguationFeatureExtractor
 	}
 
 	public static double getAverageRelatedness(DatabaseUtils dbUtils, String concept,
-			Map<String, WikiAnchor> context) throws SQLException
+			Context context) throws SQLException
 	{
 		double sumR = 0;
-		for (WikiAnchor anchor : context.values())
+		for (WikiAnchor anchor : context.getAnchors())
 		{
 			double relatedness = dbUtils.queryRelatedness(anchor.concept, concept);
 			sumR += relatedness;

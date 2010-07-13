@@ -1,18 +1,17 @@
 package ecologylab.semantics.concept.detect;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 import ecologylab.semantics.concept.database.DatabaseUtils;
+import ecologylab.semantics.concept.text.Context;
 import ecologylab.semantics.concept.text.Gram;
-import ecologylab.semantics.concept.text.WikiAnchor;
 
 public class DetectionFeatureExtractor
 {
 
 	protected DatabaseUtils	dbUtils	= new DatabaseUtils();
 
-	public DetectionInstance extract(int totalWordCount, Gram gram, Map<String, WikiAnchor> context,
+	public DetectionInstance extract(int totalWordCount, Gram gram, Context context,
 			Disambiguator disambiguator) throws SQLException
 	{
 		String concept = disambiguator.disambiguatedConcept;
