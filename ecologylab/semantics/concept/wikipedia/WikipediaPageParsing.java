@@ -5,8 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.junit.Test;
-
+import ecologylab.generic.DispatchTarget;
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.concept.wikipedia.metametadata.AddConceptCategorySemanticAction;
@@ -20,16 +19,18 @@ import ecologylab.semantics.metametadata.example.MyInfoCollector;
 
 public class WikipediaPageParsing
 {
-	public final int fullSize = 2000;
-	
-	public void parse(String inputFilePath, int nDownloadThread) throws InterruptedException, IOException
+	public final int	fullSize	= 2000;
+
+	public void parse(String inputFilePath, int nDownloadThread) throws InterruptedException,
+			IOException
 	{
 		SemanticAction.register(CreateConceptSemanticAction.class,
 				AddConceptOutlinkSemanticAction.class, AddConceptCategorySemanticAction.class,
 				FinishConceptSemanticAction.class);
 
-		MyInfoCollector infoCollector = new MyInfoCollector(".", GeneratedMetadataTranslationScope.get());
-		
+		MyInfoCollector infoCollector = new MyInfoCollector(".",
+				GeneratedMetadataTranslationScope.get());
+
 		BufferedReader br = new BufferedReader(new FileReader(inputFilePath));
 		String line;
 		while ((line = br.readLine()) != null)
@@ -75,21 +76,45 @@ public class WikipediaPageParsing
 			System.err.println("arguments: <wiki-page-list-file-path> <count-of-download-thread>");
 			return;
 		}
-		
+
 		String listFilePath = args[0];
 		int nDownloadThread = Integer.valueOf(args[1]);
-		
+
 		WikipediaPageParsing parsing = new WikipediaPageParsing();
 		parsing.parse(listFilePath, nDownloadThread);
 	}
-	
+
 	public static void test2()
 	{
-		MetaMetadataRepository repo = MetaMetadataRepository.load(new File("../cf/config/semantics/metametadata"));
-		WikiInfoCollector ic = new WikiInfoCollector(repo, GeneratedMetadataTranslationScope.get());
-		ParsedURL purl = ParsedURL.getAbsolute("http://achellis.cse.tamu.edu/wiki/United_States");
-		MyContainer c = ic.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
-		System.out.println(c);
+		MetaMetadataRepository repo = MetaMetadataRepository.load(new File(
+				"../cf/config/semantics/metametadata"));
+		final WikiInfoCollector ic = new WikiInfoCollector(repo,
+				GeneratedMetadataTranslationScope.get());
+		ParsedURL purl = ParsedURL
+				.getAbsolute("http://achilles.cse.tamu.edu/wiki/articles/u/n/i/United_States_09d4.html");
+		MyContainer c = ic.getContainerDownloadIfNeeded(null, purl, null, false, false, false,
+				new DispatchTarget<MyContainer>()
+				{
+
+					@Override
+					public void delivery(MyContainer o)
+					{
+						try
+						{
+							Thread.sleep(1000);
+						}
+						catch (InterruptedException e)
+						{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						ConceptPool.get().save();
+						StringPool.closeAll();
+						ic.getDownloadMonitor().stop();
+					}
+
+				});
+		System.out.print(c);
 	}
-	
+
 }
