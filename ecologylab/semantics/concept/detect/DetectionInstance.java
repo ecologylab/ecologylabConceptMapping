@@ -16,7 +16,7 @@ public class DetectionInstance
 
 	public double						averageRelatedness;
 
-	public double						dismabiguationConfidence;
+	public double						disambiguationConfidence;
 
 	public double						occurrence;							// number of occurrence
 

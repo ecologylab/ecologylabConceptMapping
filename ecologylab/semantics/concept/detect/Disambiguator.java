@@ -19,8 +19,6 @@ public class Disambiguator
 
 	public static final String		modelFilePath					= "model/disambi.svm.prob.model";
 
-	protected DatabaseUtils				dbUtils								= new DatabaseUtils();
-
 	public String									disambiguatedConcept;
 
 	public double									confidence;
@@ -37,7 +35,7 @@ public class Disambiguator
 
 		try
 		{
-			List<String> concepts = dbUtils.querySenses(surface);
+			List<String> concepts = DatabaseUtils.get().querySenses(surface);
 			for (String concept : concepts)
 			{
 				DisambiguationFeatureExtractor def = new DisambiguationFeatureExtractor();

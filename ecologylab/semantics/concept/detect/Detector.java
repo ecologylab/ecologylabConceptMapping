@@ -35,13 +35,11 @@ public class Detector
 
 	public static final Double						threshold					= 0.5;
 
-	protected DatabaseUtils								dbUtils						= new DatabaseUtils();
-
 	protected NGramGenerator							ngGen;
 
-	protected Set<String>									surfaces;
+	protected Set<String>									surfaces = new HashSet<String>();
 
-	protected Set<String>									unambiSurfaces;
+	protected Set<String>									unambiSurfaces = new HashSet<String>();
 
 	protected Context											context;
 
@@ -77,13 +75,13 @@ public class Detector
 
 		for (String gram : ngGen.ngrams.keySet())
 		{
-			if (dbUtils.querySurfaces().contains(gram))
+			if (DatabaseUtils.get().querySurfaces().contains(gram))
 			{
 				surfaces.add(gram);
 
 				try
 				{
-					List<String> senses = dbUtils.querySenses(gram);
+					List<String> senses = DatabaseUtils.get().querySenses(gram);
 					if (senses.size() == 1) // unambiguous surface
 					{
 						unambiSurfaces.add(gram);
@@ -110,7 +108,7 @@ public class Detector
 		{
 			try
 			{
-				String sense = dbUtils.querySenses(surface).get(0);
+				String sense = DatabaseUtils.get().querySenses(surface).get(0);
 				context.addUniquely(surface, sense);
 			}
 			catch (SQLException e)
@@ -194,7 +192,7 @@ public class Detector
 		instance[0].value = inst.keyphraseness;
 		instance[1].value = inst.contextualRelatedness;
 		instance[2].value = inst.averageRelatedness;
-		instance[3].value = inst.dismabiguationConfidence;
+		instance[3].value = inst.disambiguationConfidence;
 		instance[4].value = inst.occurrence;
 		instance[5].value = inst.frequency;
 

@@ -9,6 +9,9 @@ import java.util.Set;
 public class Context
 {
 
+	/**
+	 * map from concept to WikiAnchor
+	 */
 	private Map<String, WikiAnchor>	anchors		= new HashMap<String, WikiAnchor>();
 
 	private Set<String>							surfaces	= new HashSet<String>();
@@ -22,7 +25,7 @@ public class Context
 			surfaces.add(surface);
 		}
 	}
-
+	
 	public void addAll(Context other)
 	{
 		for (String concept : other.getConcepts())

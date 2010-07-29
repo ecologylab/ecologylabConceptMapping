@@ -15,19 +15,15 @@ public class DatabaseUtils
 	
 	private DatabaseAdapter	da;
 
-	public DatabaseUtils()
-	{
-		this.da = DatabaseAdapter.get();
-	}
-	
-	private List<String>	surfaces	= null;
+	private Set<String>	surfaces	= null;
+	private Set<String>	concepts	= null;
 
-	public List<String> querySurfaces()
+	public Set<String> querySurfaces()
 	{
 		if (surfaces != null)
 			return surfaces;
 
-		surfaces = new ArrayList<String>();
+		surfaces = new HashSet<String>();
 		try
 		{
 			ResultSet rs = da.executeQuerySql("SELECT surface FROM surfaces;");
@@ -44,14 +40,13 @@ public class DatabaseUtils
 		return surfaces;
 	}
 
-	private List<String>	concepts	= null;
 
-	public List<String> queryConcepts()
+	public Set<String> queryConcepts()
 	{
 		if (concepts != null)
 			return concepts;
 
-		concepts = new ArrayList<String>();
+		concepts = new HashSet<String>();
 		try
 		{
 			ResultSet rs = da.executeQuerySql("SELECT DISTINCT from_concept FROM inlinks;");
@@ -180,4 +175,19 @@ public class DatabaseUtils
 		return rst;
 	}
 
+	private DatabaseUtils()
+	{
+		this.da = DatabaseAdapter.get();
+	}
+	
+	private static DatabaseUtils utils = null;
+	
+	public static DatabaseUtils get()
+	{
+		if (utils == null)
+		{
+			utils = new DatabaseUtils();
+		}
+		return utils;
+	}
 }

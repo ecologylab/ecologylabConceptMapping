@@ -1,44 +1,48 @@
 package ecologylab.semantics.concept.train;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+import ecologylab.net.ParsedURL;
+import ecologylab.semantics.concept.database.DatabaseUtils;
 import ecologylab.semantics.concept.detect.DetectionFeatureExtractor;
 import ecologylab.semantics.concept.detect.DetectionInstance;
 import ecologylab.semantics.concept.detect.Detector;
 import ecologylab.semantics.concept.detect.DisambiguationFeatureExtractor;
 import ecologylab.semantics.concept.detect.DisambiguationInstance;
+import ecologylab.semantics.concept.text.Context;
 import ecologylab.semantics.concept.text.WikiAnchor;
-import ecologylab.semantics.concept.text.WikiNGramGenerator;
+import ecologylab.semantics.generated.library.GeneratedMetadataTranslationScope;
+import ecologylab.semantics.metametadata.MetaMetadataRepository;
 
 public class TrainingSetPreparer extends Detector
 {
+	
+	private Context presetContext;
 
-	protected WikiNGramGenerator	wikiNgGen;
-
-	public TrainingSetPreparer(String wikiHtmlText) throws SQLException
+	public TrainingSetPreparer(String wikiText, Context presetContext) throws SQLException
 	{
-		super(wikiHtmlText);
-		// TODO Auto-generated constructor stub
+		super(wikiText);
 	}
-
-	@Override
-	protected void generateNGrams(String text)
-	{
-		ngGen = new WikiNGramGenerator(text);
-		wikiNgGen = ((WikiNGramGenerator) ngGen);
-	}
-
+	
+	/**
+	 * overridden to enlarge the context with the preset context.
+	 */
 	@Override
 	protected void generateContext()
 	{
 		super.generateContext();
-		context.addAll(wikiNgGen.context);
+		context.addAll(presetContext);
 	}
-
+	
+	/**
+	 * overridden to generate a training set for disambiguation, and also prepare disambiguation
+	 * features for use by concept detection feature extractor.
+	 */
 	@Override
 	protected void disambiguate()
 	{
@@ -46,22 +50,25 @@ public class TrainingSetPreparer extends Detector
 		super.disambiguate();
 	}
 
+	/**
+	 * generate and store disambiguation features.
+	 */
 	private void generateTrainingSetForDisambiguation()
 	{
 		DisambiguationFeatureExtractor dfe = new DisambiguationFeatureExtractor();
 		try
 		{
 			BufferedWriter bw = new BufferedWriter(new FileWriter("data/disambiguation-training.dat"));
-			for (WikiAnchor anchor : wikiNgGen.context.getAnchors())
+			for (WikiAnchor anchor : context.getAnchors())
 			{
 				String surface = anchor.surface;
 				List<String> concepts;
 				try
 				{
-					concepts = dbUtils.querySenses(surface);
+					concepts = DatabaseUtils.get().querySenses(surface);
 					for (String concept : concepts)
 					{
-						DisambiguationInstance inst = dfe.extract(wikiNgGen.context, surface, concept);
+						DisambiguationInstance inst = dfe.extract(context, surface, concept);
 						bw.write(String.format("%d,%f,%f,%f # %s -> %s\n",
 								concept.equals(anchor.concept) ? DisambiguationInstance.posClassIntLabel
 										: DisambiguationInstance.negClassIntLabel, inst.commonness,
@@ -83,6 +90,9 @@ public class TrainingSetPreparer extends Detector
 		}
 	}
 
+	/**
+	 * overridden to generate a training set for concept detection.
+	 */
 	@Override
 	protected void detect()
 	{
@@ -103,7 +113,7 @@ public class TrainingSetPreparer extends Detector
 						bw.write(String.format("%d,%f,%f,%f,%f,%f,%f # %s -> %s\n", context.getSurfaces()
 								.contains(surface) ? DetectionInstance.posClassIntLabel
 								: DetectionInstance.negClassIntLabel, inst.keyphraseness,
-								inst.contextualRelatedness, inst.averageRelatedness, inst.dismabiguationConfidence,
+								inst.contextualRelatedness, inst.averageRelatedness, inst.disambiguationConfidence,
 								inst.occurrence, inst.frequency, inst.surface, inst.concept));
 					}
 					catch (SQLException e)
@@ -122,4 +132,12 @@ public class TrainingSetPreparer extends Detector
 		}
 	}
 
+	public static void main(String[] args) throws IOException
+	{
+		MetaMetadataRepository repo = MetaMetadataRepository.load(new File("../cf/config/semantics/metametadata"));
+		WikiInfoCollectorForTraining ic = new WikiInfoCollectorForTraining(repo , GeneratedMetadataTranslationScope.get());
+		ParsedURL purl = ParsedURL.getAbsolute("http://achilles.cse.tamu.edu/wiki/articles/c/h/i/Chicago.html");
+		ic.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
+	}
+	
 }

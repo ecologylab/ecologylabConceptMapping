@@ -28,8 +28,6 @@ public class DisambiguationFeatureExtractor
 
 	public static final double	w_ar		= 0.5;
 
-	protected DatabaseUtils			dbUtils	= new DatabaseUtils();
-
 	public DisambiguationInstance extract(Context context, String surface, String concept)
 			throws SQLException
 	{
@@ -42,8 +40,8 @@ public class DisambiguationFeatureExtractor
 			if (anchor.surface.equals(surface))
 				continue;
 
-			double kp = dbUtils.queryKeyphraseness(anchor.surface);
-			double ar = getAverageRelatedness(dbUtils, anchor.concept, context);
+			double kp = DatabaseUtils.get().queryKeyphraseness(anchor.surface);
+			double ar = getAverageRelatedness(anchor.concept, context);
 			double w = w_kp * kp + w_ar * ar;
 			weights.put(anchor, w);
 			instance.contextQuality += w;
@@ -55,21 +53,21 @@ public class DisambiguationFeatureExtractor
 			if (anchor.surface.equals(surface))
 				continue;
 
-			instance.commonness = dbUtils.queryCommonness(surface, concept);
+			instance.commonness = DatabaseUtils.get().queryCommonness(surface, concept);
 			double w = weights.get(anchor);
-			instance.contextualRelatedness += w * dbUtils.queryRelatedness(concept, anchor.concept);
+			instance.contextualRelatedness += w * DatabaseUtils.get().queryRelatedness(concept, anchor.concept);
 		}
 
 		return instance;
 	}
 
-	public static double getAverageRelatedness(DatabaseUtils dbUtils, String concept,
+	public static double getAverageRelatedness(String concept,
 			Context context) throws SQLException
 	{
 		double sumR = 0;
 		for (WikiAnchor anchor : context.getAnchors())
 		{
-			double relatedness = dbUtils.queryRelatedness(anchor.concept, concept);
+			double relatedness = DatabaseUtils.get().queryRelatedness(anchor.concept, concept);
 			sumR += relatedness;
 		}
 		return sumR / context.size();
