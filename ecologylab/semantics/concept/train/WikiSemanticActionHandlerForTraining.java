@@ -36,7 +36,8 @@ public class WikiSemanticActionHandlerForTraining extends SemanticActionHandlerB
 		String surface = (String) getArgumentValueByName(action, "surface");
 		String concept = (String) getArgumentValueByName(action, "target_title");
 		
-		context.addUniquely(surface, concept);
+		if (surface != null && concept != null)
+			context.addUniquely(surface, concept);
 	}
 	
 	@Override
@@ -44,7 +45,8 @@ public class WikiSemanticActionHandlerForTraining extends SemanticActionHandlerB
 	{
 		try
 		{
-			TrainingSetPreparer tsp = new TrainingSetPreparer(textSb.toString(), context);
+			TrainingSetPreparer tsp = new TrainingSetPreparer(context);
+			tsp.detect(textSb.toString());
 		}
 		catch (SQLException e)
 		{

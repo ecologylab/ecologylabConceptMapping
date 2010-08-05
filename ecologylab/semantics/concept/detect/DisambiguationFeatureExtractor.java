@@ -1,12 +1,15 @@
 package ecologylab.semantics.concept.detect;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ecologylab.semantics.concept.database.DatabaseUtils;
 import ecologylab.semantics.concept.text.Context;
 import ecologylab.semantics.concept.text.WikiAnchor;
+import ecologylab.semantics.concept.utils.Pair;
 
 /**
  * This class extracts features for sense disambiguation, for each pair of (surface, concept).
@@ -24,9 +27,32 @@ import ecologylab.semantics.concept.text.WikiAnchor;
 public class DisambiguationFeatureExtractor
 {
 
-	public static final double	w_kp		= 0.5;
+	public static final double								w_kp					= 0.5;
 
-	public static final double	w_ar		= 0.5;
+	public static final double								w_ar					= 0.5;
+
+	private Context														context;
+
+	private List<String>											ambiSurfaces	= new ArrayList<String>();
+
+	private Map<String, Double>								keyphraseness	= new HashMap<String, Double>();
+
+	private Map<Pair<String, String>, Double>	relatedness		= new HashMap<Pair<String, String>, Double>();
+
+	private double														contextQuality;
+
+	public DisambiguationFeatureExtractor(Context context)
+	{
+		this.context = context;
+	}
+
+	private void init()
+	{
+		for (WikiAnchor anchor : context.getAnchors())
+		{
+			anchor.surface
+		}
+	}
 
 	public DisambiguationInstance extract(Context context, String surface, String concept)
 			throws SQLException
@@ -55,14 +81,14 @@ public class DisambiguationFeatureExtractor
 
 			instance.commonness = DatabaseUtils.get().queryCommonness(surface, concept);
 			double w = weights.get(anchor);
-			instance.contextualRelatedness += w * DatabaseUtils.get().queryRelatedness(concept, anchor.concept);
+			instance.contextualRelatedness += w
+					* DatabaseUtils.get().queryRelatedness(concept, anchor.concept);
 		}
 
 		return instance;
 	}
 
-	public static double getAverageRelatedness(String concept,
-			Context context) throws SQLException
+	public static double getAverageRelatedness(String concept, Context context) throws SQLException
 	{
 		double sumR = 0;
 		for (WikiAnchor anchor : context.getAnchors())

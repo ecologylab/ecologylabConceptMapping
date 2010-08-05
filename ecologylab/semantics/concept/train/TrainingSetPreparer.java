@@ -24,9 +24,9 @@ public class TrainingSetPreparer extends Detector
 	
 	private Context presetContext;
 
-	public TrainingSetPreparer(String wikiText, Context presetContext) throws SQLException
+	public TrainingSetPreparer(Context presetContext) throws SQLException
 	{
-		super(wikiText);
+		this.presetContext = presetContext;
 	}
 	
 	/**
@@ -66,6 +66,9 @@ public class TrainingSetPreparer extends Detector
 				try
 				{
 					concepts = DatabaseUtils.get().querySenses(surface);
+					if (concepts.size() <= 1)
+						continue;
+					
 					for (String concept : concepts)
 					{
 						DisambiguationInstance inst = dfe.extract(context, surface, concept);
@@ -94,7 +97,7 @@ public class TrainingSetPreparer extends Detector
 	 * overridden to generate a training set for concept detection.
 	 */
 	@Override
-	protected void detect()
+	protected void detectConcepts()
 	{
 		DetectionFeatureExtractor dfe = new DetectionFeatureExtractor();
 

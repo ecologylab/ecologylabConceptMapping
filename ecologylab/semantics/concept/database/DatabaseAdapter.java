@@ -25,13 +25,17 @@ public class DatabaseAdapter
 			catch (ClassNotFoundException e)
 			{
 				System.err.println("driver loading failed.");
+				e.printStackTrace();
 				return null;
 			}
 			catch (SQLException e)
 			{
 				System.err.println("connection failed.");
+				e.printStackTrace();
 				return null;
 			}
+			
+			System.err.println("connected.");
 		}
 
 		return da;
@@ -93,4 +97,8 @@ public class DatabaseAdapter
 		return rs;
 	}
 
+	public static void main(String[] args)
+	{
+		DatabaseAdapter da = DatabaseAdapter.get();
+	}
 }

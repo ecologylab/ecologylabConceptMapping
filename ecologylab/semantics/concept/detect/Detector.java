@@ -47,13 +47,19 @@ public class Detector
 
 	public Map<String, String>						detectedConcepts;
 
-	public Detector(String text) throws SQLException
+	/**
+	 * the entry method for concept detection.
+	 * 
+	 * @param text
+	 * @throws SQLException
+	 */
+	public void detect(String text) throws SQLException
 	{
 		generateNGrams(text);
 		findSurfaces();
 		generateContext();
 		disambiguate();
-		detect();
+		detectConcepts();
 	}
 
 	/**
@@ -75,7 +81,7 @@ public class Detector
 
 		for (String gram : ngGen.ngrams.keySet())
 		{
-			if (DatabaseUtils.get().querySurfaces().contains(gram))
+			if (DatabaseUtils.get().hasSurface(gram))
 			{
 				surfaces.add(gram);
 
@@ -145,7 +151,7 @@ public class Detector
 	/**
 	 * Determine output concepts.
 	 */
-	protected void detect()
+	protected void detectConcepts()
 	{
 		detectedConcepts = new HashMap<String, String>();
 		DetectionFeatureExtractor dfe = new DetectionFeatureExtractor();
