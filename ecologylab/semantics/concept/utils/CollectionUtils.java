@@ -9,11 +9,11 @@ import java.util.List;
 public class CollectionUtils
 {
 	
-	public static int sum(Collection<Integer> collection)
+	public static <T extends Number> double sum(Collection<T> collection)
 	{
-		int s = 0;
-		for (int v : collection)
-			s += v;
+		double s = 0;
+		for (T v : collection)
+			s += v.doubleValue();
 		return s;
 	}
 

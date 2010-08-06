@@ -23,10 +23,17 @@ public class SVMPredicter
 	 *          This points to the SVM model file saved by the trainer.
 	 * @throws IOException 
 	 */
-	public SVMPredicter(String parameterFilePath, String modelFilePath) throws IOException
+	public SVMPredicter(String parameterFilePath, String modelFilePath)
 	{
-		normalization = new SVMGaussianNormalization(parameterFilePath);
-		model = svm.svm_load_model(modelFilePath);
+		try
+		{
+			normalization = new SVMGaussianNormalization(parameterFilePath);
+			model = svm.svm_load_model(modelFilePath);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	/**

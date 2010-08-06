@@ -1,18 +1,15 @@
 package ecologylab.semantics.concept.detect;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import libsvm.svm_node;
 
+import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.database.DatabaseUtils;
 import ecologylab.semantics.concept.learning.svm.SVMPredicter;
-import ecologylab.semantics.concept.text.Context;
 import ecologylab.semantics.concept.text.NGramGenerator;
 
 /**
@@ -29,36 +26,30 @@ import ecologylab.semantics.concept.text.NGramGenerator;
 public class Detector
 {
 
-	public static final String						parameterFilePath	= null;
+	protected NGramGenerator										nGramGenerator;
 
-	public static final String						modelFilePath			= null;
+	protected Context														context;
 
-	public static final Double						threshold					= 0.5;
+	protected FeatureExtractor									featureExtractor;
 
-	protected NGramGenerator							ngGen;
+	protected Map<String, Map<String, Double>>	surfacesAndSenses;
 
-	protected Set<String>									surfaces = new HashSet<String>();
+	protected Set<Instance>											instances;
 
-	protected Set<String>									unambiSurfaces = new HashSet<String>();
-
-	protected Context											context;
-
-	protected Map<String, Disambiguator>	disambiguators;
-
-	public Map<String, String>						detectedConcepts;
+	public Map<String, String>									detectedConcepts;
 
 	/**
 	 * the entry method for concept detection.
 	 * 
 	 * @param text
-	 * @throws SQLException
 	 */
-	public void detect(String text) throws SQLException
+	public void detect(String text)
 	{
 		generateNGrams(text);
-		findSurfaces();
-		generateContext();
-		disambiguate();
+		findSurfacesAndGenerateContext();
+		context.init();
+		featureExtractor = new FeatureExtractor(context);
+		disambiguateAndGenerateInstances();
 		detectConcepts();
 	}
 
@@ -69,58 +60,34 @@ public class Detector
 	 */
 	protected void generateNGrams(String text)
 	{
-		ngGen = new NGramGenerator(text);
+		nGramGenerator = new NGramGenerator(text);
 	}
 
 	/**
 	 * Filter out n-grams that are not surfaces (which will not link to Wikipedia articles).
 	 */
-	protected void findSurfaces()
+	protected void findSurfacesAndGenerateContext()
 	{
-		unambiSurfaces = new HashSet<String>();
+		context = new Context();
+		surfacesAndSenses = new HashMap<String, Map<String, Double>>();
 
-		for (String gram : ngGen.ngrams.keySet())
+		for (String gram : nGramGenerator.ngrams.keySet())
 		{
 			if (DatabaseUtils.get().hasSurface(gram))
 			{
-				surfaces.add(gram);
-
-				try
+				Map<String, Double> senses = DatabaseUtils.get().querySenses(gram);
+				if (senses.size() <= 0)
 				{
-					List<String> senses = DatabaseUtils.get().querySenses(gram);
-					if (senses.size() == 1) // unambiguous surface
-					{
-						unambiSurfaces.add(gram);
-					}
+					// weird things happening
+					continue;
 				}
-				catch (SQLException e)
+				else if (senses.size() == 1)
 				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// unambiguous surface
+					String sense = (String) senses.keySet().toArray()[0];
+					context.add(gram, sense);
 				}
-			}
-		}
-	}
-
-	/**
-	 * Find unambiguous surfaces and link them to Wikipedia articles. They will be used in link
-	 * resolution.
-	 */
-	protected void generateContext()
-	{
-		context = new Context();
-
-		for (String surface : unambiSurfaces)
-		{
-			try
-			{
-				String sense = DatabaseUtils.get().querySenses(surface).get(0);
-				context.addUniquely(surface, sense);
-			}
-			catch (SQLException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				surfacesAndSenses.put(gram, senses); // cache commonness data for use
 			}
 		}
 	}
@@ -128,24 +95,44 @@ public class Detector
 	/**
 	 * Disambiguate. Output the best possible concept & confidence.
 	 */
-	protected void disambiguate()
+	protected void disambiguateAndGenerateInstances()
 	{
-		disambiguators = new HashMap<String, Disambiguator>();
-		for (String surface : surfaces)
+		instances = new HashSet<Instance>();
+		for (String surface : surfacesAndSenses.keySet())
 		{
-			try
+			Map<String, Double> senses = surfacesAndSenses.get(surface);
+			Instance bestInst = null;
+			for (String concept : senses.keySet())
 			{
-				Disambiguator disambi = new Disambiguator(context, surface);
-				disambiguators.put(surface, disambi);
+				Instance inst = featureExtractor.extract(surface, concept, senses.get(concept),
+						nGramGenerator.totalWordCount, nGramGenerator.ngrams.get(surface).count);
+
+				if (senses.size() > 1)
+				{
+					// ambi surface
+					svm_node[] svmInst = constructSVMInstance(inst.commonness, inst.contextualRelatedness,
+							inst.contextQuality);
+					Map<Integer, Double> buf = new HashMap<Integer, Double>();
+					SVMPredicter pred = new SVMPredicter(ConceptConstants.DISAMBI_PARAM_FILE_PATH,
+							ConceptConstants.DISAMBI_MODEL_FILE_PATH);
+					pred.predict(svmInst, buf);
+					inst.disambiguationConfidence = buf.get(ConceptConstants.POS_CLASS_INT_LABEL);
+
+					if (bestInst == null || inst.disambiguationConfidence > bestInst.disambiguationConfidence)
+					{
+						bestInst = inst;
+					}
+				}
+				else
+				{
+					// unambi surface
+					bestInst = inst;
+				}
 			}
-			catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			instances.add(bestInst);
 		}
 
-		// maybe sort by confidence and iteratively improve the disambiguation results
+		// maybe sort by confidence and iteratively refine the disambiguation results
 	}
 
 	/**
@@ -154,54 +141,31 @@ public class Detector
 	protected void detectConcepts()
 	{
 		detectedConcepts = new HashMap<String, String>();
-		DetectionFeatureExtractor dfe = new DetectionFeatureExtractor();
 
-		for (String surface : surfaces)
+		for (Instance inst : instances)
 		{
-			try
-			{
-				Disambiguator disambiguator = disambiguators.get(surface);
-				DetectionInstance inst = dfe.extract(ngGen.totalWordCount, ngGen.ngrams.get(surface),
-						context, disambiguator);
-				svm_node[] instance = constructSVMInstance(inst);
-				SVMPredicter pred;
-				pred = new SVMPredicter(parameterFilePath, modelFilePath);
-				Map<Integer, Double> results = new HashMap<Integer, Double>();
-				int p = pred.predict(instance, results);
-				double confid = results.get(DetectionInstance.posClassIntLabel);
-				inst.isLinked = (p == DetectionInstance.posClassIntLabel);
-				inst.positiveConfidence = confid;
-				if (confid > threshold)
-					detectedConcepts.put(surface, disambiguator.disambiguatedConcept);
-			}
-			catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			catch (SQLException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			svm_node[] instance = constructSVMInstance(inst.keyphraseness, inst.contextualRelatedness,
+					inst.disambiguationConfidence, inst.occurrence, inst.frequency);
+			SVMPredicter pred = new SVMPredicter(ConceptConstants.DETECT_PARAM_FILE_PATH,
+					ConceptConstants.DETECT_MODEL_FILE_PATH);
+			Map<Integer, Double> results = new HashMap<Integer, Double>();
+			pred.predict(instance, results);
+			inst.conceptConfidence = results.get(ConceptConstants.POS_CLASS_INT_LABEL);
+
+			if (inst.conceptConfidence > ConceptConstants.DETECT_THRESHOLD)
+				detectedConcepts.put(inst.anchor.getSurface(), inst.anchor.getConcept());
 		}
 	}
 
-	protected svm_node[] constructSVMInstance(DetectionInstance inst)
+	public static svm_node[] constructSVMInstance(double... features)
 	{
-		svm_node[] instance = new svm_node[6];
+		svm_node[] instance = new svm_node[features.length];
 		for (int i = 0; i < instance.length; ++i)
 		{
 			instance[i].index = i + 1;
+			instance[i].value = features[i];
 		}
-
-		instance[0].value = inst.keyphraseness;
-		instance[1].value = inst.contextualRelatedness;
-		instance[2].value = inst.averageRelatedness;
-		instance[3].value = inst.disambiguationConfidence;
-		instance[4].value = inst.occurrence;
-		instance[5].value = inst.frequency;
-
 		return instance;
 	}
+
 }

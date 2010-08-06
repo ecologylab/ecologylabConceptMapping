@@ -40,7 +40,7 @@ public class CommonnessExtractor
 	public void extract(String surface) throws SQLException
 	{
 		Map<String, Integer> cc = getConceptCountForSurface(surface);
-		int n = CollectionUtils.sum(cc.values());
+		int n = (int) CollectionUtils.sum(cc.values());
 		for (String concept : cc.keySet())
 		{
 			double commonness = cc.get(concept) / (double) n;

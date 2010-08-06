@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.actions.SemanticActionHandlerBase;
-import ecologylab.semantics.concept.text.Context;
+import ecologylab.semantics.concept.detect.Context;
 import ecologylab.semantics.documentparsers.DocumentParser;
 import ecologylab.semantics.generated.library.Paragraph;
 import ecologylab.semantics.metadata.Metadata;
@@ -26,6 +26,7 @@ public class WikiSemanticActionHandlerForTraining extends SemanticActionHandlerB
 		for (Paragraph paragraph : paragraphs)
 		{
 			textSb.append(paragraph.getParagraphText());
+			textSb.append(" ");
 		}
 	}
 
@@ -37,7 +38,7 @@ public class WikiSemanticActionHandlerForTraining extends SemanticActionHandlerB
 		String concept = (String) getArgumentValueByName(action, "target_title");
 		
 		if (surface != null && concept != null)
-			context.addUniquely(surface, concept);
+			context.add(surface, concept);
 	}
 	
 	@Override
@@ -50,7 +51,6 @@ public class WikiSemanticActionHandlerForTraining extends SemanticActionHandlerB
 		}
 		catch (SQLException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
