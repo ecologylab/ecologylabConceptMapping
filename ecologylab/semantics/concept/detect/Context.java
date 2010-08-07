@@ -16,6 +16,8 @@ public class Context
 
 	private Set<ConceptAnchor>															anchors						= new HashSet<ConceptAnchor>();
 
+	private Set<String>																			surfaces					= new HashSet<String>();
+
 	private Map<Pair<ConceptAnchor, ConceptAnchor>, Double>	mutualRelatedness	= new HashMap<Pair<ConceptAnchor, ConceptAnchor>, Double>();
 
 	private Map<ConceptAnchor, Double>											weights						= new HashMap<ConceptAnchor, Double>();
@@ -25,12 +27,13 @@ public class Context
 	public void add(ConceptAnchor anchor)
 	{
 		anchors.add(anchor);
+		surfaces.add(anchor.getSurface());
 	}
 
 	public void add(String surface, String concept)
 	{
 		ConceptAnchor anchor = new ConceptAnchor(surface, concept);
-		anchors.add(anchor);
+		add(anchor);
 	}
 
 	public void addAll(Context other)
@@ -44,6 +47,11 @@ public class Context
 	public Set<ConceptAnchor> getAnchors()
 	{
 		return anchors;
+	}
+
+	public Set<String> getSurfaces()
+	{
+		return surfaces;
 	}
 
 	public int size()
