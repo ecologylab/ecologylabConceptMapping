@@ -3,7 +3,7 @@ package ecologylab.semantics.concept;
 public class ConceptConstants
 {
 
-	public static final String	METAMETADATA_REPOSITORY_LOCATION	= "../cf/config/semantics/metametadata";
+	public static final String	METAMETADATA_REPOSITORY_LOCATION	= "../ecologylabSemantics/repository";
 
 	public static final String	DISAMBI_PARAM_FILE_PATH						= "model/disambi.guassian_normalization.params";
 
