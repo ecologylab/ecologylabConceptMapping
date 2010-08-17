@@ -7,6 +7,7 @@ import java.util.Set;
 
 import libsvm.svm_node;
 
+import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.database.DatabaseUtils;
 import ecologylab.semantics.concept.learning.svm.SVMPredicter;
@@ -23,7 +24,7 @@ import ecologylab.semantics.concept.text.NGramGenerator;
  * @author quyin
  * 
  */
-public class Detector
+public class Detector extends Debug
 {
 
 	protected NGramGenerator										nGramGenerator;
@@ -75,6 +76,7 @@ public class Detector
 		{
 			if (DatabaseUtils.get().hasSurface(gram))
 			{
+				debug("surface found: " + gram);
 				Map<String, Double> senses = DatabaseUtils.get().querySenses(gram);
 				if (senses.size() <= 0)
 				{

@@ -9,7 +9,9 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DatabaseAdapter
+import ecologylab.generic.Debug;
+
+public class DatabaseAdapter extends Debug
 {
 
 	private static DatabaseAdapter	da	= null;
@@ -18,24 +20,7 @@ public class DatabaseAdapter
 	{
 		if (da == null)
 		{
-			try
-			{
-				da = new DatabaseAdapter();
-			}
-			catch (ClassNotFoundException e)
-			{
-				System.err.println("driver loading failed.");
-				e.printStackTrace();
-				return null;
-			}
-			catch (SQLException e)
-			{
-				System.err.println("connection failed.");
-				e.printStackTrace();
-				return null;
-			}
-			
-			System.err.println("connected.");
+			da = new DatabaseAdapter();
 		}
 
 		return da;
@@ -43,15 +28,28 @@ public class DatabaseAdapter
 
 	private Connection	conn;
 
-	private DatabaseAdapter() throws ClassNotFoundException, SQLException
+	private DatabaseAdapter()
 	{
-		Class.forName("org.postgresql.Driver");
-
-		String url = "jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing";
-		String username = "quyin";
-		String password = "quyindbpwd";
-
-		conn = DriverManager.getConnection(url, username, password);
+		try
+		{
+			Class.forName("org.postgresql.Driver");
+			
+			String url = "jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing";
+			String username = "quyin";
+			String password = "quyindbpwd";
+			conn = DriverManager.getConnection(url, username, password);
+			debug("database connected");
+		}
+		catch (ClassNotFoundException e)
+		{
+			error("database driver not found!");
+			e.printStackTrace();
+		}
+		catch (SQLException e)
+		{
+			error("database connection failed.");
+			e.printStackTrace();
+		}
 	}
 
 	private Map<String, PreparedStatement>	prepSts	= new HashMap<String, PreparedStatement>();

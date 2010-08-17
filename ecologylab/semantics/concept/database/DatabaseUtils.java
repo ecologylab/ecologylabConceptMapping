@@ -1,5 +1,8 @@
 package ecologylab.semantics.concept.database;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,10 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 
-public class DatabaseUtils
+public class DatabaseUtils extends Debug
 {
 
 	public static final int	NUM_ALL_CONCEPTS	= 2283272;
@@ -21,67 +25,11 @@ public class DatabaseUtils
 	private DatabaseAdapter	da;
 
 	private Set<String>			surfaces					= new HashSet<String>();
-
-	private Set<String>			concepts					= new HashSet<String>();
-
+	
 	public boolean hasSurface(String surface)
 	{
-		// if it is in the cache, we know that it is a surface
 		if (surfaces.contains(surface))
 			return true;
-
-		// if not in the cache, query the database
-		PreparedStatement st = da.getPreparedStatement("SELECT surface FROM surfaces WHERE surface=?");
-		try
-		{
-			st.setString(1, surface);
-			ResultSet rs = st.executeQuery();
-			if (rs.next())
-			{
-				String result = rs.getString("surface");
-				surfaces.add(result);
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-
-		return false;
-	}
-
-	public boolean hasConcept(String concept)
-	{
-		if (concepts.contains(concept))
-			return true;
-
-		PreparedStatement st = da
-				.getPreparedStatement("SELECT concept FROM inlinks WHERE from_concept=?");
-		try
-		{
-			st.setString(1, concept);
-			ResultSet rs = st.executeQuery();
-			if (rs.next())
-			{
-				String result = rs.getString("from_concept");
-				concepts.add(result);
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-
 		return false;
 	}
 
@@ -92,10 +40,16 @@ public class DatabaseUtils
 
 		try
 		{
-			st.setString(1, surface);
+			st.setString(1, surface.toLowerCase());
 			ResultSet rs = st.executeQuery();
-			rs.next();
-			return rs.getDouble("keyphraseness");
+			if (rs.next())
+			{
+				return rs.getDouble("keyphraseness");
+			}
+			else
+			{
+				error("keyphraseness not found: " + surface);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -106,16 +60,14 @@ public class DatabaseUtils
 	}
 
 	/* smaller relatedness indicates more relation between concepts */
-	public double queryRelatedness(String concept1, String concept2)
+	public double queryRelatedness(List<String> inlinkList1, List<String> inlinkList2)
 	{
-		if (concept1.equals(concept2))
+		if (inlinkList1.equals(inlinkList2))
 			return 0;
 
-		List<String> list1 = queryFromConceptsForConcept(concept1);
-		List<String> list2 = queryFromConceptsForConcept(concept2);
-		int s1 = list1.size();
-		int s2 = list2.size();
-		List<String> commonSublist = CollectionUtils.commonSublist(list1, list2);
+		int s1 = inlinkList1.size();
+		int s2 = inlinkList2.size();
+		List<String> commonSublist = CollectionUtils.commonSublist(inlinkList1, inlinkList2);
 		int s = commonSublist.size();
 		if (s <= 0)
 			return 1; // or Math.log will fail
@@ -185,7 +137,24 @@ public class DatabaseUtils
 
 	private DatabaseUtils()
 	{
-		this.da = DatabaseAdapter.get();
+		try
+		{
+			BufferedReader br = new BufferedReader(new FileReader(DatabaseConstants.freqSurfaceDataFile));
+			String surface = null;
+			while ((surface = br.readLine()) != null)
+			{
+				surfaces.add(surface);
+			}
+			br.close();
+			debug("frequent surfaces loaded.");
+			
+			da = DatabaseAdapter.get();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private static DatabaseUtils	utils	= null;
@@ -197,5 +166,10 @@ public class DatabaseUtils
 			utils = new DatabaseUtils();
 		}
 		return utils;
+	}
+	
+	public static void main(String[] args)
+	{
+		DatabaseUtils.get();
 	}
 }

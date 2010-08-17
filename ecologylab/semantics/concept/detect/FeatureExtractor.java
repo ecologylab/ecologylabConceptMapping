@@ -1,5 +1,7 @@
 package ecologylab.semantics.concept.detect;
 
+import java.util.List;
+
 import ecologylab.semantics.concept.database.DatabaseUtils;
 import ecologylab.semantics.concept.text.ConceptAnchor;
 
@@ -36,7 +38,8 @@ public class FeatureExtractor
 		for (ConceptAnchor anchor : context.getAnchors())
 		{
 			double w = context.getWeight(anchor);
-			double rel = DatabaseUtils.get().queryRelatedness(concept, anchor.getConcept());
+			List<String> inlinks = DatabaseUtils.get().queryFromConceptsForConcept(concept);
+			double rel = DatabaseUtils.get().queryRelatedness(inlinks, context.getConceptInlinks(anchor.getConcept()));
 			instance.contextualRelatedness += w * rel;
 			sumWeights += w;
 		}
