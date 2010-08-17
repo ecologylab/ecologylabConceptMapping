@@ -2,7 +2,7 @@ package ecologylab.semantics.concept.wikipedia;
 
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.actions.SemanticAction;
-import ecologylab.semantics.actions.SemanticActionHandlerBase;
+import ecologylab.semantics.actions.SemanticActionHandler;
 import ecologylab.semantics.documentparsers.DocumentParser;
 import ecologylab.semantics.generated.library.WikipediaPageType;
 import ecologylab.semantics.metadata.Metadata;
@@ -10,19 +10,18 @@ import ecologylab.semantics.metametadata.example.MyContainer;
 import ecologylab.semantics.metametadata.example.MyInfoCollector;
 
 public class WikiSemanticActionHandler extends
-		SemanticActionHandlerBase<MyContainer, MyInfoCollector>
+		SemanticActionHandler<MyContainer, MyInfoCollector>
 {
 
-	@Override
 	public void parseDocumentNow(SemanticAction action, DocumentParser docType,
 			MyInfoCollector infoCollector)
 	{
 		System.out.println("parse_document_now called.");
-		String category = (String) getArgumentValueByName(action, "category");
+		String category = (String) action.getArgumentObject("category");
 		if (category == null)
 		{
-			String surface = (String) getArgumentValueByName(action, "surface");
-			String targetTitle = (String) getArgumentValueByName(action, "target_title");
+			String surface = (String) action.getArgumentObject("surface");
+			String targetTitle = (String) action.getArgumentObject("target_title");
 
 			String linkS = String.format(
 					"[esc:name \"%s\"] esc:linked_by [esc:name \"%s\"]; esc:surface \"%s\" .", targetTitle,
@@ -35,7 +34,7 @@ public class WikiSemanticActionHandler extends
 		}
 		else
 		{
-			String categoryName = (String) getArgumentValueByName(action, "category");
+			String categoryName = (String) action.getArgumentObject("category");
 			ConceptPool.get().addCategory(categoryName);
 		}
 	}

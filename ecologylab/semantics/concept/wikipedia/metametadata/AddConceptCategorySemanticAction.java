@@ -1,7 +1,5 @@
 package ecologylab.semantics.concept.wikipedia.metametadata;
 
-import java.util.Map;
-
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.actions.SemanticActionStandardMethods;
 import ecologylab.semantics.concept.wikipedia.ConceptPool;
@@ -26,9 +24,9 @@ public class AddConceptCategorySemanticAction extends SemanticAction implements
 	}
 
 	@Override
-	public Object handle(Object obj, Map<String, Object> args)
+	public Object perform(Object obj)
 	{
-		String categoryName = (String) args.get("category");
+		String categoryName = (String) getArgumentObject("category");
 		
 		ConceptPool.get().addCategory(categoryName);
 		return null;

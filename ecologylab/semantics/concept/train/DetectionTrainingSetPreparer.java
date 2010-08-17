@@ -56,6 +56,8 @@ public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 	public static void main(String[] args) throws IOException
 	{
 		TrainingSetPreparer.phase = DETECTION_PHASE;
+		TrainingSetPreparer.registerSemanticActions();
+		
 		MetaMetadataRepository repo = MetaMetadataRepository.load(new File(
 				ConceptConstants.METAMETADATA_REPOSITORY_LOCATION));
 		WikiInfoCollectorForTraining ic = new WikiInfoCollectorForTraining(repo,

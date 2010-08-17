@@ -1,8 +1,5 @@
 package ecologylab.semantics.concept.wikipedia.metametadata;
 
-import java.util.ArrayList;
-import java.util.Map;
-
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.actions.SemanticActionStandardMethods;
@@ -12,7 +9,8 @@ import ecologylab.serialization.ElementState.xml_tag;
 
 @simpl_inherit
 @xml_tag("create_concept")
-public class CreateConceptSemanticAction extends SemanticAction implements SemanticActionStandardMethods
+public class CreateConceptSemanticAction extends SemanticAction implements
+		SemanticActionStandardMethods
 {
 	@Override
 	public String getActionName()
@@ -26,11 +24,11 @@ public class CreateConceptSemanticAction extends SemanticAction implements Seman
 	}
 
 	@Override
-	public Object handle(Object obj, Map<String, Object> args)
+	public Object perform(Object obj)
 	{
-		String title = (String) args.get("title");
-		ParsedURL purl = (ParsedURL) args.get("location");
-		
+		String title = (String) getArgumentObject("title");
+		ParsedURL purl = (ParsedURL) getArgumentObject("location");
+
 		ConceptPool.get().beginNewConcept(title, purl);
 		return null;
 	}

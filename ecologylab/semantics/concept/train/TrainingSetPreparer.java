@@ -2,6 +2,7 @@ package ecologylab.semantics.concept.train;
 
 import java.io.BufferedWriter;
 
+import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.concept.detect.Context;
 import ecologylab.semantics.concept.detect.Detector;
 
@@ -25,6 +26,11 @@ public abstract class TrainingSetPreparer extends Detector
 	{
 		super.findSurfacesAndGenerateContext();
 		context.addAll(presetContext);
+	}
+	
+	public static void registerSemanticActions()
+	{
+		SemanticAction.register(WikiParsingLinkHandler.class, WikiParsingTextHandler.class);
 	}
 
 	public static final int	DISAMBIGUTION_PHASE	= 1;
