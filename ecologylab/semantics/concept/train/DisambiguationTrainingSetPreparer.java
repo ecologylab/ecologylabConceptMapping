@@ -93,7 +93,7 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 		WikiInfoCollectorForTraining ic = new WikiInfoCollectorForTraining(repo,
 				GeneratedMetadataTranslationScope.get());
 
-		BufferedReader in = new BufferedReader(new FileReader("data/trainset-url-test.lst"));
+		BufferedReader in = new BufferedReader(new FileReader("data/trainset-url.lst"));
 		String line = null;
 		while ((line = in.readLine()) != null)
 		{
