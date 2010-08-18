@@ -22,7 +22,7 @@ public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 		try
 		{
 			out = new BufferedWriter(new FileWriter(
-					ConceptTrainingConstants.DETECT_TRAINING_SET_FILE_PATH));
+					ConceptTrainingConstants.DETECT_TRAINING_SET_FILE_PATH, true));
 		}
 		catch (IOException e)
 		{
@@ -45,7 +45,7 @@ public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 						: ConceptConstants.NEG_CLASS_INT_LABEL, inst.keyphraseness, inst.contextualRelatedness,
 						inst.disambiguationConfidence, inst.occurrence, inst.frequency, surface, concept));
 			}
-			out.close();
+			out.flush();
 		}
 		catch (IOException e)
 		{
@@ -57,6 +57,9 @@ public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 	{
 		TrainingSetPreparer.phase = DETECTION_PHASE;
 		TrainingSetPreparer.registerSemanticActions();
+		File outf = new File(ConceptTrainingConstants.DETECT_TRAINING_SET_FILE_PATH);
+		if (outf.exists())
+			outf.delete();
 		
 		MetaMetadataRepository repo = MetaMetadataRepository.load(new File(
 				ConceptConstants.METAMETADATA_REPOSITORY_LOCATION));

@@ -27,7 +27,7 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 		try
 		{
 			out = new BufferedWriter(new FileWriter(
-					ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH));
+					ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH, true));
 		}
 		catch (IOException e)
 		{
@@ -66,7 +66,7 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 					}
 				}
 			}
-			out.close();
+			out.flush();
 		}
 		catch (IOException e)
 		{
@@ -85,8 +85,11 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 
 	public static void main(String[] args) throws IOException, InterruptedException
 	{
-		TrainingSetPreparer.registerSemanticActions();
 		TrainingSetPreparer.phase = DISAMBIGUTION_PHASE;
+		TrainingSetPreparer.registerSemanticActions();
+		File outf = new File(ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH);
+		if (outf.exists())
+			outf.delete();
 
 		MetaMetadataRepository repo = MetaMetadataRepository.load(new File(
 				ConceptConstants.METAMETADATA_REPOSITORY_LOCATION));
