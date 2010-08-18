@@ -34,11 +34,12 @@ public class FeatureExtractor
 		instance.commonness = commonness;
 		instance.contextQuality = context.getQuality();
 		instance.contextualRelatedness = 0;
+		
+		List<String> inlinks = DatabaseUtils.get().queryFromConceptsForConcept(concept);
 		double sumWeights = 0;
 		for (ConceptAnchor anchor : context.getAnchors())
 		{
 			double w = context.getWeight(anchor);
-			List<String> inlinks = DatabaseUtils.get().queryFromConceptsForConcept(concept);
 			double rel = DatabaseUtils.get().queryRelatedness(inlinks, context.getConceptInlinks(anchor.getConcept()));
 			instance.contextualRelatedness += w * rel;
 			sumWeights += w;

@@ -40,7 +40,7 @@ public class DatabaseUtils extends Debug
 
 		try
 		{
-			st.setString(1, surface.toLowerCase());
+			st.setString(1, surface.toLowerCase().replaceAll("[^a-z0-9]", " "));
 			ResultSet rs = st.executeQuery();
 			if (rs.next())
 			{
@@ -48,7 +48,7 @@ public class DatabaseUtils extends Debug
 			}
 			else
 			{
-				error("keyphraseness not found: " + surface);
+				warning("keyphraseness not found: " + surface);
 			}
 		}
 		catch (SQLException e)
@@ -70,7 +70,7 @@ public class DatabaseUtils extends Debug
 		List<String> commonSublist = CollectionUtils.commonSublist(inlinkList1, inlinkList2);
 		int s = commonSublist.size();
 		if (s <= 0)
-			return 1; // or Math.log will fail
+			return 0; // or Math.log will fail
 
 		int smin = ((s1 > s2) ? s2 : s1);
 		int smax = ((s1 > s2) ? s1 : s2);

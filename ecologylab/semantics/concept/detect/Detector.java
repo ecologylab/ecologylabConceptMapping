@@ -76,7 +76,6 @@ public class Detector extends Debug
 		{
 			if (DatabaseUtils.get().hasSurface(gram))
 			{
-				debug("surface found: " + gram);
 				Map<String, Double> senses = DatabaseUtils.get().querySenses(gram);
 				if (senses.size() <= 0)
 				{
@@ -92,6 +91,8 @@ public class Detector extends Debug
 				surfacesAndSenses.put(gram, senses); // cache commonness data for use
 			}
 		}
+		
+		debug(surfacesAndSenses.size() + " surface(s) found.");
 	}
 
 	/**

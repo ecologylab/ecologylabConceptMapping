@@ -28,6 +28,7 @@ public class ConceptPool extends ElementState
 	@simpl_scalar
 	private int									end;
 
+	@simpl_nowrap
 	@simpl_collection("concept")
 	private ArrayList<Concept>	pool				= new ArrayList<Concept>();
 
@@ -108,8 +109,8 @@ public class ConceptPool extends ElementState
 		}
 	}
 
-	// singleton
-	private ConceptPool()
+	// for SIMPL
+	public ConceptPool()
 	{
 
 	}

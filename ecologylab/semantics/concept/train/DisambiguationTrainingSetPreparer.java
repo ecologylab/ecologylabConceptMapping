@@ -1,7 +1,9 @@
 package ecologylab.semantics.concept.train;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
@@ -45,6 +47,11 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 			for (ConceptAnchor anchor : context.getAnchors())
 			{
 				String surface = anchor.getSurface();
+				if (!nGramGenerator.ngrams.containsKey(surface))
+					continue; // to deal with some citation anchors
+
+				debug("extracting features for surface: " + surface);
+
 				Map<String, Double> concepts = DatabaseUtils.get().querySenses(surface);
 				if (concepts.size() > 1)
 				{
@@ -76,17 +83,24 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 		// nothing to do
 	}
 
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args) throws IOException, InterruptedException
 	{
-		TrainingSetPreparer.phase = DISAMBIGUTION_PHASE;
 		TrainingSetPreparer.registerSemanticActions();
-		
+		TrainingSetPreparer.phase = DISAMBIGUTION_PHASE;
+
 		MetaMetadataRepository repo = MetaMetadataRepository.load(new File(
 				ConceptConstants.METAMETADATA_REPOSITORY_LOCATION));
 		WikiInfoCollectorForTraining ic = new WikiInfoCollectorForTraining(repo,
 				GeneratedMetadataTranslationScope.get());
-		ParsedURL purl = ParsedURL
-				.getAbsolute("http://achilles.cse.tamu.edu/wiki/articles/c/h/i/Chicago.html");
-		ic.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
+
+		BufferedReader in = new BufferedReader(new FileReader("data/trainset-url-test.lst"));
+		String line = null;
+		while ((line = in.readLine()) != null)
+		{
+			ParsedURL purl = ParsedURL.getAbsolute(line);
+			ic.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
+		}
+		Thread.sleep(5000);
+		ic.getDownloadMonitor().stop();
 	}
 }

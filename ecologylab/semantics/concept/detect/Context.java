@@ -116,7 +116,6 @@ public class Context extends Debug
 		debug("calculating mutual relatedness ...");
 
 		int N = size() * size();
-		int n = 0;
 		debug(N + " pair(s) in total;");
 
 		mutualRelatedness = new HashMap<Pair<ConceptAnchor, ConceptAnchor>, Double>();
@@ -134,16 +133,9 @@ public class Context extends Debug
 					double rel = DatabaseUtils.get().queryRelatedness(l1, l2);
 					mutualRelatedness.put(new Pair<ConceptAnchor, ConceptAnchor>(a1, a2), rel);
 					mutualRelatedness.put(new Pair<ConceptAnchor, ConceptAnchor>(a2, a1), rel);
-
-					n += 2;
-					if (n % 1000 == 0)
-					{
-						debug(n + " pair(s) processed;");
-					}
 				}
 			}
 		}
-		debug("done: " + n + " pair(s) processed");
 	}
 
 	private void calcWeights()

@@ -73,6 +73,12 @@ public class Concept extends ElementState
 		categoryNames.add(categoryName);
 	}
 	
+	// empty constructor for SIMPL
+	public Concept()
+	{
+		super();
+	}
+	
 	public Concept(String name, ParsedURL purl)
 	{
 		super();
