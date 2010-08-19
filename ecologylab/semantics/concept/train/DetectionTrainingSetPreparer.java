@@ -59,7 +59,11 @@ public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 		TrainingSetPreparer.registerSemanticActions();
 		File outf = new File(ConceptTrainingConstants.DETECT_TRAINING_SET_FILE_PATH);
 		if (outf.exists())
-			outf.delete();
+		{
+			System.err
+					.println("training set data file already exists! if you want to regenerate it please delete the old one first.");
+			System.exit(-1);
+		}
 		
 		MetaMetadataRepository repo = MetaMetadataRepository.load(new File(
 				ConceptConstants.METAMETADATA_REPOSITORY_LOCATION));

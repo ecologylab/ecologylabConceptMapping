@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import libsvm.svm_node;
+
 public class CollectionUtils
 {
 	
@@ -64,6 +66,24 @@ public class CollectionUtils
 		List<String> l2 = Arrays.asList(a2);
 		
 		System.out.println(commonSublist(l1, l2));
+	}
+
+	public static <T> void randomPermute(List<T> list, int n)
+	{
+		int size = list.size();
+		assert size >= n : "illegal n: n = " + n + " > list.size() = " + size;
+		for (int i = 0; i < n; ++i)
+		{
+			int j = i + (int) (Math.random() * (size - i));
+			T tmp = list.get(i);
+			list.set(i, list.get(j));
+			list.set(j, tmp);
+		}
+	}
+	
+	public static <T> void randomPermute(List<T> list)
+	{
+		randomPermute(list, list.size());
 	}
 	
 }

@@ -13,10 +13,11 @@ public class SVMGaussianNormalization
 {
 	protected class LineStruct
 	{
-		public String head;
-		public double[] values;
+		public String		head;
+
+		public double[]	values;
 	}
-	
+
 	protected int				numAttributes;
 
 	protected double[]	means;
@@ -107,7 +108,7 @@ public class SVMGaussianNormalization
 			instance[i].value = (instance[i].value - means[i]) / stds[i];
 		}
 	}
-	
+
 	protected double getStd(List<svm_node[]> instances, int i, double mean)
 	{
 		double sum_sqr = 0;
@@ -132,7 +133,7 @@ public class SVMGaussianNormalization
 	protected LineStruct processLine(String line)
 	{
 		LineStruct ls = new LineStruct();
-		
+
 		String[] parts1 = line.split(":");
 		assert parts1.length == 2 : "unknown line format: " + line;
 		ls.head = parts1[0];
