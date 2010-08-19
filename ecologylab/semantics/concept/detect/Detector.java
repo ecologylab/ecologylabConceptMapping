@@ -100,7 +100,12 @@ public class Detector extends Debug
 	 */
 	protected void disambiguateAndGenerateInstances()
 	{
+		debug("disambiguating surfaces ...");
+		
 		instances = new HashSet<Instance>();
+		SVMPredicter pred = new SVMPredicter(ConceptConstants.DISAMBI_PARAM_FILE_PATH,
+				ConceptConstants.DISAMBI_MODEL_FILE_PATH);
+		
 		for (String surface : surfacesAndSenses.keySet())
 		{
 			Map<String, Double> senses = surfacesAndSenses.get(surface);
@@ -116,8 +121,6 @@ public class Detector extends Debug
 					svm_node[] svmInst = constructSVMInstance(inst.commonness, inst.contextualRelatedness,
 							inst.contextQuality);
 					Map<Integer, Double> buf = new HashMap<Integer, Double>();
-					SVMPredicter pred = new SVMPredicter(ConceptConstants.DISAMBI_PARAM_FILE_PATH,
-							ConceptConstants.DISAMBI_MODEL_FILE_PATH);
 					pred.predict(svmInst, buf);
 					inst.disambiguationConfidence = buf.get(ConceptConstants.POS_CLASS_INT_LABEL);
 
@@ -132,6 +135,8 @@ public class Detector extends Debug
 					bestInst = inst;
 				}
 			}
+			
+			debug("disambiguated: " + surface + " -> " + bestInst.anchor.getConcept());
 			instances.add(bestInst);
 		}
 

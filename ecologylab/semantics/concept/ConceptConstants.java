@@ -5,13 +5,13 @@ public class ConceptConstants
 
 	public static final String	METAMETADATA_REPOSITORY_LOCATION	= "../ecologylabSemantics/repository";
 
-	public static final String	DISAMBI_PARAM_FILE_PATH						= "model/disambi.guassian_normalization.params";
+	public static final String	DISAMBI_PARAM_FILE_PATH						= "model/disambi-norm-params.dat";
 
-	public static final String	DISAMBI_MODEL_FILE_PATH						= "model/disambi.svm.prob.model";
+	public static final String	DISAMBI_MODEL_FILE_PATH						= "model/disambi-svm.model";
 
-	public static final String	DETECT_PARAM_FILE_PATH						= null;
+	public static final String	DETECT_PARAM_FILE_PATH						= "model/detect-norm-params.dat";
 
-	public static final String	DETECT_MODEL_FILE_PATH						= null;
+	public static final String	DETECT_MODEL_FILE_PATH						= "model/detect-svm.model";
 
 	public static final int			POS_CLASS_INT_LABEL								= 1;
 

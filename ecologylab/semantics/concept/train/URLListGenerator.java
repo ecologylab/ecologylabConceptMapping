@@ -85,7 +85,7 @@ public class URLListGenerator extends Debug
 				if (purl != null)
 				{
 					String urlString = purl.toString();
-					urlString.replace("http://achilles/", "http://achilles.cse.tamu.edu/");
+					urlString = urlString.replace("http://achilles/", "http://achilles.cse.tamu.edu/");
 					rst.add(ParsedURL.getAbsolute(urlString));
 					i++;
 				}
@@ -109,7 +109,7 @@ public class URLListGenerator extends Debug
 		URLListGenerator ulg = new URLListGenerator("C:/run/all-concepts");
 		
 		PrintWriter out = new PrintWriter(new File("data/trainset-url.lst"));
-		for (ParsedURL purl : ulg.generate(1000))
+		for (ParsedURL purl : ulg.generate(10000))
 		{
 			out.println(purl);
 		}
