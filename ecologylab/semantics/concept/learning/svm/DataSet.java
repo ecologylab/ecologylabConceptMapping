@@ -147,6 +147,7 @@ public class DataSet extends Debug
 	public static DataSet read(String filepath) throws IOException
 	{
 		DataSet ds = new DataSet();
+		ds.debug("reading data from " + filepath + " ...");
 		
 		BufferedReader in = new BufferedReader(new FileReader(filepath));
 		String line = null;
@@ -167,9 +168,10 @@ public class DataSet extends Debug
 	public void test() throws IOException
 	{
 		DataSet ds = DataSet.read("data/disambi-training-balanced.dat");
-		DataSet[] dss = ds.randomSplit(0.5, 0.5);
+		DataSet[] dss = ds.randomSplit(0.5, 0.1, 0.4);
 		dss[0].save("data/disambi-trainset.dat");
-		dss[1].save("data/disambi-testset.dat");
+		dss[1].save("data/disambi-validateset.dat");
+		dss[2].save("data/disambi-testset.dat");
 	}
 
 }

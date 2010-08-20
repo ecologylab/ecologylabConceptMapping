@@ -49,7 +49,6 @@ public class SVMPredicter
 	 */
 	public int predict(svm_node[] instance, Map<Integer, Double> results)
 	{
-		results.clear();
 		normalization.normalize(instance);
 
 		int nr_class = svm.svm_get_nr_class(model);
@@ -65,7 +64,11 @@ public class SVMPredicter
 			double max_prob = 0;
 			for (int j = 0; j < nr_class; j++)
 			{
-				results.put(labels[j], prob_estimates[j]);
+				if (results != null)
+				{
+					results.put(labels[j], prob_estimates[j]);
+				}
+				
 				if (prob_estimates[j] > max_prob)
 				{
 					max_prob = prob_estimates[j];

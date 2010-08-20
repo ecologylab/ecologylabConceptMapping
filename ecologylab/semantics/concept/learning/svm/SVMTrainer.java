@@ -1,14 +1,11 @@
 package ecologylab.semantics.concept.learning.svm;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
-import ecologylab.semantics.concept.learning.svm.DataSet.LineStruct;
 
 import libsvm.svm;
 import libsvm.svm_model;
@@ -32,6 +29,32 @@ public class SVMTrainer extends Debug
 
 	protected List<svm_node[]>	x;
 
+	public SVMTrainer(int numAttributes, DataSet trainSet, String outputParameterFilePath)
+			throws IOException
+	{
+		this.numAttributes = numAttributes;
+
+		nPos = 0;
+		nNeg = 0;
+		y = new ArrayList<Double>();
+		for (int i = 0; i < trainSet.getLabels().size(); ++i)
+		{
+			int label = trainSet.getLabels().get(i);
+			y.add((double) label);
+			if (label == ConceptConstants.POS_CLASS_INT_LABEL)
+			{
+				nPos++;
+			}
+			else if (label == ConceptConstants.NEG_CLASS_INT_LABEL)
+			{
+				nNeg++;
+			}
+		}
+		x = trainSet.getFeatures();
+
+		preprocessData(outputParameterFilePath);
+	}
+
 	/**
 	 * Train an SVM given parameters and data, and output results into file(s).
 	 * 
@@ -49,9 +72,7 @@ public class SVMTrainer extends Debug
 	public SVMTrainer(int numAttributes, String dataFilePath, String outputParameterFilePath)
 			throws IOException
 	{
-		this.numAttributes = numAttributes;
-		readData(dataFilePath);
-		preprocessData(outputParameterFilePath);
+		this(numAttributes, DataSet.read(dataFilePath), outputParameterFilePath);
 	}
 
 	public svm_model train(double C, double gamma)
@@ -106,36 +127,6 @@ public class SVMTrainer extends Debug
 		gn.save(outputParameterFilePath);
 		for (svm_node[] inst : x)
 			gn.normalize(inst);
-	}
-
-	protected void readData(String dataFilePath) throws IOException
-	{
-		debug("reading data from " + dataFilePath + " ...");
-
-		nPos = 0;
-		nNeg = 0;
-		y = new ArrayList<Double>();
-		x = new ArrayList<svm_node[]>();
-
-		BufferedReader br = new BufferedReader(new FileReader(dataFilePath));
-		String line = null;
-		while ((line = br.readLine()) != null)
-		{
-			LineStruct ls = new LineStruct();
-			int label = DataSet.readALine(line, ls);
-			assert ls.feature.length == numAttributes : "format error: " + line;
-			if (label == ConceptConstants.POS_CLASS_INT_LABEL)
-			{
-				nPos++;
-			}
-			else if (label == ConceptConstants.NEG_CLASS_INT_LABEL)
-			{
-				nNeg++;
-			}
-			y.add((double) label);
-			x.add(ls.feature);
-		}
-		br.close();
 	}
 
 	public static void saveModel(svm_model model, String modelFilepath) throws IOException

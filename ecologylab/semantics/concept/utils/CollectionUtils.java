@@ -58,16 +58,16 @@ public class CollectionUtils
 		return rst;
 	}
 	
-	public static void main(String[] args)
+	public static <T1, T2> List<T2> convertList(List<T1> list)
 	{
-		String[] a1 = new String[] {"aaa", "aab", "aad"};
-		String[] a2 = new String[] {"aaa", "aac", "aad", "aae"};
-		List<String> l1 = Arrays.asList(a1);
-		List<String> l2 = Arrays.asList(a2);
-		
-		System.out.println(commonSublist(l1, l2));
+		List<T2> list2 = new ArrayList<T2>();
+		for (T1 e : list)
+		{
+			list2.add((T2) e);
+		}
+		return list2;
 	}
-
+	
 	public static <T> void randomPermute(List<T> list, int n)
 	{
 		int size = list.size();
@@ -86,4 +86,14 @@ public class CollectionUtils
 		randomPermute(list, list.size());
 	}
 	
+	public static void main(String[] args)
+	{
+		String[] a1 = new String[] {"aaa", "aab", "aad"};
+		String[] a2 = new String[] {"aaa", "aac", "aad", "aae"};
+		List<String> l1 = Arrays.asList(a1);
+		List<String> l2 = Arrays.asList(a2);
+		
+		System.out.println(commonSublist(l1, l2));
+	}
+
 }
