@@ -8,6 +8,7 @@ import java.util.List;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.learning.svm.DataSet.LineStruct;
 
 import libsvm.svm;
 import libsvm.svm_model;
@@ -120,8 +121,9 @@ public class SVMTrainer extends Debug
 		String line = null;
 		while ((line = br.readLine()) != null)
 		{
-			svm_node[] instance = new svm_node[numAttributes];
-			int label = Utils.lineToInstance(line, instance);
+			LineStruct ls = new LineStruct();
+			int label = DataSet.readALine(line, ls);
+			assert ls.feature.length == numAttributes : "format error: " + line;
 			if (label == ConceptConstants.POS_CLASS_INT_LABEL)
 			{
 				nPos++;
@@ -131,7 +133,7 @@ public class SVMTrainer extends Debug
 				nNeg++;
 			}
 			y.add((double) label);
-			x.add(instance);
+			x.add(ls.feature);
 		}
 		br.close();
 	}
