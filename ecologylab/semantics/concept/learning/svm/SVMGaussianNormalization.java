@@ -11,9 +11,6 @@ import libsvm.svm_node;
 
 public class SVMGaussianNormalization
 {
-	protected static class LineStruct
-	{
-	}
 
 	protected int				numAttributes;
 
