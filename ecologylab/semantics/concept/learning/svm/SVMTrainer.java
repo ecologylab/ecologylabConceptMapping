@@ -1,8 +1,6 @@
 package ecologylab.semantics.concept.learning.svm;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
@@ -16,83 +14,45 @@ import libsvm.svm_problem;
 public class SVMTrainer extends Debug
 {
 
-	/**
-	 * Number of attributes, i.e. dimensionality of x. NOT including label
-	 */
-	public int									numAttributes;
+	private DataSet			trainSet;
 
-	protected List<Double>			y;
-
-	public int									nPos;
-
-	public int									nNeg;
-
-	protected List<svm_node[]>	x;
-
-	public SVMTrainer(int numAttributes, DataSet trainSet, String outputParameterFilePath)
-			throws IOException
-	{
-		this.numAttributes = numAttributes;
-
-		nPos = 0;
-		nNeg = 0;
-		y = new ArrayList<Double>();
-		for (int i = 0; i < trainSet.getLabels().size(); ++i)
-		{
-			int label = trainSet.getLabels().get(i);
-			y.add((double) label);
-			if (label == ConceptConstants.POS_CLASS_INT_LABEL)
-			{
-				nPos++;
-			}
-			else if (label == ConceptConstants.NEG_CLASS_INT_LABEL)
-			{
-				nNeg++;
-			}
-		}
-		x = trainSet.getFeatures();
-
-		preprocessData(outputParameterFilePath);
-	}
+	private svm_problem	problem;
 
 	/**
 	 * Train an SVM given parameters and data, and output results into file(s).
 	 * 
-	 * @param numAttributes
-	 * @param dataFilePath
-	 *          The training set, in the format like "1,1.0,2.0,3.0 # comments". The first field (1
-	 *          herein the example) must be an integer indicating the class label.
-	 * @param outputParameterFilePath
-	 *          Data pre-processing parameter file path. These parameters are generated during
-	 *          training, and will be used in predicting
-	 * @param outputModelFilePath
-	 *          The output SVM model, in libsvm format
-	 * @throws IOException
+	 * @param trainSet
+	 *          The training set. you can load a dataset from a file using DataSet.load().
 	 */
-	public SVMTrainer(int numAttributes, String dataFilePath, String outputParameterFilePath)
-			throws IOException
+	public SVMTrainer(DataSet trainSet)
 	{
-		this(numAttributes, DataSet.read(dataFilePath), outputParameterFilePath);
-	}
+		this.trainSet = trainSet;
 
-	public svm_model train(double C, double gamma)
-	{
-		assert y.size() == x.size() : "data error: x.size() != y.size()";
-
-		debug("training the model ...");
-
-		// construct svm_problem
-		svm_problem prob = new svm_problem();
-		prob.l = x.size();
-		prob.x = new svm_node[prob.l][];
-		prob.y = new double[prob.l];
-		for (int i = 0; i < prob.l; ++i)
+		problem = new svm_problem();
+		problem.l = trainSet.getLabels().size();
+		problem.x = new svm_node[problem.l][];
+		problem.y = new double[problem.l];
+		for (int i = 0; i < problem.l; ++i)
 		{
-			prob.x[i] = x.get(i);
-			prob.y[i] = y.get(i);
+			problem.x[i] = trainSet.getFeatures().get(i);
+			problem.y[i] = trainSet.getLabels().get(i);
 		}
 
-		double negWeight = (double) nPos / nNeg;
+	}
+
+	/**
+	 * train a probabilistic SVM model with given parameters.
+	 * 
+	 * @param C
+	 * @param gamma
+	 * @return
+	 */
+	public svm_model train(double C, double gamma)
+	{
+		debug("training the model ...");
+
+		double negWeight = (double) trainSet.getNumberOfPositiveSamples()
+				/ trainSet.getNumberOfNegativeSamples();
 		debug("negative class weight: " + negWeight);
 
 		// construct svm_parameter
@@ -109,26 +69,22 @@ public class SVMTrainer extends Debug
 		param.shrinking = 1;
 		param.probability = 1; // probability model by default
 		param.nr_weight = 2;
-		param.weight_label = new int[]
-		{ ConceptConstants.POS_CLASS_INT_LABEL, ConceptConstants.NEG_CLASS_INT_LABEL };
-		param.weight = new double[]
-		{ 1, negWeight };
+		param.weight_label = new int[] { ConceptConstants.POS_CLASS_INT_LABEL, ConceptConstants.NEG_CLASS_INT_LABEL };
+		param.weight = new double[] { 1, negWeight };
 		// inputs
 		param.C = C;
 		param.gamma = gamma;
 
-		return svm.svm_train(prob, param);
+		return svm.svm_train(problem, param);
 	}
 
-	protected void preprocessData(String outputParameterFilePath) throws IOException
-	{
-		SVMGaussianNormalization gn = new SVMGaussianNormalization(numAttributes);
-		gn.generateParameters(x);
-		gn.save(outputParameterFilePath);
-		for (svm_node[] inst : x)
-			gn.normalize(inst);
-	}
-
+	/**
+	 * save a trained model into a file.
+	 * 
+	 * @param model
+	 * @param modelFilepath
+	 * @throws IOException
+	 */
 	public static void saveModel(svm_model model, String modelFilepath) throws IOException
 	{
 		svm.svm_save_model(modelFilepath, model);
@@ -136,8 +92,8 @@ public class SVMTrainer extends Debug
 
 	public static void main(String[] args) throws IOException
 	{
-		SVMTrainer t = new SVMTrainer(3, "data/disambi-training-balanced.dat",
-				"model/disambi-norm-params.dat");
+		DataSet trainSet = DataSet.load("data/disambi-training-balanced.dat");
+		SVMTrainer t = new SVMTrainer(trainSet);
 		svm_model model = t.train(8.0, 2.0);
 		saveModel(model, "model/disambi-svm.model");
 	}

@@ -31,7 +31,7 @@ public class TrainingSetBalancer
 		String line = null;
 		while ((line = in.readLine()) != null)
 		{
-			int label = DataSet.readALine(line, null);
+			int label = Integer.parseInt(line.substring(0, line.indexOf(',')));
 			if (label == ConceptConstants.POS_CLASS_INT_LABEL)
 			{
 				posLines.add(line);

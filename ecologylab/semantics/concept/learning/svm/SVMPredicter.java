@@ -1,7 +1,6 @@
 package ecologylab.semantics.concept.learning.svm;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import libsvm.svm;
@@ -10,24 +9,18 @@ import libsvm.svm_node;
 
 public class SVMPredicter
 {
-	private SVMGaussianNormalization normalization;
 	
 	private svm_model	model;
-
+	
 	/**
-	 * Construct a predictor using given parameters and model.
+	 * construct a predicter using a saved model.
 	 * 
-	 * @param parameterFilePath
-	 *          This points to the file containing data pre-processing parameters.
 	 * @param modelFilePath
-	 *          This points to the SVM model file saved by the trainer.
-	 * @throws IOException 
 	 */
-	public SVMPredicter(String parameterFilePath, String modelFilePath)
+	public SVMPredicter(String modelFilePath)
 	{
 		try
 		{
-			normalization = new SVMGaussianNormalization(parameterFilePath);
 			model = svm.svm_load_model(modelFilePath);
 		}
 		catch (IOException e)
@@ -49,8 +42,6 @@ public class SVMPredicter
 	 */
 	public int predict(svm_node[] instance, Map<Integer, Double> results)
 	{
-		normalization.normalize(instance);
-
 		int nr_class = svm.svm_get_nr_class(model);
 		int[] labels = new int[nr_class];
 		svm.svm_get_labels(model, labels);
@@ -80,46 +71,6 @@ public class SVMPredicter
 		else
 		{
 			return (int) Math.round(svm.svm_predict(model, instance));
-		}
-	}
-
-	/**
-	 * @param args
-	 * @throws IOException 
-	 */
-	public static void main(String[] args) throws IOException
-	{
-		int numAttribute = 3;
-		SVMPredicter p = new SVMPredicter("model/disambi.gaussian_normalization.params", "model/disambi.svm.model");
-		
-		double[][] test = {
-				{0.000022,34.757521,34.757521}, // false
-				{0.500000,12.030561,20.921073}, // true
-				{0.027237,21.838401,22.880950}, // false
-				{0.500000,2.830788,6.330549}, // true
-		};
-		Map<Integer, Double> results = new HashMap<Integer, Double>();
-		
-		for (int i = 0; i < test.length; ++i)
-		{
-			svm_node[] node = new svm_node[numAttribute];
-			for (int j = 0; j < numAttribute; ++j)
-			{
-				node[j] = new svm_node();
-				node[j].index = j;
-				node[j].value = test[i][j];
-			}
-			
-			int max_label = p.predict(node, results);
-			StringBuilder sb = new StringBuilder();
-			sb.append(max_label + ": ");
-			boolean first = true;
-			for (Integer l : results.keySet())
-			{
-				sb.append((first?"":", ") + l + "(" + results.get(l) + ")");
-				first = false;
-			}
-			System.out.println(sb.toString());
 		}
 	}
 

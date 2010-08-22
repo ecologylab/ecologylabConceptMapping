@@ -1,5 +1,6 @@
 package ecologylab.semantics.concept.detect;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,6 +11,7 @@ import libsvm.svm_node;
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.database.DatabaseUtils;
+import ecologylab.semantics.concept.learning.svm.SVMGaussianNormalization;
 import ecologylab.semantics.concept.learning.svm.SVMPredicter;
 import ecologylab.semantics.concept.text.NGramGenerator;
 
@@ -43,8 +45,9 @@ public class Detector extends Debug
 	 * the entry method for concept detection.
 	 * 
 	 * @param text
+	 * @throws IOException 
 	 */
-	public void detect(String text)
+	public void detect(String text) throws IOException
 	{
 		generateNGrams(text);
 		findSurfacesAndGenerateContext();
@@ -97,14 +100,15 @@ public class Detector extends Debug
 
 	/**
 	 * Disambiguate. Output the best possible concept & confidence.
+	 * @throws IOException 
 	 */
-	protected void disambiguateAndGenerateInstances()
+	protected void disambiguateAndGenerateInstances() throws IOException
 	{
 		debug("disambiguating surfaces ...");
 		
 		instances = new HashSet<Instance>();
-		SVMPredicter pred = new SVMPredicter(ConceptConstants.DISAMBI_PARAM_FILE_PATH,
-				ConceptConstants.DISAMBI_MODEL_FILE_PATH);
+		SVMGaussianNormalization norm = new SVMGaussianNormalization(ConceptConstants.DISAMBI_PARAM_FILE_PATH);
+		SVMPredicter pred = new SVMPredicter(ConceptConstants.DISAMBI_MODEL_FILE_PATH);
 		
 		for (String surface : surfacesAndSenses.keySet())
 		{
@@ -120,6 +124,7 @@ public class Detector extends Debug
 					// ambi surface
 					svm_node[] svmInst = constructSVMInstance(inst.commonness, inst.contextualRelatedness,
 							inst.contextQuality);
+					norm.normalize(svmInst);
 					Map<Integer, Double> buf = new HashMap<Integer, Double>();
 					pred.predict(svmInst, buf);
 					inst.disambiguationConfidence = buf.get(ConceptConstants.POS_CLASS_INT_LABEL);
@@ -145,19 +150,23 @@ public class Detector extends Debug
 
 	/**
 	 * Determine output concepts.
+	 * @throws IOException 
 	 */
-	protected void detectConcepts()
+	protected void detectConcepts() throws IOException
 	{
+		debug("detecting concepts ...");
+		
 		detectedConcepts = new HashMap<String, String>();
+		SVMGaussianNormalization norm = new SVMGaussianNormalization(ConceptConstants.DETECT_PARAM_FILE_PATH);
+		SVMPredicter pred = new SVMPredicter(ConceptConstants.DETECT_MODEL_FILE_PATH);
 
 		for (Instance inst : instances)
 		{
-			svm_node[] instance = constructSVMInstance(inst.keyphraseness, inst.contextualRelatedness,
+			svm_node[] svmInst = constructSVMInstance(inst.keyphraseness, inst.contextualRelatedness,
 					inst.disambiguationConfidence, inst.occurrence, inst.frequency);
-			SVMPredicter pred = new SVMPredicter(ConceptConstants.DETECT_PARAM_FILE_PATH,
-					ConceptConstants.DETECT_MODEL_FILE_PATH);
+			norm.normalize(svmInst);
 			Map<Integer, Double> results = new HashMap<Integer, Double>();
-			pred.predict(instance, results);
+			pred.predict(svmInst, results);
 			inst.conceptConfidence = results.get(ConceptConstants.POS_CLASS_INT_LABEL);
 
 			if (inst.conceptConfidence > ConceptConstants.DETECT_THRESHOLD)

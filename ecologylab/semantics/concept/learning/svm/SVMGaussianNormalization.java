@@ -11,11 +11,8 @@ import libsvm.svm_node;
 
 public class SVMGaussianNormalization
 {
-	protected class LineStruct
+	protected static class LineStruct
 	{
-		public String		head;
-
-		public double[]	values;
 	}
 
 	protected int				numAttributes;
@@ -50,27 +47,37 @@ public class SVMGaussianNormalization
 		String line = null;
 		while ((line = br.readLine()) != null)
 		{
-			LineStruct ls = processLine(line);
-			if (ls.head.equals("means"))
-				means = ls.values;
-			else if (ls.head.equals("stds"))
-				stds = ls.values;
+			String[] parts1 = line.split(":");
+			assert parts1.length == 2 : "unknown line format: " + line;
+			String head = parts1[0];
+			String[] parts2 = parts1[1].split(",");
+			double[] values = new double[parts2.length];
+			for (int i = 0; i < parts2.length; ++i)
+			{
+				values[i] = Double.valueOf(parts2[i]);
+			}
+			if (head.equals("means"))
+				means = values;
+			else if (head.equals("stds"))
+				stds = values;
 		}
 		br.close();
+		assert means.length == stds.length : "errors in parameters.";
+		numAttributes = means.length;
 	}
 
 	/**
-	 * Calculate normalization parameters given a collection of instances.
+	 * Calculate normalization parameters given a dataset.
 	 * 
-	 * @param x
+	 * @param dataset
 	 */
-	public void generateParameters(List<svm_node[]> x)
+	public void generateParameters(DataSet dataset)
 	{
 
-		for (int i = 0; i < numAttributes; ++i)
+		for (int i = 0; i < dataset.getDimension(); ++i)
 		{
-			means[i] = getMean(x, i);
-			stds[i] = getStd(x, i, means[i]);
+			means[i] = getMean(dataset.getFeatures(), i);
+			stds[i] = getStd(dataset.getFeatures(), i, means[i]);
 		}
 	}
 
@@ -95,17 +102,32 @@ public class SVMGaussianNormalization
 	}
 
 	/**
-	 * Do normalization on an existing instance. The previous values will be replaced.
+	 * normalize a dataset using calculated or loaded parameters. values in the dataset will be
+	 * replaced.
+	 * 
+	 * @param dataset
+	 */
+	public void normalize(DataSet dataset)
+	{
+		for (int i = 0; i < dataset.getFeatures().size(); ++i)
+		{
+			svm_node[] instance = dataset.getFeatures().get(i);
+			normalize(instance);
+		}
+	}
+	
+	/**
+	 * normalize an instance using calculated or loaded parameters. values in the instance will be
+	 * replaced.
 	 * 
 	 * @param instance
-	 * @return
 	 */
 	public void normalize(svm_node[] instance)
 	{
-		for (int i = 0; i < instance.length; ++i)
+		for (int j = 0; j < instance.length; ++j)
 		{
-			assert stds[i] != 0 : "zero standard deviation at index " + i;
-			instance[i].value = (instance[i].value - means[i]) / stds[i];
+			assert stds[j] != 0 : "zero standard deviation at index " + j;
+			instance[j].value = (instance[j].value - means[j]) / stds[j];
 		}
 	}
 
@@ -128,22 +150,6 @@ public class SVMGaussianNormalization
 			sum += instance[i].value;
 		}
 		return sum / instances.size();
-	}
-
-	protected LineStruct processLine(String line)
-	{
-		LineStruct ls = new LineStruct();
-
-		String[] parts1 = line.split(":");
-		assert parts1.length == 2 : "unknown line format: " + line;
-		ls.head = parts1[0];
-		String[] parts2 = parts1[1].split(",");
-		ls.values = new double[parts2.length];
-		for (int i = 0; i < parts2.length; ++i)
-		{
-			ls.values[i] = Double.valueOf(parts2[i]);
-		}
-		return ls;
 	}
 
 }

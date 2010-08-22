@@ -13,42 +13,38 @@ import ecologylab.generic.Debug;
 public class SVMTuner extends Debug
 {
 
-	int					numAttributes;
+	DataSet	trainSet;
 
-	String			outputParameterFilePath;
+	DataSet	testSet;
 
-	Writer			out;
+	Writer	out;
 
-	SVMTrainer	trainer;
-
-	public SVMTuner(int numAttributes, String outputParameterFilePath, Writer out)
+	public SVMTuner(DataSet trainSet, DataSet testSet, Writer out)
 	{
-		this.numAttributes = numAttributes;
-		this.outputParameterFilePath = outputParameterFilePath;
+		this.trainSet = trainSet;
+		this.testSet = testSet;
 		this.out = out;
 	}
 
-	public void tune(double[] Cs, double[] gammas, DataSet trainSet, DataSet validateSet,
-			String outputModelFilenamePrefix) throws IOException
+	public void tune(double[] Cs, double[] gammas, String modelFilenamePrefix) throws IOException
 	{
-		trainer = new SVMTrainer(numAttributes, trainSet, outputParameterFilePath);
+		SVMTrainer trainer = new SVMTrainer(trainSet);
 
 		for (double C : Cs)
 		{
 			for (double gamma : gammas)
 			{
 				svm_model model = trainer.train(C, gamma);
-				String modelFilename = outputModelFilenamePrefix
-						+ String.format("-C=%f_g=%f.svm", C, gamma);
+				String modelFilename = modelFilenamePrefix + String.format("-C=%f_g=%f.model", C, gamma);
 				SVMTrainer.saveModel(model, modelFilename);
 
-				SVMPredicter pred = new SVMPredicter(outputParameterFilePath, modelFilename);
-				int size = validateSet.getLabels().size();
+				SVMPredicter pred = new SVMPredicter(modelFilename);
+				int size = testSet.getLabels().size();
 				int hit = 0;
 				for (int i = 0; i < size; ++i)
 				{
-					int label = validateSet.getLabels().get(i);
-					svm_node[] inst = validateSet.getFeatures().get(i);
+					int label = testSet.getLabels().get(i);
+					svm_node[] inst = testSet.getFeatures().get(i);
 					int p = pred.predict(inst, null);
 					if (p == label)
 						hit++;
@@ -56,20 +52,27 @@ public class SVMTuner extends Debug
 				double acc = (double) hit / size;
 
 				out.write(String.format("C=%f, gamma=%f: accuracy=%f\n", C, gamma, acc));
+				out.flush();
 			}
 		}
 	}
 
 	public static void main(String[] args) throws IOException
 	{
-		DataSet trainSet = DataSet.read("data/disambi-trainset.dat");
-		DataSet validateSet = DataSet.read("data/disambi-validateset.dat");
+		DataSet trainSet = DataSet.load("data/disambi-trainset.dat");
+		SVMGaussianNormalization norm = new SVMGaussianNormalization(trainSet.getDimension());
+		norm.generateParameters(trainSet);
+		norm.save("model/disambi-norm-params.dat");
+		
+		DataSet testSet = DataSet.load("data/disambi-testset.dat");
+		norm.normalize(testSet);
 
 		BufferedWriter out = new BufferedWriter(new FileWriter("data/disambi-tuning-results.dat"));
-		SVMTuner tuner = new SVMTuner(3, "data/disambi-tuning-params.dat", out);
-		tuner.tune(new double[]
-		{ 0.25, 0.5, 1, 2, 4, 8 }, new double[]
-		{ 0.125, 0.25, 0.5, 1, 2, 4 }, trainSet, validateSet, "data/disambi-tuning-models");
+		SVMTuner tuner = new SVMTuner(trainSet, testSet, out);
+		tuner.tune(
+				new double[] { 0.125, 0.25, 0.5 },
+				new double[] { 0.0625, 0.125, 0.25 },
+				"data/disambi-tuning-models");
 		out.close();
 	}
 
