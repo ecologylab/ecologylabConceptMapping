@@ -21,6 +21,6 @@ public class ConceptConstants
 
 	public static final double	WEIGHT_MUTUAL_RELATEDNESS					= 0.5;
 
-	public static final double	DETECT_THRESHOLD									= 0.5;
+	public static final double	DETECT_THRESHOLD									= 0.3;
 
 }

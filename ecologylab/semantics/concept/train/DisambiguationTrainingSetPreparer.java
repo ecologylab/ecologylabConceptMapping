@@ -83,7 +83,7 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 		// nothing to do
 	}
 
-	public static void main(String[] args) throws IOException, InterruptedException
+	public static void main(String[] args) throws IOException
 	{
 		TrainingSetPreparer.phase = DISAMBIGUTION_PHASE;
 		TrainingSetPreparer.registerSemanticActions();
@@ -107,7 +107,15 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 			ParsedURL purl = ParsedURL.getAbsolute(line);
 			ic.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
 		}
-		Thread.sleep(5000);
+		try
+		{
+			Thread.sleep(5000);
+		}
+		catch (InterruptedException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		ic.getDownloadMonitor().stop();
 	}
 }
