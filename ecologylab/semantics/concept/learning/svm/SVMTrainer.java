@@ -66,7 +66,7 @@ public class SVMTrainer extends Debug
 		param.cache_size = 100;
 		param.eps = 1e-3;
 		param.p = 0.1;
-		param.shrinking = 1;
+		param.shrinking = 0; // don't use shrinking to speed up training
 		param.probability = 1; // probability model by default
 		param.nr_weight = 2;
 		param.weight_label = new int[] { ConceptConstants.POS_CLASS_INT_LABEL, ConceptConstants.NEG_CLASS_INT_LABEL };
@@ -93,8 +93,13 @@ public class SVMTrainer extends Debug
 	public static void main(String[] args) throws IOException
 	{
 		DataSet trainSet = DataSet.load("data/disambi-training-balanced.dat");
+		SVMGaussianNormalization norm = new SVMGaussianNormalization(trainSet.getDimension());
+		norm.generateParameters(trainSet);
+		norm.save("model/disambi-norm-params.dat");
+		norm.normalize(trainSet);
+		
 		SVMTrainer t = new SVMTrainer(trainSet);
-		svm_model model = t.train(8.0, 2.0);
+		svm_model model = t.train(8, 2);
 		saveModel(model, "model/disambi-svm.model");
 	}
 

@@ -82,7 +82,7 @@ public class TrainingSetBalancer
 		TrainingSetBalancer tsb = new TrainingSetBalancer();
 		try
 		{
-			tsb.balance("data/disambi-training.dat", "data/disambi-training-balanced.dat");
+			tsb.balance("data/detect-training.dat", "data/detect-training-balanced.dat");
 		}
 		catch (IOException e)
 		{

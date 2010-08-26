@@ -191,10 +191,10 @@ public class DataSet extends Debug
 
 	public static void main(String[] args) throws IOException
 	{
-		DataSet ds = DataSet.load("data/disambi-training-balanced.dat");
+		DataSet ds = DataSet.load("data/detect-training-balanced.dat");
 		DataSet[] dss = ds.randomSplit(0.5, 0.5);
-		dss[0].save("data/disambi-trainset.dat");
-		dss[1].save("data/disambi-testset.dat");
+		dss[0].save("data/detect-trainset.dat");
+		dss[1].save("data/detect-testset.dat");
 	}
 
 }

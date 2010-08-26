@@ -7,11 +7,11 @@ public class ConceptConstants
 
 	public static final String	DISAMBI_PARAM_FILE_PATH						= "model/disambi-norm-params.dat";
 
-	public static final String	DISAMBI_MODEL_FILE_PATH						= "model/disambi-svm.model";
+	public static final String	DISAMBI_MODEL_FILE_PATH						= "model/disambi-tuning-models-C=8.000000_g=2.000000.model";
 
 	public static final String	DETECT_PARAM_FILE_PATH						= "model/detect-norm-params.dat";
 
-	public static final String	DETECT_MODEL_FILE_PATH						= "model/detect-svm.model";
+	public static final String	DETECT_MODEL_FILE_PATH						= "model/detect-tuning-models-C=8.000000_g=1.000000.model";
 
 	public static final int			POS_CLASS_INT_LABEL								= 1;
 

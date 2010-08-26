@@ -59,20 +59,21 @@ public class SVMTuner extends Debug
 
 	public static void main(String[] args) throws IOException
 	{
-		DataSet trainSet = DataSet.load("data/disambi-trainset.dat");
+		DataSet trainSet = DataSet.load("data/detect-trainset.dat");
+		DataSet testSet = DataSet.load("data/detect-testset.dat");
+		
 		SVMGaussianNormalization norm = new SVMGaussianNormalization(trainSet.getDimension());
 		norm.generateParameters(trainSet);
-		norm.save("model/disambi-norm-params.dat");
-		
-		DataSet testSet = DataSet.load("data/disambi-testset.dat");
+		norm.save("model/detect-norm-params.dat");
+		norm.normalize(trainSet);
 		norm.normalize(testSet);
 
-		BufferedWriter out = new BufferedWriter(new FileWriter("data/disambi-tuning-results.dat"));
+		BufferedWriter out = new BufferedWriter(new FileWriter("data/detect-tuning-results.dat"));
 		SVMTuner tuner = new SVMTuner(trainSet, testSet, out);
 		tuner.tune(
-				new double[] { 0.125, 0.25, 0.5 },
-				new double[] { 0.0625, 0.125, 0.25 },
-				"data/disambi-tuning-models");
+				new double[] { 0.125, 0.25, 0.5, 1, 2, 4, 8 },
+				new double[] { 0.0625, 0.125, 0.25, 0.5, 1, 2 },
+				"model/detect-tuning-models");
 		out.close();
 	}
 
