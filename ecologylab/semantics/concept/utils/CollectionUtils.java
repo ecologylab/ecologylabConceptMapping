@@ -1,10 +1,14 @@
 package ecologylab.semantics.concept.utils;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.Test;
 
 import libsvm.svm_node;
 
@@ -86,7 +90,31 @@ public class CollectionUtils
 		randomPermute(list, list.size());
 	}
 	
-	public static void main(String[] args)
+	public static <T extends Comparable<T>> boolean binarySearch(T element, T[] array)
+	{
+		return binarySearch(element, array, 0, array.length);
+	}
+	
+	public static <T extends Comparable<T>> boolean binarySearch(T element, T[] array, int begin, int end)
+	{
+		if (end <= begin)
+			return false;
+			
+		if (end - begin == 1)
+			return array[begin].equals(element);
+		
+		int p = begin + (end - begin) / 2;
+		T m = array[p];
+		if (element.compareTo(m) < 0)
+			return binarySearch(element, array, begin, p);
+		else if (element.compareTo(m) > 0)
+			return binarySearch(element, array, p + 1, end);
+		else // element.compareTo(m) == 0
+			return true;
+	}
+
+	@Test
+	public void testCommonSublist()
 	{
 		String[] a1 = new String[] {"aaa", "aab", "aad"};
 		String[] a2 = new String[] {"aaa", "aac", "aad", "aae"};
@@ -94,6 +122,16 @@ public class CollectionUtils
 		List<String> l2 = Arrays.asList(a2);
 		
 		System.out.println(commonSublist(l1, l2));
+	}
+	
+	@Test
+	public void testBinarySearch()
+	{
+		String[] a = { "1", "2", "3", "5", "6", "7", "9" };
+		assertTrue(binarySearch("1", a));
+		assertFalse(binarySearch("4", a));
+		assertTrue(binarySearch("7", a));
+		assertFalse(binarySearch("8", a));
 	}
 
 }
