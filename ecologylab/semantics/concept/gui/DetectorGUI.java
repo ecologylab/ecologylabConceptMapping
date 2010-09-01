@@ -1,6 +1,10 @@
 package ecologylab.semantics.concept.gui;
 
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridBagLayoutInfo;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -11,6 +15,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -51,12 +56,14 @@ public class DetectorGUI extends JPanel
 	private Detector							detector;
 
 	private Vector<ConceptRecord>	detected;
-	
+
 	private Vector<ConceptRecord>	displayed;
 
 	private JTextArea							textArea;
 
 	private JList									list;
+
+	private JLabel								label;
 
 	private JSlider								slider;
 
@@ -85,14 +92,17 @@ public class DetectorGUI extends JPanel
 			}
 		});
 
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		// setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		setLayout(new GridBagLayout());
 
 		Border border = BorderFactory.createEmptyBorder(5, 5, 5, 5);
 
 		textArea = new JTextArea();
-		textArea.setPreferredSize(new Dimension(400, 300));
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
+		JScrollPane scrollPaneForText = new JScrollPane(textArea);
+		scrollPaneForText.setPreferredSize(new Dimension(400, 300));
+		scrollPaneForText.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
 		JButton btn = new JButton("Detect");
 		btn.addActionListener(new ActionListener()
@@ -123,6 +133,9 @@ public class DetectorGUI extends JPanel
 			}
 		});
 
+		label = new JLabel();
+		label.setText("Threshold: 0.00");
+
 		final int n = 100;
 		slider = new JSlider(-n, n, 0);
 		slider.addChangeListener(new ChangeListener()
@@ -134,20 +147,44 @@ public class DetectorGUI extends JPanel
 				if (!slider.getValueIsAdjusting())
 				{
 					threshold = slider.getValue() / (double) n;
+					label.setText(String.format("Threshold: %.2f", threshold));
 					filterAndUpdate();
 				}
 			}
 		});
 
 		list = new JList();
+		JScrollPane scrollPaneForList = new JScrollPane(list);
+		scrollPaneForList.setPreferredSize(new Dimension(400, 300));
+		scrollPaneForList.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-		add(textArea);
-		add(btn);
-		add(slider);
-		JScrollPane scrollPane = new JScrollPane(list);
-		scrollPane.setPreferredSize(new Dimension(400, 300));
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		add(scrollPane);
+		GridBagConstraints c = new GridBagConstraints(0, 0, 3, 1, 1, 1, GridBagConstraints.CENTER,
+				GridBagConstraints.NONE, new Insets(4, 4, 4, 4), 4, 4);
+		add(scrollPaneForText, c);
+
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		c.weightx = 0.2;
+		add(btn, c);
+
+		c.gridx = 1;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		c.weightx = 0.2;
+		add(label, c);
+		
+		c.gridx = 2;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		c.weightx = 0.6;
+		add(slider, c);
+
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 3;
+		c.weightx = 1;
+		add(scrollPaneForList, c);
 
 		setBorder(border);
 	}
