@@ -1,8 +1,10 @@
 package ecologylab.semantics.concept.detect;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,6 +30,23 @@ import ecologylab.semantics.concept.text.NGramGenerator;
  */
 public class Detector extends Debug
 {
+	
+	public static interface DetectionListener
+	{
+		void conceptDetected(String surface, String concept, boolean prediction, double confidence);
+	}
+	
+	private List<DetectionListener> listeners = new ArrayList<DetectionListener>();
+	
+	public void addDetectionListener(DetectionListener listener)
+	{
+		listeners.add(listener);
+	}
+	
+	public void removeDetectionListener(DetectionListener listener)
+	{
+		listeners.remove(listener);
+	}
 
 	protected NGramGenerator										nGramGenerator;
 
@@ -51,6 +70,11 @@ public class Detector extends Debug
 	{
 		generateNGrams(text);
 		findSurfacesAndGenerateContext();
+		if (context.getAnchors() == null || context.getAnchors().isEmpty())
+		{
+			warning("no unambiguous surfaces found: can't disambiguate anything!");
+			return;
+		}
 		context.init();
 		featureExtractor = new FeatureExtractor(context);
 		disambiguateAndGenerateInstances();
@@ -166,9 +190,17 @@ public class Detector extends Debug
 					inst.disambiguationConfidence, inst.occurrence, inst.frequency);
 			norm.normalize(svmInst);
 			Map<Integer, Double> results = new HashMap<Integer, Double>();
-			pred.predict(svmInst, results);
+			boolean prediction = pred.predict(svmInst, results) == ConceptConstants.POS_CLASS_INT_LABEL;
 			inst.conceptConfidence = results.get(ConceptConstants.POS_CLASS_INT_LABEL);
-
+			
+			debug("candidate: " + inst.anchor.getSurface() + " -> " + inst.anchor.getConcept());
+			
+			for (DetectionListener listener : listeners)
+			{
+				debug("calling listener: " + listener);
+				listener.conceptDetected(inst.anchor.getSurface(), inst.anchor.getConcept(), prediction, inst.conceptConfidence);
+			}
+			
 			if (inst.conceptConfidence > ConceptConstants.DETECT_THRESHOLD)
 				detectedConcepts.put(inst.anchor.getSurface(), inst.anchor.getConcept());
 		}
