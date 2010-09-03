@@ -3,7 +3,6 @@ package ecologylab.semantics.concept.gui;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridBagLayoutInfo;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,7 +11,6 @@ import java.util.Collections;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -28,6 +26,7 @@ import javax.swing.event.ChangeListener;
 
 import ecologylab.semantics.concept.detect.Detector;
 import ecologylab.semantics.concept.detect.Detector.DetectionListener;
+import ecologylab.semantics.concept.detect.Instance;
 
 public class DetectorGUI extends JPanel
 {
@@ -40,6 +39,8 @@ public class DetectorGUI extends JPanel
 
 		double	confidence;
 
+		double	disambiguationConfidence;
+
 		@Override
 		public int compareTo(ConceptRecord other)
 		{
@@ -49,7 +50,8 @@ public class DetectorGUI extends JPanel
 		@Override
 		public String toString()
 		{
-			return String.format("(%.2f) %s -> %s", confidence, surface, concept);
+			return String.format("(%.2f) %s -> %s (%.2f)", confidence, surface, concept,
+					disambiguationConfidence);
 		}
 	}
 
@@ -80,12 +82,13 @@ public class DetectorGUI extends JPanel
 		{
 			@Override
 			public void conceptDetected(String surface, String concept, boolean prediction,
-					double confidence)
+					double confidence, Instance inst)
 			{
 				ConceptRecord rec = new ConceptRecord();
 				rec.surface = surface;
 				rec.concept = concept;
 				rec.confidence = confidence;
+				rec.disambiguationConfidence = inst.disambiguationConfidence;
 				detected.add(rec);
 
 				filterAndUpdate();
@@ -137,17 +140,17 @@ public class DetectorGUI extends JPanel
 		label.setText("Threshold: 0.00");
 
 		final int n = 100;
-		slider = new JSlider(-n, n, 0);
+		slider = new JSlider(0, n, 0);
 		slider.addChangeListener(new ChangeListener()
 		{
 			@Override
 			public void stateChanged(ChangeEvent e)
 			{
 				JSlider slider = (JSlider) e.getSource();
+				threshold = slider.getValue() / (double) n;
+				label.setText(String.format("Threshold: %.2f", threshold));
 				if (!slider.getValueIsAdjusting())
 				{
-					threshold = slider.getValue() / (double) n;
-					label.setText(String.format("Threshold: %.2f", threshold));
 					filterAndUpdate();
 				}
 			}
@@ -156,7 +159,8 @@ public class DetectorGUI extends JPanel
 		list = new JList();
 		JScrollPane scrollPaneForList = new JScrollPane(list);
 		scrollPaneForList.setPreferredSize(new Dimension(400, 300));
-		scrollPaneForList.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPaneForList
+				.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
 		GridBagConstraints c = new GridBagConstraints(0, 0, 3, 1, 1, 1, GridBagConstraints.CENTER,
 				GridBagConstraints.NONE, new Insets(4, 4, 4, 4), 4, 4);
@@ -172,12 +176,14 @@ public class DetectorGUI extends JPanel
 		c.gridy = 1;
 		c.gridwidth = 1;
 		c.weightx = 0.2;
+		c.anchor = GridBagConstraints.LINE_END;
 		add(label, c);
-		
+
 		c.gridx = 2;
 		c.gridy = 1;
 		c.gridwidth = 1;
 		c.weightx = 0.6;
+		c.anchor = GridBagConstraints.CENTER;
 		add(slider, c);
 
 		c.gridx = 0;
@@ -189,7 +195,7 @@ public class DetectorGUI extends JPanel
 		setBorder(border);
 	}
 
-	public void filterAndUpdate()
+	public synchronized void filterAndUpdate()
 	{
 		Collections.sort(detected);
 		displayed = new Vector<ConceptRecord>();
