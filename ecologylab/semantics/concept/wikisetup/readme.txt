@@ -1,0 +1,24 @@
+To setup a local mirror of Wikipedia:
+
+1. Download and install XAMPP;
+
+2. Download and install MediaWiki;
+
+3. Download and compile MWDumper, officially maintained by MediaWiki;
+
+4. Download MySql Connector/J;
+
+5. Download the following Wikipedia dumps:
+    * pages-articles.xml.bz2
+    * redirect.sql.gz
+    * category.sql.gz
+    * categorylinks.sql.gz
+    * pagelinks.sql.gz
+
+6. Change variable max_allowed_packet to 32M or bigger, and innodb_log_file_size to 64M or bigger
+   in MySql configuration file; restart MySql service;
+    
+7. Set variables referring to MWDumper, MySql Connector/J and Wikipedia pages-articles.xml.bz2 in
+   import.bat; correct MySql database name, user name and password in the connection string;
+   
+8. Run import.bat and leave it for tonight ... it should be done in days.
