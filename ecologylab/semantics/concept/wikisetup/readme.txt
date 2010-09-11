@@ -4,7 +4,7 @@ To setup a local mirror of Wikipedia:
 
 2. Download and install MediaWiki;
 
-3. Download and compile MWDumper, officially maintained by MediaWiki;
+3. Download and compile MWDumper, officially maintained by MediaWiki; (You may want to apply a patch for bug 13721 first: https://bugzilla.wikimedia.org/show_bug.cgi?id=13721)
 
 4. Download MySql Connector/J;
 
