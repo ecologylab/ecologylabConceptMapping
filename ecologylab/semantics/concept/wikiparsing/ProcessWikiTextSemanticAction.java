@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing.passtwo;
+package ecologylab.semantics.concept.wikiparsing;
 
 import ecologylab.semantics.actions.CreateAndVisualizeTextSurrogateSemanticAction;
 import ecologylab.serialization.simpl_inherit;

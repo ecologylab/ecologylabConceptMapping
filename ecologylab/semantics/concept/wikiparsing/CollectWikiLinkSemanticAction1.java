@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing.passone;
+package ecologylab.semantics.concept.wikiparsing;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import ecologylab.semantics.actions.ParseDocumentSemanticAction;
 import ecologylab.semantics.actions.SemanticActionHandler;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
-import ecologylab.semantics.concept.wikiparsing.WikiInfoCollector;
 import ecologylab.serialization.ElementState.xml_tag;
 import ecologylab.serialization.simpl_inherit;
 

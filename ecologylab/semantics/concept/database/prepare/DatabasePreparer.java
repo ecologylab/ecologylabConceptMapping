@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 import ecologylab.semantics.concept.database.DatabaseAdapter;
 import ecologylab.semantics.concept.database.prepare.InlinkN3Parser.Inlink;
-import ecologylab.semantics.concept.wikiparsing.passtwo.CommonnessExtractor;
+import ecologylab.semantics.concept.wikiparsing.CommonnessExtractor;
 
 public class DatabasePreparer
 {

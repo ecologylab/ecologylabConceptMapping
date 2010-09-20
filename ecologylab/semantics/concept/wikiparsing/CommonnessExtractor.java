@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing.passtwo;
+package ecologylab.semantics.concept.wikiparsing;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

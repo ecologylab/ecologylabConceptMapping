@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing.passone;
+package ecologylab.semantics.concept.wikiparsing;
 
 public class FrequentConceptsIdentifier
 {
