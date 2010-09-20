@@ -13,7 +13,7 @@ import ecologylab.serialization.simpl_inherit;
 
 @simpl_inherit
 @xml_tag("parse_document")
-public class CollectWikiLinkSemanticAction extends ParseDocumentSemanticAction<WikiInfoCollector, SemanticActionHandler>
+public class CollectWikiLinkSemanticAction1 extends ParseDocumentSemanticAction<WikiInfoCollector, SemanticActionHandler>
 {
 
 	@Override

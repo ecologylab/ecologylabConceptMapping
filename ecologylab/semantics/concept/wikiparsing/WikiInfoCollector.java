@@ -5,7 +5,7 @@ import ecologylab.semantics.metametadata.MetaMetadataRepository;
 import ecologylab.semantics.metametadata.example.MyInfoCollector;
 import ecologylab.serialization.TranslationScope;
 
-public class WikiInfoCollector extends MyInfoCollector<WikiPageContainer>
+public class WikiInfoCollector extends MyInfoCollector
 {
 	
 	public static interface SemanticActionHandlerFactory

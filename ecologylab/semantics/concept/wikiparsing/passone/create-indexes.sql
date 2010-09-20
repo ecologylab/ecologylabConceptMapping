@@ -1,17 +1,17 @@
 DROP INDEX IF EXISTS dbp_titles_title;
 CREATE INDEX dbp_titles_title ON dbp_titles (title);
 
-DROP INDEX IF EXISTS dbp_redirects_redirected;
-CREATE INDEX dbp_redirects_redirected ON dbp_redirects (redirected);
+DROP INDEX IF EXISTS dbp_redirects_redirected_name;
+CREATE INDEX dbp_redirects_redirected_name ON dbp_redirects (redirected_name);
 
-DROP INDEX IF EXISTS redirects_to_concept;
-CREATE INDEX redirects_to_concept ON redirects (to_concept);
+DROP INDEX IF EXISTS redirects_to_title;
+CREATE INDEX redirects_to_title ON redirects (to_title);
 
-DROP INDEX IF EXISTS wikilinks_from_concept;
-CREATE INDEX wikilinks_from_concept ON wikilinks (from_concept);
+DROP INDEX IF EXISTS wikilinks_from_title;
+CREATE INDEX wikilinks_from_title ON wikilinks (from_title);
 
-DROP INDEX IF EXISTS wikilinks_to_concept;
-CREATE INDEX wikilinks_to_concept ON wikilinks (to_concept);
+DROP INDEX IF EXISTS wikilinks_to_title;
+CREATE INDEX wikilinks_to_title ON wikilinks (to_title);
 
 DROP INDEX IF EXISTS wikilinks_surface;
 CREATE INDEX wikilinks_surface ON wikilinks (surface);

@@ -28,7 +28,7 @@ public class LabelImporter extends AbstractImporter
 			String objectPart = m.group(2);
 
 			String dbpName = subjectPart.substring(DbpediaParserUtils.dbpediaResourcePrefix.length());
-			String wikiTitle = TextUtils.normalize(StringEscapeUtils.unescapeJava(objectPart));
+			String wikiTitle = StringEscapeUtils.unescapeJava(objectPart);
 
 			if (dbpName != null && wikiTitle != null)
 			{

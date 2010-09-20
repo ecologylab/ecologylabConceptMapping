@@ -1,13 +1,15 @@
 package ecologylab.semantics.concept.wikiparsing.passone;
 
-import ecologylab.generic.Debug;
-
-public class ParsingPhaseOne extends Debug
+public class FrequentConceptsIdentifier
 {
 
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args)
 	{
-		
+		// TODO Auto-generated method stub
+
 	}
 
 }

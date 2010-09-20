@@ -8,27 +8,27 @@ CREATE TABLE dbp_titles (
 DROP TABLE IF EXISTS dbp_redirects;
 CREATE TABLE dbp_redirects (
 	name VARCHAR PRIMARY KEY,
-	redirected VARCHAR NOT NULL
+	redirected_name VARCHAR NOT NULL
+) WITHOUT OIDS;
+
+DROP TABLE IF EXISTS dbp_primary_concepts;
+CREATE TABLE dbp_primary_concepts (
+  name VARCHAR PRIMARY KEY
 ) WITHOUT OIDS;
 
 -- create primary tables
 DROP TABLE IF EXISTS redirects;
 CREATE TABLE redirects (
-	from_concept VARCHAR PRIMARY KEY,
-	to_concept VARCHAR NOT NULL
+	from_title VARCHAR PRIMARY KEY,
+	to_title VARCHAR NOT NULL
 ) WITHOUT OIDS;
 
 DROP TABLE IF EXISTS wikilinks;
 CREATE TABLE wikilinks (
-	from_concept VARCHAR NOT NULL,
-	to_concept VARCHAR NOT NULL,
+	from_title VARCHAR NOT NULL,
+	to_title VARCHAR NOT NULL,
 	surface VARCHAR NOT NULL
 );
-
-DROP TABLE IF EXISTS concepts;
-CREATE TABLE concepts (
-  name VARCHAR PRIMARY KEY
-) WITHOUT OIDS;
 
 -- create secondary tables
 DROP TABLE IF EXISTS commonness;

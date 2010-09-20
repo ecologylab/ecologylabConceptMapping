@@ -2,7 +2,7 @@ package ecologylab.semantics.concept.wikiparsing.passtwo;
 
 import ecologylab.generic.Debug;
 
-public class ParsingPhaseTwo extends Debug
+public class KeyphrasenessExtractor extends Debug
 {
 
 	/**
