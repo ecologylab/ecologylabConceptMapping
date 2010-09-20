@@ -34,7 +34,8 @@ public class DatabaseAdapter extends Debug
 		{
 			Class.forName("org.postgresql.Driver");
 			
-			String url = "jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing";
+			// String url = "jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing";
+			String url = "jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing2";
 			String username = "quyin";
 			String password = "quyindbpwd";
 			conn = DriverManager.getConnection(url, username, password);

@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikipedia;
+package ecologylab.semantics.concept.wikiparsing;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

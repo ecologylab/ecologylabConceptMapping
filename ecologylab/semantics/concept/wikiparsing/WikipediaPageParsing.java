@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikipedia;
+package ecologylab.semantics.concept.wikiparsing;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,10 +8,10 @@ import java.io.IOException;
 import ecologylab.generic.DispatchTarget;
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.actions.SemanticAction;
-import ecologylab.semantics.concept.wikipedia.metametadata.AddConceptCategorySemanticAction;
-import ecologylab.semantics.concept.wikipedia.metametadata.AddConceptOutlinkSemanticAction;
-import ecologylab.semantics.concept.wikipedia.metametadata.CreateConceptSemanticAction;
-import ecologylab.semantics.concept.wikipedia.metametadata.FinishConceptSemanticAction;
+import ecologylab.semantics.concept.wikiparsing.metametadata.AddConceptCategorySemanticAction;
+import ecologylab.semantics.concept.wikiparsing.metametadata.AddConceptOutlinkSemanticAction;
+import ecologylab.semantics.concept.wikiparsing.metametadata.CreateConceptSemanticAction;
+import ecologylab.semantics.concept.wikiparsing.metametadata.FinishConceptSemanticAction;
 import ecologylab.semantics.generated.library.GeneratedMetadataTranslationScope;
 import ecologylab.semantics.metametadata.MetaMetadataRepository;
 import ecologylab.semantics.metametadata.example.MyContainer;
@@ -66,7 +66,7 @@ public class WikipediaPageParsing
 
 	public static void main(String[] args)
 	{
-		test2();
+//		test2();
 	}
 
 	public static void test1(String[] args) throws InterruptedException, IOException
@@ -84,6 +84,7 @@ public class WikipediaPageParsing
 		parsing.parse(listFilePath, nDownloadThread);
 	}
 
+	/*
 	public static void test2()
 	{
 		MetaMetadataRepository repo = MetaMetadataRepository.load(new File(
@@ -116,5 +117,6 @@ public class WikipediaPageParsing
 				});
 		System.out.print(c);
 	}
+	*/
 
 }

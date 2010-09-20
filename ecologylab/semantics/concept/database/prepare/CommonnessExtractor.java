@@ -8,7 +8,7 @@ import java.util.Map;
 
 import ecologylab.semantics.concept.database.DatabaseAdapter;
 import ecologylab.semantics.concept.utils.CollectionUtils;
-import ecologylab.semantics.concept.wikipedia.StringPool;
+import ecologylab.semantics.concept.wikiparsing.StringPool;
 
 /**
  * This class is used to extract commonness given the sorted surface file.

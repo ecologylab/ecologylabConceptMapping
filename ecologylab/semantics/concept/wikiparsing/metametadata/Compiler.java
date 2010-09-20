@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikipedia.metametadata;
+package ecologylab.semantics.concept.wikiparsing.metametadata;
 
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.tools.MetadataCompiler;

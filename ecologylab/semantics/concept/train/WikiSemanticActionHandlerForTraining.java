@@ -5,10 +5,8 @@ import java.io.IOException;
 import ecologylab.semantics.actions.SemanticActionHandler;
 import ecologylab.semantics.concept.detect.Context;
 import ecologylab.semantics.metadata.Metadata;
-import ecologylab.semantics.metametadata.example.MyContainer;
 
-public class WikiSemanticActionHandlerForTraining extends
-		SemanticActionHandler<MyContainer, WikiInfoCollectorForTraining>
+public class WikiSemanticActionHandlerForTraining extends SemanticActionHandler
 {
 
 	StringBuilder	textBuilder	= new StringBuilder();

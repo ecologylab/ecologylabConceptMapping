@@ -1,9 +1,9 @@
-package ecologylab.semantics.concept.wikipedia.metametadata;
+package ecologylab.semantics.concept.wikiparsing.metametadata;
 
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.actions.SemanticActionStandardMethods;
-import ecologylab.semantics.concept.wikipedia.ConceptPool;
-import ecologylab.semantics.concept.wikipedia.StringPool;
+import ecologylab.semantics.concept.wikiparsing.ConceptPool;
+import ecologylab.semantics.concept.wikiparsing.StringPool;
 import ecologylab.serialization.simpl_inherit;
 import ecologylab.serialization.ElementState.xml_tag;
 

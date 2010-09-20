@@ -15,8 +15,8 @@ import java.util.Map;
 import ecologylab.generic.Debug;
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
-import ecologylab.semantics.concept.wikipedia.Concept;
-import ecologylab.semantics.concept.wikipedia.ConceptPool;
+import ecologylab.semantics.concept.wikiparsing.Concept;
+import ecologylab.semantics.concept.wikiparsing.ConceptPool;
 import ecologylab.serialization.SIMPLTranslationException;
 import ecologylab.serialization.TranslationScope;
 
