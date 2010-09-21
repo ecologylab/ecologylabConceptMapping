@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import ecologylab.net.ParsedURL;
 
-public class WikipediaPageParsing
+public class WikiParsing
 {
 	
 	public static final String	wikiUrlPrefix	= "http://achilles.cse.tamu.edu/mediawiki/index.php/";
