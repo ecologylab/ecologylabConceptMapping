@@ -1,0 +1,1 @@
+psql -c "select name from dbp_primary_concepts order by name;" -d wikiparsing2 -o "../../../../data/primary-concepts.lst" -q -t

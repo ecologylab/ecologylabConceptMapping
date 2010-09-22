@@ -4,8 +4,6 @@ to rebuild the database:
 
 2. run importers to import dbpedia data
 
-3. run create-indexes.sql
+3. run fill-redirects-and-wikilinks.sql
 
-4. run fill-redirects-and-wikilinks.sql
-
-5. run recognize-primary-concepts.sql
+4. run recognize-primary-concepts.sql
