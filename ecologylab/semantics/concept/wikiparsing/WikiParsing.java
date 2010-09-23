@@ -12,35 +12,51 @@ import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.actions.SemanticActionHandler;
 import ecologylab.semantics.generated.library.GeneratedMetadataTranslationScope;
 import ecologylab.semantics.metametadata.MetaMetadataRepository;
-import ecologylab.semantics.concept.wikiparsing.WikiInfoCollector.SemanticActionHandlerFactory;
+import ecologylab.semantics.metametadata.example.MyInfoCollector;
+import ecologylab.semantics.metametadata.example.SemanticActionHandlerFactory;
 
 public class WikiParsing extends Debug
 {
 
-	public static final String	wikiUrlPrefix								= "http://achilles.cse.tamu.edu/mediawiki/index.php/";
+	public static final String	wikiUrlPrefix											= "http://achilles.cse.tamu.edu/mediawiki/index.php/";
 
-	public static final String	primaryConceptListFilePath	= "data/primary-concepts.lst";
+	public static final String	defaultPrimaryConceptListFilePath	= "data/primary-concepts.lst";
 
-	public static final String	repositoryPath							= "../ecologylabSemantics/repository";
+	public static final String	defaultRepositoryPath							= "../ecologylabSemantics/repository";
+
+	private MyInfoCollector			infoCollector;
+
+	private int									maxToDownloadBufferSize;
+
+	/**
+	 * @param infoCollector
+	 *          The InfoCollector used for parsing.
+	 * @param numDownloadThread
+	 *          How many threads are used for downloading; larger value can improve performance but
+	 *          will cost more resources.
+	 * @param maxToDownloadBufferSize
+	 *          The upper bound of the to-download buffer size. Note that this is different from the
+	 *          number of threads used for downloading.
+	 */
+	public WikiParsing(MyInfoCollector infoCollector, int maxToDownloadBufferSize)
+	{
+		this.infoCollector = infoCollector;
+		this.maxToDownloadBufferSize = maxToDownloadBufferSize;
+	}
 
 	/**
 	 * Parse current local mirrored Wikipedia collection, using predefined InfoCollector and semantic
 	 * actions.
 	 * 
-	 * @param infoCollector
-	 *          The InfoCollector used for parsing.
-	 * @param nDownloadThread
-	 *          How many threads are used for downloading; larger value can improve performance but
-	 *          will cost more resources.
-	 * @param fullSize
-	 *          The upper bound of the to-download buffer size. Note that this is different from the
-	 *          number of threads used for downloading.
+	 * @param primaryConceptListFilePath
+	 *          The path to a list file containing primary concept names.
+	 * 
 	 * @throws InterruptedException
 	 * @throws IOException
 	 * @throws SQLException
 	 */
-	public void parse(WikiInfoCollector infoCollector, int nDownloadThread, int fullSize)
-			throws InterruptedException, IOException, SQLException
+	public void parse(String primaryConceptListFilePath) throws InterruptedException, IOException,
+			SQLException
 	{
 		BufferedReader br = new BufferedReader(new FileReader(primaryConceptListFilePath));
 		String line = null;
@@ -50,9 +66,9 @@ public class WikiParsing extends Debug
 			String url = wikiUrlPrefix + concept;
 			debug("parsing " + url + " ...");
 			ParsedURL purl = ParsedURL.getAbsolute(url);
-			if (infoCollector.getDownloadMonitor().toDownloadSize() > fullSize)
+			if (infoCollector.getDownloadMonitor().toDownloadSize() > maxToDownloadBufferSize)
 			{
-				while (infoCollector.getDownloadMonitor().toDownloadSize() > fullSize / 5)
+				while (infoCollector.getDownloadMonitor().toDownloadSize() > maxToDownloadBufferSize / 5)
 					Thread.sleep(1000);
 			}
 			infoCollector.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
@@ -68,12 +84,14 @@ public class WikiParsing extends Debug
 		infoCollector.getDownloadMonitor().stop();
 	}
 
-	public static void parsingPass1() throws InterruptedException, IOException, SQLException
+	public static void parsingPass1(String repositoryPath, String primaryConceptListFilePath,
+			int numThreads, int maxDownloadBufferSize) throws InterruptedException, IOException,
+			SQLException
 	{
 		SemanticAction.register(LinkHandler1.class);
 
 		MetaMetadataRepository repository = MetaMetadataRepository.load(new File(repositoryPath));
-		SemanticActionHandlerFactory sahFactory = new SemanticActionHandlerFactory()
+		SemanticActionHandlerFactory semanticActionHandlerFactory = new SemanticActionHandlerFactory()
 		{
 			@Override
 			public SemanticActionHandler create()
@@ -81,11 +99,11 @@ public class WikiParsing extends Debug
 				return new SemanticActionHandler();
 			}
 		};
-		WikiInfoCollector infoCollector = new WikiInfoCollector(repository,
-				GeneratedMetadataTranslationScope.get(), sahFactory, 10);
+		MyInfoCollector infoCollector = new MyInfoCollector(repository,
+				GeneratedMetadataTranslationScope.get(), semanticActionHandlerFactory, numThreads);
 
-		WikiParsing wp = new WikiParsing();
-		wp.parse(infoCollector, 30, 300);
+		WikiParsing wp = new WikiParsing(infoCollector, maxDownloadBufferSize);
+		wp.parse(primaryConceptListFilePath);
 	}
 
 	public static void parsingPass2()
@@ -95,7 +113,19 @@ public class WikiParsing extends Debug
 
 	public static void main(String[] args) throws InterruptedException, IOException, SQLException
 	{
-		parsingPass1();
+		if (args.length == 0)
+		{
+			System.err
+					.println("arguments: <repository-path> <concept-list-file-path> <num-threads> <max-download-buffer-size>");
+			return;
+		}
+
+		String repositoryPath = args[0];
+		String conceptListFilePath = args[1];
+		int numThreads = Integer.parseInt(args[2]);
+		int maxDownloadBufferSize = Integer.parseInt(args[3]);
+
+		parsingPass1(repositoryPath, conceptListFilePath, numThreads, maxDownloadBufferSize);
 	}
 
 }

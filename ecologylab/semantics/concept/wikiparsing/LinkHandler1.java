@@ -5,14 +5,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ecologylab.semantics.actions.ParseDocumentSemanticAction;
-import ecologylab.semantics.actions.SemanticActionHandler;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
 import ecologylab.serialization.ElementState.xml_tag;
 import ecologylab.serialization.simpl_inherit;
 
 @simpl_inherit
 @xml_tag("parse_document")
-public class LinkHandler1 extends ParseDocumentSemanticAction<WikiInfoCollector, SemanticActionHandler>
+public class LinkHandler1 extends ParseDocumentSemanticAction
 {
 
 	@Override
