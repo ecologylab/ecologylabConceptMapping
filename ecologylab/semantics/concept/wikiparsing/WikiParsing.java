@@ -59,7 +59,12 @@ public class WikiParsing extends Debug
 	public void parse(String primaryConceptListFilePath) throws InterruptedException, IOException,
 			SQLException
 	{
-		SimpleTimer.get();
+		SimpleTimer.get("total.log");
+		SimpleTimer.get("fetching_and_rendering.log");
+		SimpleTimer.get("populating.log");
+		SimpleTimer.get("saving.log");
+		
+		SimpleTimer.get("total.log").startTiming(this);
 		
 		BufferedReader br = new BufferedReader(new FileReader(primaryConceptListFilePath));
 		String line = null;
@@ -86,6 +91,8 @@ public class WikiParsing extends Debug
 
 		infoCollector.getDownloadMonitor().stop();
 		
+		SimpleTimer.get("total.log").finishTiming(this);
+		Thread.sleep(5000); // waiting for timers in semantic actions to finish their jobs.
 		SimpleTimer.closeAll();
 	}
 
