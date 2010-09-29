@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.train;
+package ecologylab.semantics.concept.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,7 +10,6 @@ import java.util.List;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
-import ecologylab.semantics.concept.utils.CollectionUtils;
 
 public class PrimaryConceptsRandomPicker extends Debug
 {
@@ -32,7 +31,7 @@ public class PrimaryConceptsRandomPicker extends Debug
 	{
 		if (args.length != 1)
 		{
-			System.err.println("args: n: how many concepts you want to pick.");
+			System.err.println("args: <n>\n  n: how many concepts you want to pick.");
 			return;
 		}
 		int n = Integer.parseInt(args[0]);
