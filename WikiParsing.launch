@@ -7,7 +7,7 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ecologylab.semantics.concept.wikiparsing.WikiParsing"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="Z:\\wikipedia-en-html\\test.lst 1"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="../ecologylabSemantics/repository data/primary-concepts-2.lst 1 4"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ecologylabConceptMapping"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms320m -Xmx320m"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms512m -Xmx1024m"/>
 </launchConfiguration>
