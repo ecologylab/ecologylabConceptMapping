@@ -88,35 +88,6 @@ public class WikiParsing extends Debug
 		infoCollector.getDownloadMonitor().stop();
 	}
 	
-	/**
-	 * treat redirects as wikilinks, using normalized form of the redirected concept title as surface.
-	 * save them into wikilinks.
-	 */
-	public void addRedirectsAsWikiLinks()
-	{
-		try
-		{
-			ResultSet rs = DatabaseAdapter.get().executeQuerySql("SELECT from_title, to_title FROM redirects;");
-			PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement("INSERT INTO wikilinks VALUES (?,?,?);");
-			while (rs.next())
-			{
-				String from = rs.getString("from_title");
-				String to = rs.getString("to_title");
-				String surface = TextUtils.normalize(from);
-				
-				ps.setString(1, from);
-				ps.setString(2, to);
-				ps.setString(3, surface);
-				ps.execute();
-			}
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	public static void main(String[] args) throws InterruptedException, IOException, SQLException
 	{
 		if (args.length == 0)
@@ -147,7 +118,6 @@ public class WikiParsing extends Debug
 				GeneratedMetadataTranslationScope.get(), semanticActionHandlerFactory, numThreads);
 
 		WikiParsing wp = new WikiParsing(infoCollector, maxDownloadBufferSize);
-		wp.addRedirectsAsWikiLinks();
 		wp.parse(conceptListFilePath);
 	}
 

@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import ecologylab.semantics.actions.CreateAndVisualizeTextSurrogateSemanticAction;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.utils.TextUtils;
 import ecologylab.semantics.generated.library.Paragraph;
 import ecologylab.serialization.simpl_inherit;
 import ecologylab.serialization.ElementState.xml_tag;
@@ -24,7 +25,8 @@ public class TextHandler extends CreateAndVisualizeTextSurrogateSemanticAction
 		StringBuilder textBuilder = new StringBuilder();
 		for (Paragraph p : paragraphs)
 		{
-			textBuilder.append(p.getParagraphText());
+			String wikiText = p.getParagraphText();
+			textBuilder.append(TextUtils.removeWikiMessages(wikiText));
 			textBuilder.append("\n");
 		}
 		String text = textBuilder.toString();
