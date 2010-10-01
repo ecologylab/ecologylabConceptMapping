@@ -1,9 +1,0 @@
-to rebuild the database:
-
-1. run create-tables.sql
-
-2. run importers to import dbpedia data
-
-3. run fill-redirects-and-wikilinks.sql
-
-4. run recognize-primary-concepts.sql
