@@ -6,12 +6,13 @@ import java.sql.SQLException;
 
 import ecologylab.semantics.actions.ParseDocumentSemanticAction;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.utils.TextUtils;
 import ecologylab.serialization.ElementState.xml_tag;
 import ecologylab.serialization.simpl_inherit;
 
 @simpl_inherit
 @xml_tag("parse_document")
-public class LinkHandler1 extends ParseDocumentSemanticAction
+public class LinkHandler extends ParseDocumentSemanticAction
 {
 
 	@Override
@@ -26,7 +27,8 @@ public class LinkHandler1 extends ParseDocumentSemanticAction
 		if (title != null && surface != null && target != null)
 		{
 			String trueTarget = getRedirectedTitle(target);
-			saveWikilink(title, surface, trueTarget);
+			String normedSurface = TextUtils.normalize(surface);
+			saveWikilink(title, normedSurface, trueTarget);
 		}
 		
 		return null;
@@ -53,7 +55,7 @@ public class LinkHandler1 extends ParseDocumentSemanticAction
 		}
 		return target;
 	}
-
+	
 	private synchronized void saveWikilink(String title, String surface, String trueTarget)
 	{
 		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(

@@ -24,4 +24,5 @@ public class TextUtils
 			System.out.format("|%s| -> |%s|\n", test, normalize(test));
 		}
 	}
+	
 }

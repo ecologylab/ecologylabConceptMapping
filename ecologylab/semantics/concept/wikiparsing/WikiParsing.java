@@ -4,12 +4,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ecologylab.generic.Debug;
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.actions.SemanticAction;
 import ecologylab.semantics.actions.SemanticActionHandler;
+import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.utils.TextUtils;
 import ecologylab.semantics.generated.library.GeneratedMetadataTranslationScope;
 import ecologylab.semantics.metametadata.MetaMetadataRepository;
 import ecologylab.semantics.metametadata.example.MyInfoCollector;
@@ -83,32 +87,34 @@ public class WikiParsing extends Debug
 
 		infoCollector.getDownloadMonitor().stop();
 	}
-
-	public static void parsingPass1(String repositoryPath, String primaryConceptListFilePath,
-			int numThreads, int maxDownloadBufferSize) throws InterruptedException, IOException,
-			SQLException
+	
+	/**
+	 * treat redirects as wikilinks, using normalized form of the redirected concept title as surface.
+	 * save them into wikilinks.
+	 */
+	public void addRedirectsAsWikiLinks()
 	{
-		SemanticAction.register(LinkHandler1.class);
-
-		MetaMetadataRepository repository = MetaMetadataRepository.load(new File(repositoryPath));
-		SemanticActionHandlerFactory semanticActionHandlerFactory = new SemanticActionHandlerFactory()
+		try
 		{
-			@Override
-			public SemanticActionHandler create()
+			ResultSet rs = DatabaseAdapter.get().executeQuerySql("SELECT from_title, to_title FROM redirects;");
+			PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement("INSERT INTO wikilinks VALUES (?,?,?);");
+			while (rs.next())
 			{
-				return new SemanticActionHandler();
+				String from = rs.getString("from_title");
+				String to = rs.getString("to_title");
+				String surface = TextUtils.normalize(from);
+				
+				ps.setString(1, from);
+				ps.setString(2, to);
+				ps.setString(3, surface);
+				ps.execute();
 			}
-		};
-		MyInfoCollector infoCollector = new MyInfoCollector(repository,
-				GeneratedMetadataTranslationScope.get(), semanticActionHandlerFactory, numThreads);
-
-		WikiParsing wp = new WikiParsing(infoCollector, maxDownloadBufferSize);
-		wp.parse(primaryConceptListFilePath);
-	}
-
-	public static void parsingPass2()
-	{
-
+		}
+		catch (SQLException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) throws InterruptedException, IOException, SQLException
@@ -125,7 +131,24 @@ public class WikiParsing extends Debug
 		int numThreads = Integer.parseInt(args[2]);
 		int maxDownloadBufferSize = Integer.parseInt(args[3]);
 
-		parsingPass1(repositoryPath, conceptListFilePath, numThreads, maxDownloadBufferSize);
+		SemanticAction.register(LinkHandler.class);
+		SemanticAction.register(TextHandler.class);
+
+		MetaMetadataRepository repository = MetaMetadataRepository.load(new File(repositoryPath));
+		SemanticActionHandlerFactory semanticActionHandlerFactory = new SemanticActionHandlerFactory()
+		{
+			@Override
+			public SemanticActionHandler create()
+			{
+				return new SemanticActionHandler();
+			}
+		};
+		MyInfoCollector infoCollector = new MyInfoCollector(repository,
+				GeneratedMetadataTranslationScope.get(), semanticActionHandlerFactory, numThreads);
+
+		WikiParsing wp = new WikiParsing(infoCollector, maxDownloadBufferSize);
+		wp.addRedirectsAsWikiLinks();
+		wp.parse(conceptListFilePath);
 	}
 
 }
