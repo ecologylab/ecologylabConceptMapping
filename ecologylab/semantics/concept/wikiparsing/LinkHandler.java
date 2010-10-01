@@ -21,24 +21,23 @@ public class LinkHandler extends ParseDocumentSemanticAction
 		String title = (String) semanticActionHandler.getSemanticActionVariableMap().get("title");
 		String surface = (String) getArgumentObject("surface");
 		String target = (String) getArgumentObject("target_title");
-		
+
 		debug("link detected: " + title + " -> " + target + " : " + surface);
-		
+
 		if (title != null && surface != null && target != null)
 		{
 			String trueTarget = getRedirectedTitle(target);
 			String normedSurface = TextUtils.normalize(surface);
 			saveWikilink(title, normedSurface, trueTarget);
 		}
-		
+
 		return null;
 	}
 
 	private synchronized String getRedirectedTitle(String target)
 	{
 		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
-				"SELECT to_title FROM redirects WHERE from_title=?;"
-				);
+				"SELECT to_title FROM redirects WHERE from_title=?;");
 		try
 		{
 			ps.setString(1, target);
@@ -50,17 +49,16 @@ public class LinkHandler extends ParseDocumentSemanticAction
 		}
 		catch (SQLException e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			warning(String.format("error when looking up redirects for %s, error message: %s", target,
+					e.getMessage()));
 		}
 		return target;
 	}
-	
+
 	private synchronized void saveWikilink(String title, String surface, String trueTarget)
 	{
 		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
-				"INSERT INTO wikilinks VALUES (?, ?, ?);"
-				);
+				"INSERT INTO wikilinks VALUES (?, ?, ?);");
 		try
 		{
 			ps.setString(1, title);
@@ -70,8 +68,8 @@ public class LinkHandler extends ParseDocumentSemanticAction
 		}
 		catch (SQLException e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			warning(String.format("error when saving wikilink: %s -> %s: %s, error message: %s", title,
+					trueTarget, surface, e.getMessage()));
 		}
 	}
 

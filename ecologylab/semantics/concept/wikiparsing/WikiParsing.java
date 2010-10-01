@@ -102,6 +102,8 @@ public class WikiParsing extends Debug
 		int numThreads = Integer.parseInt(args[2]);
 		int maxDownloadBufferSize = Integer.parseInt(args[3]);
 
+		Debug.setLoggingFile("debug.log");
+		
 		SemanticAction.register(LinkHandler.class);
 		SemanticAction.register(TextHandler.class);
 

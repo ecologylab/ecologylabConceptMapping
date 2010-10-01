@@ -48,8 +48,8 @@ public class TextHandler extends CreateAndVisualizeTextSurrogateSemanticAction
 		}
 		catch (SQLException e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			warning(String.format("error when saving wikitext for %s, error message: %s", title,
+					e.getMessage()));
 		}
 	}
 
