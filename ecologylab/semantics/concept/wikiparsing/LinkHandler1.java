@@ -1,13 +1,11 @@
 package ecologylab.semantics.concept.wikiparsing;
 
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ecologylab.semantics.actions.ParseDocumentSemanticAction;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
-import ecologylab.semantics.tools.SimpleTimer;
 import ecologylab.serialization.ElementState.xml_tag;
 import ecologylab.serialization.simpl_inherit;
 
@@ -19,16 +17,6 @@ public class LinkHandler1 extends ParseDocumentSemanticAction
 	@Override
 	public Object perform(Object obj)
 	{
-		try
-		{
-			SimpleTimer.get("saving.log").startTiming(documentParser.getContainer());
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		String title = (String) semanticActionHandler.getSemanticActionVariableMap().get("title");
 		String surface = (String) getArgumentObject("surface");
 		String target = (String) getArgumentObject("target_title");
@@ -39,16 +27,6 @@ public class LinkHandler1 extends ParseDocumentSemanticAction
 		{
 			String trueTarget = getRedirectedTitle(target);
 			saveWikilink(title, surface, trueTarget);
-		}
-		
-		try
-		{
-			SimpleTimer.get("saving.log").finishTiming(documentParser.getContainer());
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		
 		return null;
