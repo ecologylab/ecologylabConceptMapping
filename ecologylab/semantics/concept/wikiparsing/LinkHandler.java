@@ -59,8 +59,7 @@ public class LinkHandler extends ParseDocumentSemanticAction
 	private synchronized void saveWikilink(String title, String surface, String trueTarget)
 	{
 		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
-//				"INSERT INTO wikilinks VALUES (?, ?, ?);"
-				"INSERT INTO wikilinks2 VALUES (?, ?, ?);"
+				"INSERT INTO wikilinks VALUES (?, ?, ?);"
 				);
 		try
 		{
