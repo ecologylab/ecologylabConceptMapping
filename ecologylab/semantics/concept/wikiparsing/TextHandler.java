@@ -21,17 +21,24 @@ public class TextHandler extends CreateAndVisualizeTextSurrogateSemanticAction
 	{
 		String title = (String) getArgumentObject("title");
 		Collection<Paragraph> paragraphs = (Collection<Paragraph>) getArgumentObject("wiki_text");
+		
+		if (paragraphs == null)
+			return null;
 
 		StringBuilder textBuilder = new StringBuilder();
 		for (Paragraph p : paragraphs)
 		{
 			String wikiText = p.getParagraphText();
-			textBuilder.append(TextUtils.removeWikiMessages(wikiText));
+			if (wikiText != null)
+			{
+				textBuilder.append(TextUtils.removeWikiMessages(wikiText));
+			}
 			textBuilder.append("\n");
 		}
 		String text = textBuilder.toString();
 
-		saveWikitext(title, text);
+		if (title != null && text != null)
+			saveWikitext(title, text);
 
 		return null;
 	}
