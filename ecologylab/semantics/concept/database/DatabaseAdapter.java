@@ -16,7 +16,7 @@ public class DatabaseAdapter extends Debug
 
 	private static DatabaseAdapter	da	= null;
 
-	public static DatabaseAdapter get()
+	public static synchronized DatabaseAdapter get()
 	{
 		if (da == null)
 		{

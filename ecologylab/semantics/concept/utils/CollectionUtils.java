@@ -62,6 +62,14 @@ public class CollectionUtils
 		return rst;
 	}
 	
+	/**
+	 * convert List<T1> to List<T2>.
+	 * 
+	 * @param <T1>
+	 * @param <T2>
+	 * @param list
+	 * @return
+	 */
 	public static <T1, T2> List<T2> convertList(List<T1> list)
 	{
 		List<T2> list2 = new ArrayList<T2>();
@@ -72,6 +80,14 @@ public class CollectionUtils
 		return list2;
 	}
 	
+	/**
+	 * randomly pick n elements from a list and permute them. top n positions of the list is used to
+	 * store these elements.
+	 * 
+	 * @param <T>
+	 * @param list
+	 * @param n
+	 */
 	public static <T> void randomPermute(List<T> list, int n)
 	{
 		int size = list.size();
@@ -85,16 +101,41 @@ public class CollectionUtils
 		}
 	}
 	
+	/**
+	 * randomly permute a list.
+	 * 
+	 * @param <T>
+	 * @param list
+	 */
 	public static <T> void randomPermute(List<T> list)
 	{
 		randomPermute(list, list.size());
 	}
 	
+	/**
+	 * do a binary search for an element. the array should be sorted first.
+	 * 
+	 * @param <T>
+	 * @param element
+	 * @param array
+	 * @return
+	 */
 	public static <T extends Comparable<T>> boolean binarySearch(T element, T[] array)
 	{
 		return binarySearch(element, array, 0, array.length);
 	}
 	
+	/**
+	 * do a binary search for an element in a range of an array. this part of array should be sorted
+	 * first.
+	 * 
+	 * @param <T>
+	 * @param element
+	 * @param array
+	 * @param begin
+	 * @param end
+	 * @return
+	 */
 	public static <T extends Comparable<T>> boolean binarySearch(T element, T[] array, int begin, int end)
 	{
 		if (end <= begin)
@@ -132,6 +173,45 @@ public class CollectionUtils
 		assertFalse(binarySearch("4", a));
 		assertTrue(binarySearch("7", a));
 		assertFalse(binarySearch("8", a));
+	}
+
+	/**
+	 * 
+	 * @param <T>
+	 * @param element
+	 * @param list
+	 * @return true if found, false if not.
+	 */
+	public static <T extends Comparable<T>> boolean binarySearch(T element, List<T> list)
+	{
+		return binarySearch(element, list, 0, list.size());
+	}
+
+	/**
+	 * 
+	 * @param <T>
+	 * @param element
+	 * @param list
+	 * @param begin
+	 * @param end
+	 * @return true if found, false if not.
+	 */
+	public static <T extends Comparable<T>> boolean binarySearch(T element, List<T> list, int begin, int end)
+	{
+		if (end <= begin)
+			return false;
+			
+		if (end - begin == 1)
+			return list.get(begin).equals(element);
+		
+		int p = begin + (end - begin) / 2;
+		T m = list.get(p);
+		if (element.compareTo(m) < 0)
+			return binarySearch(element, list, begin, p);
+		else if (element.compareTo(m) > 0)
+			return binarySearch(element, list, p + 1, end);
+		else // element.compareTo(m) == 0
+			return true;
 	}
 
 }

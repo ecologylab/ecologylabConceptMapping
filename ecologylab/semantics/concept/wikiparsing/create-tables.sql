@@ -39,8 +39,9 @@ DROP TABLE IF EXISTS wikilinks;
 CREATE TABLE wikilinks (
 	from_title VARCHAR NOT NULL,
 	to_title VARCHAR NOT NULL,
-	surface VARCHAR NOT NULL
-);
+	surface VARCHAR NOT NULL,
+	PRIMARY KEY (from_title, to_title, surface)
+) WITHOUT OIDS;
 
 -- map wikipedia titles to texts. these are parsed paragraphs, with no wiki-markups or html codes.
 DROP TABLE IF EXISTS wikitexts;

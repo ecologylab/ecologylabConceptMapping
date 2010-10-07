@@ -1,17 +1,17 @@
 package ecologylab.semantics.concept.utils;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HtmlUtils
-{
+import ecologylab.generic.Debug;
 
-	public static interface HtmlStrippingListener
-	{
-		void newHtmlTag(String tag, Map<String, String> attributes, String inner);
-	}
+public class HtmlUtils extends Debug
+{
 
 	/**
 	 * Regex pattern used to capture HTML tags.
@@ -25,38 +25,17 @@ public class HtmlUtils
 	 */
 	public static final Pattern	pHtmlAttributes	= Pattern.compile("(\\w+)=\"(.*?)\"");
 
-	public static String stripHtmlTags(String text, HtmlStrippingListener... listeners)
-	{
-		StringBuffer sb = new StringBuffer();
-
-		Matcher m = pHtmlTag.matcher(text);
-		while (m.find())
-		{
-			String tag = m.group(1);
-			String attr = m.group(2);
-			String inner = m.group(3);
-
-			if (listeners != null)
-			{
-				for (HtmlStrippingListener listener : listeners)
-				{
-					listener.newHtmlTag(tag, (attr == null) ? null : attributesAsMap(attr), inner);
-				}
-			}
-
-			StringBuffer strippedInner = new StringBuffer(" ");
-			strippedInner.append((inner == null) ? "" : stripHtmlTags(inner, listeners));
-			strippedInner.append(" ");
-
-			m.appendReplacement(sb, strippedInner.toString());
-		}
-		m.appendTail(sb);
-
-		return sb.toString();
-	}
-
+	/**
+	 * convert an attributes string (e.g. <code>attr1="value1" attr2="value2"</code>) into a map.
+	 * 
+	 * @param s
+	 * @return
+	 */
 	public static Map<String, String> attributesAsMap(String s)
 	{
+		if (s == null)
+			return null;
+		
 		Map<String, String> map = new HashMap<String, String>();
 		Matcher m = pHtmlAttributes.matcher(s);
 		while (m.find())
@@ -68,20 +47,70 @@ public class HtmlUtils
 		return map;
 	}
 
-	public static void main(String[] args)
+	/**
+	 * strip html tags from input text.
+	 * 
+	 * @param text
+	 * @param parseAttributes true if you need those attributes. false if you don't need them.
+	 * @return text without html tags.
+	 */
+	public String stripHtmlTags(String text, boolean parseAttributes)
 	{
-		String test = "<p /><p><a href=\"../test.html\">test.</a></p><p/>test<p id=\"id\" />";
-		System.out.println(HtmlUtils.stripHtmlTags(test, new HtmlStrippingListener()
-		{
+		StringBuffer sb = new StringBuffer();
 
-			@Override
-			public void newHtmlTag(String tag, Map<String, String> attributes, String inner)
+		Matcher m = pHtmlTag.matcher(text);
+		while (m.find())
+		{
+			String tag = m.group(1);
+			String attr = m.group(2);
+			String inner = m.group(3);
+
+			if (parseAttributes)
 			{
-				System.out.println("tag:\t" + tag);
-				System.out.println("attr:\t" + attributes);
-				System.out.println("inner:\t" + inner);
+				newHtmlTag(tag, attributesAsMap(attr), inner);
+			}
+			else
+			{
+				newHtmlTag(tag, null, inner);
 			}
 
-		}));
+			StringBuffer strippedInner = new StringBuffer(" ");
+			strippedInner.append((inner == null) ? "" : stripHtmlTags(inner, parseAttributes));
+			strippedInner.append(" ");
+
+			m.appendReplacement(sb, TextUtils.regexReplaceEscape(strippedInner.toString()));
+		}
+		m.appendTail(sb);
+
+		return sb.toString();
+	}
+
+	/**
+	 * new html tag hook. invoked every time a new html tag is parsed.
+	 * 
+	 * @param tag
+	 * @param attributes if parseAttributes is set to false, this will be null.
+	 * @param inner null if no inner structures (e.g. <code>&lt;br /&gt;</code>).
+	 */
+	public void newHtmlTag(String tag, Map<String, String> attributes, String inner)
+	{
+		
+	}
+	
+	public static void main(String[] args) throws IOException
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		BufferedReader br = new BufferedReader(new FileReader("ecologylab/semantics/concept/utils/test.wiki"));
+		String line = null;
+		while ((line = br.readLine()) != null)
+		{
+			sb.append(line);
+			sb.append(' ');
+		}
+		
+		String test = sb.toString();
+		HtmlUtils hu = new HtmlUtils();
+		System.out.println(hu.stripHtmlTags(test, true));
 	}
 }

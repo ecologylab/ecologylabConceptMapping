@@ -1,5 +1,7 @@
 package ecologylab.semantics.concept.utils;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 public class TextUtils
@@ -42,6 +44,34 @@ public class TextUtils
 		for (String wikiText : wikiTexts)
 		{
 			System.out.println(removeWikiMessages(wikiText));
+		}
+	}
+
+	public static String regexReplaceEscape(String s)
+	{
+		return s.replaceAll("\\\\", "\\\\\\\\").replaceAll("\\$", "\\\\\\$");
+	}
+	
+	@Test
+	public void testRegexReplaceEscape()
+	{
+		String[] tests = {
+				"abc\\def",
+				"abc $5 def",
+				"abc \\ def$5ghi",
+				"abc$5def\\\\ghi",
+		};
+		
+		String[] exps = {
+				"abc\\\\def",
+				"abc \\$5 def",
+				"abc \\\\ def\\$5ghi",
+				"abc\\$5def\\\\\\\\ghi",
+		};
+		
+		for (int i = 0; i < tests.length; ++i)
+		{
+			Assert.assertEquals(exps[i], regexReplaceEscape(tests[i]));
 		}
 	}
 	
