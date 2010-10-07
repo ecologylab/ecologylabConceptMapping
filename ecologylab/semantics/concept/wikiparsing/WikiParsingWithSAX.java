@@ -19,8 +19,8 @@ public class WikiParsingWithSAX
 {
 
 	private static int	count;
-	
-	private static long ms;
+
+	private static long	ms;
 
 	/**
 	 * @param args
@@ -35,7 +35,7 @@ public class WikiParsingWithSAX
 					.println("args: <primary-concept-list-file-path> <wikipedia-pages-article-dump-xml-file-path>");
 			return;
 		}
-		
+
 		Debug.setLoggingFile("debug.log");
 
 		String primaryConceptListFilePath = args[0];
@@ -46,7 +46,7 @@ public class WikiParsingWithSAX
 		String line = null;
 		while ((line = br.readLine()) != null)
 		{
-			primaryConceptList.add(line.trim());
+			primaryConceptList.add(line);
 		}
 		br.close();
 
@@ -64,6 +64,8 @@ public class WikiParsingWithSAX
 				{
 					if (CollectionUtils.binarySearch(title, primaryConceptList))
 						super.handleWikiText(title, wikiText);
+					else
+						Debug.warning(WikiParsingWithSAX.class, "not found in primary concept list: " + title);
 				}
 				catch (Exception e)
 				{
