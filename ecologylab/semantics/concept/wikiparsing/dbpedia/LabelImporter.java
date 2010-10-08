@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.junit.Test;
 
 import ecologylab.semantics.concept.database.DatabaseAdapter;
-import ecologylab.semantics.concept.utils.TextUtils;
 
 public class LabelImporter extends AbstractImporter
 {

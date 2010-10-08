@@ -1,8 +1,5 @@
 package ecologylab.semantics.concept.utils;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -78,36 +75,18 @@ public class TextUtils
 		}
 	}
 	
-	public static String urlDecode(String s)
+	public static int nextWhitespaceIndex(String s, int offset)
 	{
-		try
-		{
-			return URLDecoder.decode(s, "UTF-8");
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return s;
-		}
+		while (offset < s.length() && !Character.isWhitespace(s.charAt(offset)))
+			offset++;
+		return offset;
 	}
 	
-	@Test
-	public void testUrlDecode()
+	public static int nextNonWhitespaceIndex(String s, int offset)
 	{
-		String[] tests = {
-				"abc%20def",
-				"%21WOWOW%21",
-				"%22%E2%80%94And_He_Built_a_Crooked_House%E2%80%94%22",
-				"Acid",
-		};
-		
-		for (String test : tests)
-		{
-			System.out.println(urlDecode(test));
-		}
-		
-		System.out.println("Acid".compareTo("ACID"));
+		while (offset < s.length() && Character.isWhitespace(s.charAt(offset)))
+			offset++;
+		return offset;
 	}
 	
 }

@@ -1,14 +1,16 @@
 to rebuild the database:
 
-1. run create-tables.sql
+1. run create-tables.sql & create-indexes.sql
 
 2. run importers to import dbpedia data
 
-3. run init-redirects.sql
+3. run init-redirects.sql & AddRedirectsAsWikiLinks
 
-4. run init-dbp_primary_concepts.sql
+4. run PrimaryConceptsIdentifier
 
-5. run generate-primary-concept-list.bat
+5. run WikiParsingWithSAX
+
+6. run FrequentConceptsIdentifier, CommonnessComputer & KeyphrasenessComputer
 
 notes:
 

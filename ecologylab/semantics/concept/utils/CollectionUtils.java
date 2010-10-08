@@ -1,16 +1,13 @@
 package ecologylab.semantics.concept.utils;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
-
-import libsvm.svm_node;
 
 public class CollectionUtils
 {
@@ -31,7 +28,7 @@ public class CollectionUtils
 	 * @param list2
 	 * @return
 	 */
-	public static <T extends Comparable> List<T> commonSublist(List<T> list1, List<T> list2)
+	public static <T extends Comparable<T>> List<T> commonSublist(List<T> list1, List<T> list2)
 	{
 		int p = 0;
 		int q = 0;
@@ -70,7 +67,7 @@ public class CollectionUtils
 	 * @param list
 	 * @return
 	 */
-	public static <T1, T2> List<T2> convertList(List<T1> list)
+	public static <T2, T1 extends T2> List<T2> convertList(List<T1> list)
 	{
 		List<T2> list2 = new ArrayList<T2>();
 		for (T1 e : list)
@@ -113,47 +110,29 @@ public class CollectionUtils
 	}
 	
 	/**
-	 * do a binary search for an element. the array should be sorted first.
+	 * remove repeated element from a <b>sorted</b> list. using Object.equals() for testing.
 	 * 
 	 * @param <T>
-	 * @param element
-	 * @param array
-	 * @return
+	 * @param list
 	 */
-	public static <T extends Comparable<T>> boolean binarySearch(T element, T[] array)
+	public static <T> void unique(List<T> list)
 	{
-		return binarySearch(element, array, 0, array.length);
+		Iterator<T> it = list.iterator();
+		T element = null;
+		while (it.hasNext())
+		{
+			T e = it.next();
+			if (e.equals(element))
+			{
+				it.remove();
+			}
+			else
+			{
+				element = e;
+			}
+		}
 	}
 	
-	/**
-	 * do a binary search for an element in a range of an array. this part of array should be sorted
-	 * first.
-	 * 
-	 * @param <T>
-	 * @param element
-	 * @param array
-	 * @param begin
-	 * @param end
-	 * @return
-	 */
-	public static <T extends Comparable<T>> boolean binarySearch(T element, T[] array, int begin, int end)
-	{
-		if (end <= begin)
-			return false;
-			
-		if (end - begin == 1)
-			return array[begin].equals(element);
-		
-		int p = begin + (end - begin) / 2;
-		T m = array[p];
-		if (element.compareTo(m) < 0)
-			return binarySearch(element, array, begin, p);
-		else if (element.compareTo(m) > 0)
-			return binarySearch(element, array, p + 1, end);
-		else // element.compareTo(m) == 0
-			return true;
-	}
-
 	@Test
 	public void testCommonSublist()
 	{
@@ -166,52 +145,17 @@ public class CollectionUtils
 	}
 	
 	@Test
-	public void testBinarySearch()
+	public void testUnique()
 	{
-		String[] a = { "1", "2", "3", "5", "6", "7", "9" };
-		assertTrue(binarySearch("1", a));
-		assertFalse(binarySearch("4", a));
-		assertTrue(binarySearch("7", a));
-		assertFalse(binarySearch("8", a));
-	}
-
-	/**
-	 * 
-	 * @param <T>
-	 * @param element
-	 * @param list
-	 * @return true if found, false if not.
-	 */
-	public static <T extends Comparable<T>> boolean binarySearch(T element, List<T> list)
-	{
-		return binarySearch(element, list, 0, list.size());
-	}
-
-	/**
-	 * 
-	 * @param <T>
-	 * @param element
-	 * @param list
-	 * @param begin
-	 * @param end
-	 * @return true if found, false if not.
-	 */
-	public static <T extends Comparable<T>> boolean binarySearch(T element, List<T> list, int begin, int end)
-	{
-		if (end <= begin)
-			return false;
-			
-		if (end - begin == 1)
-			return list.get(begin).equals(element);
-		
-		int p = begin + (end - begin) / 2;
-		T m = list.get(p);
-		if (element.compareTo(m) < 0)
-			return binarySearch(element, list, begin, p);
-		else if (element.compareTo(m) > 0)
-			return binarySearch(element, list, p + 1, end);
-		else // element.compareTo(m) == 0
-			return true;
+		List<String> test = new LinkedList<String>();
+		test.add("1");
+		test.add("1");
+		test.add("2");
+		test.add("3");
+		test.add("3");
+		test.add("5");
+		unique(test);
+		System.out.println(test);
 	}
 
 }

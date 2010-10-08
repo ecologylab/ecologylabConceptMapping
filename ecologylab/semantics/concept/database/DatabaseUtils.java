@@ -106,6 +106,30 @@ public class DatabaseUtils extends Debug
 	}
 
 	/**
+	 * 
+	 * @param concept a concept title
+	 * @return all the surfaces corresponding to this concept
+	 */
+	public List<String> querySurfaces(String concept)
+	{
+		PreparedStatement st = da.getPreparedStatement("SELECT surface FROM wikilinks WHERE to_title=?;");
+		List<String> rst = new ArrayList<String>();
+		try
+		{
+			ResultSet rs = st.executeQuery();
+			while (rs.next())
+			{
+				rst.add(rs.getString("surface"));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return rst;
+	}
+	
+	/**
 	 * return a ASCENDINGLY ORDERED list of from_concept (source of a link) given a to_concept
 	 * (destination of a link).
 	 * 
@@ -172,4 +196,5 @@ public class DatabaseUtils extends Debug
 	{
 		DatabaseUtils.get();
 	}
+
 }

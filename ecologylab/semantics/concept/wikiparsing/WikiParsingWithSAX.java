@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.xml.sax.InputSource;
@@ -62,7 +63,7 @@ public class WikiParsingWithSAX
 			{
 				try
 				{
-					if (CollectionUtils.binarySearch(title, primaryConceptList))
+					if (Collections.binarySearch(primaryConceptList, title) >= 0)
 						super.handleWikiText(title, wikiText);
 					else
 						Debug.warning(WikiParsingWithSAX.class, "not found in primary concept list: " + title);

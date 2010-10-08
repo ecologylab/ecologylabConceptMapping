@@ -17,10 +17,11 @@ public class PrimaryConceptsRandomPicker extends Debug
 	public List<String> pick(int n) throws SQLException
 	{
 		List<String> picked = new ArrayList<String>();
-	  ResultSet rs = DatabaseAdapter.get().executeQuerySql("SELECT name FROM dbp_primary_concepts;");
+		String sql = "SELECT title FROM dbp_primary_concepts, dbp_titles WHERE dbp_primary_concepts.name = dbp_titles.name;";
+		ResultSet rs = DatabaseAdapter.get().executeQuerySql(sql);
 		while (rs.next())
 		{
-			String concept = rs.getString("name");
+			String concept = rs.getString("title");
 			picked.add(concept);
 		}
 		CollectionUtils.randomPermute(picked, n);
@@ -35,10 +36,10 @@ public class PrimaryConceptsRandomPicker extends Debug
 			return;
 		}
 		int n = Integer.parseInt(args[0]);
-		
+
 		PrimaryConceptsRandomPicker pcrp = new PrimaryConceptsRandomPicker();
-		PrintWriter out = new PrintWriter(new File("data/primary-concepts-" + n + ".lst")); 
-		for (String concept: pcrp.pick(n))
+		PrintWriter out = new PrintWriter(new File("data/primary-concepts-" + n + ".lst"));
+		for (String concept : pcrp.pick(n))
 		{
 			out.println(concept);
 		}
