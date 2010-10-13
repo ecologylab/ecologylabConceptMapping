@@ -14,7 +14,7 @@ public class TrieDict extends Debug
 	
 	private Trie trie = new Trie();
 	
-	public static TrieDict convertFromList(List<String> list)
+	public static TrieDict convert(List<String> list)
 	{
 		TrieDict td = new TrieDict();
 		td.trie.addAll(list.toArray(new String[0]));
@@ -48,6 +48,12 @@ public class TrieDict extends Debug
 	public String[] getAll()
 	{
 		return trie.getAll();
+	}
+	
+	public static void main(String[] args) throws IOException
+	{
+		TrieDict td = TrieDict.load(new File("data/freq-surfaces.dat"));
+		td.save(new File("data/freq-surfaces.trie"));
 	}
 	
 }
