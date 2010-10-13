@@ -5,7 +5,7 @@ INSERT INTO redirects
     FROM dbp_redirects, dbp_titles
     WHERE dbp_redirects.name = dbp_titles.name
   )
-  SELECT from_title, title as to_title
+  SELECT from_title, title AS to_title
   FROM t, dbp_titles
   WHERE t.redirected_name = dbp_titles.name;
 

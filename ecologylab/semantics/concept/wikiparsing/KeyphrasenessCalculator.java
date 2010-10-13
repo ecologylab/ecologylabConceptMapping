@@ -4,102 +4,154 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.utils.TextUtils;
-import ecologylab.semantics.concept.utils.Trie;
+import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.text.SurfaceExtractor;
+import ecologylab.semantics.concept.text.TrieDict;
 
 public class KeyphrasenessCalculator extends Debug
 {
-	
-	public void compute(File primaryConcepts, File freqSurfaces) throws IOException
+
+	SurfaceExtractor	surfaceExtractor;
+
+	public KeyphrasenessCalculator(TrieDict dictionary)
 	{
-		// load freq surfaces into a trie (prefix tree)
-		Trie trie = new Trie();
-		BufferedReader brFreqSurfaces = new BufferedReader(new FileReader(freqSurfaces));
-		String line = null;
-		while ((line = brFreqSurfaces.readLine()) != null)
+		surfaceExtractor = new SurfaceExtractor(dictionary);
+		init(dictionary);
+	}
+
+	private void init(TrieDict dictionary)
+	{
+		String[] words = dictionary.getAll();
+		for (String word : words)
 		{
-			String surface = line.trim();
-			trie.add(surface);
+			try
+			{
+				int c = initSurface(word);
+				assert c == 1 : "insertion failed: initSurface() returning " + c;
+			}
+			catch (SQLException e)
+			{
+				warning("init(): error processing " + word + ": " + e.getMessage());
+			}
 		}
-		brFreqSurfaces.close();
-		
-		// TODO save the trie for future use?
-		
-		// for each primary concept, retrive wikilinks & wikitexts, and count surface occurrences
+	}
+
+	private int initSurface(String word) throws SQLException
+	{
+		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
+				"INSERT INTO surface_occurrences VALUES (?, 0, 0);");
+		ps.setString(1, word);
+		return ps.executeUpdate();
+	}
+
+	public void compute(File primaryConcepts) throws IOException
+	{
 		BufferedReader brPrimaryConcepts = new BufferedReader(new FileReader(primaryConcepts));
-		line = null;
+		String line = null;
 		while ((line = brPrimaryConcepts.readLine()) != null)
 		{
 			String concept = line.trim();
-			
-			// count all occurrences
-			String text = getWikiText(concept);
-			int offset = 0;
-			while (offset < text.length())
+
+			try
 			{
-				int len = trie.longestMatch(text, offset);
-				if (len > 0)
+				// count all occurrences
+				String text = getWikiText(concept);
+				Set<String> allSurfaces = surfaceExtractor.extract(text);
+				for (String surface : allSurfaces)
 				{
-					// matched, find the matched surface & count
-					String matchedSurface = text.substring(offset, offset + len);
-					countSurfaceOccurrence(matchedSurface);
-					
-					offset += len;
-					offset = TextUtils.nextNonWhitespaceIndex(text, offset);
+					countSurfaceOccurrence(surface);
 				}
-				else
+
+				// count linked occurrences
+				Set<String> linkedSurfaces = getLinkedSurfaces(concept);
+				for (String surface : linkedSurfaces)
 				{
-					// not matched, skip a word
-					offset = TextUtils.nextWhitespaceIndex(text, offset);
-					offset = TextUtils.nextNonWhitespaceIndex(text, offset);
+					countLinkedSurfaceOccurrence(surface);
 				}
 			}
-			
-			// count linked occurrences
-			List<String> surfaces = getSurfaces(concept);
-			for (String surface : surfaces)
+			catch (SQLException e)
 			{
-				countLinkedSurfaceOccurrence(surface);
+				warning("compute(): error processing " + concept + ": " + e.getMessage());
 			}
 		}
-		
+
 		// calculate keyphraseness based on surface occurrences
+		try
+		{
+			int c = DatabaseAdapter
+					.get()
+					.executeUpdateSql(
+							"INSERT INTO keyphraseness SELECT surface, labeled*1.0/total AS keyphraseness FROM surface_occurrences;");
+			debug(c + " surfaces calculated keyphraseness.");
+		}
+		catch (SQLException e)
+		{
+			warning("execution error when calculating keyphraseness: " + e.getMessage());
+		}
 	}
 
-	private void countLinkedSurfaceOccurrence(String surface)
+	private String getWikiText(String concept) throws SQLException
 	{
-		// TODO Auto-generated method stub
-		
+		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
+				"SELECT text FROM wikitexts WHERE title=?;");
+		ps.setString(1, concept);
+		ResultSet rs = ps.executeQuery();
+		if (rs.next())
+		{
+			return rs.getString("text");
+		}
+		else
+		{
+			return "";
+		}
 	}
 
-	private void countSurfaceOccurrence(String matchedSurface)
+	private Set<String> getLinkedSurfaces(String concept) throws SQLException
 	{
-		// TODO Auto-generated method stub
-		
+		Set<String> rst = new HashSet<String>();
+		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
+				"SELECT surface FROM wikilinks WHERE from_title=?;");
+		ps.setString(1, concept);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next())
+		{
+			String surface = rs.getString("surface");
+			rst.add(surface);
+		}
+		return rst;
 	}
 
-	private List<String> getSurfaces(String concept)
+	private int countSurfaceOccurrence(String surface) throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
+				"UPDATE surface_occurrences SET total = total + 1 WHERE surface = ?;");
+		ps.setString(1, surface);
+		return ps.executeUpdate();
 	}
 
-	private String getWikiText(String concept)
+	private int countLinkedSurfaceOccurrence(String surface) throws SQLException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
+				"UPDATE surface_occurrences SET labeled = labeled + 1 WHERE surface = ?;");
+		ps.setString(1, surface);
+		return ps.executeUpdate();
 	}
 
 	/**
 	 * @param args
+	 * @throws IOException 
 	 */
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
-		// TODO Auto-generated method stub
-
+		KeyphrasenessCalculator kc = new KeyphrasenessCalculator(TrieDict.load(new File("freq-surfaces.dict")));
+		kc.compute(new File("data/primary-concepts.lst"));
 	}
 
 }

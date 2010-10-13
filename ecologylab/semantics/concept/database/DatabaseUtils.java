@@ -44,11 +44,14 @@ public class DatabaseUtils extends Debug
 			ResultSet rs = st.executeQuery();
 			if (rs.next())
 			{
-				return rs.getDouble("keyphraseness");
+				double kp =  rs.getDouble("keyphraseness");
+				rs.close();
+				return kp;
 			}
 			else
 			{
 				warning("keyphraseness not found: " + surface);
+				rs.close();
 			}
 		}
 		catch (SQLException e)
@@ -97,6 +100,7 @@ public class DatabaseUtils extends Debug
 			{
 				rst.put(rs.getString("concept"), rs.getDouble("commonness"));
 			}
+			rs.close();
 		}
 		catch (SQLException e)
 		{
@@ -116,11 +120,13 @@ public class DatabaseUtils extends Debug
 		List<String> rst = new ArrayList<String>();
 		try
 		{
+			st.setString(1, concept);
 			ResultSet rs = st.executeQuery();
 			while (rs.next())
 			{
 				rst.add(rs.getString("surface"));
 			}
+			rs.close();
 		}
 		catch (SQLException e)
 		{
@@ -149,6 +155,7 @@ public class DatabaseUtils extends Debug
 			{
 				rst.add(rs.getString("from_concept"));
 			}
+			rs.close();
 		}
 		catch (SQLException e)
 		{

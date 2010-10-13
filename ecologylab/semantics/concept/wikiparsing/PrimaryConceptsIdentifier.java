@@ -12,6 +12,14 @@ import java.util.List;
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
 
+/**
+ * Used to sort primary concepts stored in database into a .lst file. This file is used in tasks
+ * including wiki-parsing, etc. The reason not to use PostgreSQL's ORDER BY is that it does not
+ * confirm with Java's sorting for Strings, which causes problems to binary search.
+ * 
+ * @author quyin
+ *
+ */
 public class PrimaryConceptsIdentifier extends Debug
 {
 

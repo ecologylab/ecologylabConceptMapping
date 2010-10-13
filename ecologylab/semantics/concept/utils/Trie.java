@@ -1,6 +1,7 @@
 package ecologylab.semantics.concept.utils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -485,6 +486,11 @@ public class Trie
 	 * @param quotes Every word printed is wrapped in this string
 	 */
 	public void writeFile(String file, String delimiter, String quoteMark) throws IOException
+	{
+		writeFile(new File(file), delimiter, quoteMark);
+	}
+	
+	public void writeFile(File file, String delimiter, String quoteMark) throws IOException
 	{
 		BufferedWriter out = new BufferedWriter(new FileWriter(file));
 		char[] c = new char[maxDepth];
