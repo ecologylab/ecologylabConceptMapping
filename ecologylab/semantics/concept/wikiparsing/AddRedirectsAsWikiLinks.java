@@ -10,6 +10,9 @@ import ecologylab.semantics.concept.utils.TextUtils;
 /**
  * treat redirects as wikilinks, using normalized form of the redirected concept title as surface.
  * save them into wikilinks.
+ * 
+ * @author quyin
+ * 
  */
 public class AddRedirectsAsWikiLinks
 {

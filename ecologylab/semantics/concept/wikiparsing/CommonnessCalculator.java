@@ -2,7 +2,6 @@ package ecologylab.semantics.concept.wikiparsing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,17 +20,13 @@ import ecologylab.semantics.concept.utils.CollectionUtils;
  * @author quyin
  * 
  */
-public class CommonnessCalculator
+public class CommonnessCalculator implements PreparationConstants
 {
 
-	private static final String	freqSurfacesFilePath									= "data/freq-surfaces.lst";
-
-	private static final String	freqSurfacesWithConceptCountFilePath	= "data/freq-surfaces-with-concept-count.dat";
-
-	public void computeAll(File freqSurfaces, File freqSurfacesWithConceptCount) throws IOException
+	public void computeAll() throws IOException
 	{
-		BufferedWriter bw = new BufferedWriter(new FileWriter(freqSurfacesWithConceptCount));
-		BufferedReader br = new BufferedReader(new FileReader(freqSurfaces));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(freqSurfacesWithConceptCountFilePath));
+		BufferedReader br = new BufferedReader(new FileReader(freqSurfacesFilePath));
 		String line = null;
 		while ((line = br.readLine()) != null)
 		{
@@ -98,7 +93,7 @@ public class CommonnessCalculator
 	public static void main(String[] args) throws IOException
 	{
 		CommonnessCalculator cc = new CommonnessCalculator();
-		cc.computeAll(new File(freqSurfacesFilePath), new File(freqSurfacesWithConceptCountFilePath));
+		cc.computeAll();
 	}
 
 }

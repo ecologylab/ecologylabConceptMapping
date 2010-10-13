@@ -18,27 +18,30 @@ import ecologylab.semantics.concept.database.DatabaseAdapter;
  * confirm with Java's sorting for Strings, which causes problems to binary search.
  * 
  * @author quyin
- *
+ * 
  */
-public class PrimaryConceptsIdentifier extends Debug
+public class PrimaryConceptsIdentifier extends Debug implements PreparationConstants
 {
 
-	private static final String	primaryConceptListFilePath		= "data/primary-concepts.lst";
-
-	private static final String	initDbpPrimaryConceptsSql			= "DELETE FROM dbp_primary_concepts; INSERT INTO dbp_primary_concepts (SELECT name FROM dbp_titles EXCEPT SELECT name FROM dbp_redirects);";
-
-	private static final String	queryPrimaryConceptTitlesSql	= "SELECT title FROM dbp_primary_concepts, dbp_titles WHERE dbp_primary_concepts.name = dbp_titles.name;";
-
-	public void init() throws SQLException
+	public PrimaryConceptsIdentifier() throws SQLException
 	{
-		DatabaseAdapter.get().executeSql(initDbpPrimaryConceptsSql);
+		String sql1 =
+				"DELETE FROM dbp_primary_concepts;";
+		String sql2 =
+				"INSERT INTO dbp_primary_concepts" +
+						"  (SELECT name FROM dbp_titles" +
+						"  EXCEPT" +
+						"  SELECT name FROM dbp_redirects);";
+		DatabaseAdapter.get().executeSql(sql1);
+		DatabaseAdapter.get().executeSql(sql2);
 	}
 
 	public void identify() throws SQLException, IOException
 	{
+		String sql = "SELECT title FROM dbp_primary_concepts, dbp_titles WHERE dbp_primary_concepts.name = dbp_titles.name;";
 		List<String> primaryConceptList = new ArrayList<String>();
 
-		ResultSet rs = DatabaseAdapter.get().executeQuerySql(queryPrimaryConceptTitlesSql);
+		ResultSet rs = DatabaseAdapter.get().executeQuerySql(sql);
 		while (rs.next())
 		{
 			String title = rs.getString("title");
@@ -48,7 +51,7 @@ public class PrimaryConceptsIdentifier extends Debug
 
 		Collections.sort(primaryConceptList);
 
-		BufferedWriter bw = new BufferedWriter(new FileWriter(primaryConceptListFilePath));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(primaryConceptsFilePath));
 		for (String concept : primaryConceptList)
 		{
 			bw.write(concept);
@@ -57,15 +60,9 @@ public class PrimaryConceptsIdentifier extends Debug
 		bw.close();
 	}
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 * @throws SQLException
-	 */
 	public static void main(String[] args) throws IOException, SQLException
 	{
 		PrimaryConceptsIdentifier pci = new PrimaryConceptsIdentifier();
-		// pci.init();
 		pci.identify();
 	}
 
