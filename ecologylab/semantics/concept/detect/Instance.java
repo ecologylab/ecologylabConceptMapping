@@ -1,48 +1,51 @@
-/**
- * 
- */
 package ecologylab.semantics.concept.detect;
 
-import ecologylab.semantics.concept.text.ConceptAnchor;
 
+/**
+ * Instance augments Surface with extracted features & prediction results.
+ * 
+ * @author quyin
+ *
+ */
 public class Instance
 {
 
-	public final ConceptAnchor	anchor;
+	public final Surface	surface;
 
-	public double								commonness;
-
-	public double								contextualRelatedness;
-
-	public double								contextQuality;
-
-	public boolean							isThisSense;
-
-	public double								disambiguationConfidence;
-
-	public double								keyphraseness;
-
-	public double								occurrence;							// number of occurrence
-
-	public double								frequency;
-
-	// public double generality;
-
-	public boolean							isDetected;
-
-	public double								conceptConfidence;
-
-	public Instance(String surface, String concept)
+	public Instance(Surface surface)
 	{
-		anchor = new ConceptAnchor(surface, concept);
+		this.surface = surface;
 	}
+
+	// for disambiguation
+	
+	public double		commonness;
+
+	public double		contextualRelatedness;
+
+	public double		contextQuality;
+
+	public Concept	disambiguatedConcept;
+
+	public double		disambiguationConfidence;
+
+	// for detection
+
+	public double		keyphraseness;
+
+	public double		occurrence;							// number of occurrence
+
+	public double		frequency;
+
+	public boolean	isDetected;
+
+	public double		detectionConfidence;
 
 	@Override
 	public String toString()
 	{
-		String s = String.format("{surface:%s, concept:%s, features:%f,%f,%f,%f,%f,%f,%f,%f}",
-				anchor.getSurface(), anchor.getConcept(), commonness, contextualRelatedness,
-				contextQuality, disambiguationConfidence, keyphraseness, occurrence, frequency);
+		String s = String.format("{surface:%s, concept:%s, confidences:%f,%f}", surface,
+				disambiguatedConcept, disambiguationConfidence, detectionConfidence);
 		return s;
 	}
 

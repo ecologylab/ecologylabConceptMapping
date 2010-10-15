@@ -16,6 +16,9 @@ CREATE INDEX wikilinks_to_title ON wikilinks (to_title);
 DROP INDEX IF EXISTS wikilinks_surface;
 CREATE INDEX wikilinks_surface ON wikilinks (surface);
 
+DROP INDEX IF EXISTS freq_surfaces_count_of_references;
+CREATE INDEX freq_surfaces_count_of_references ON freq_surfaces (count_of_references);
+
 DROP INDEX IF EXISTS commonness_surface;
 CREATE INDEX commonness_surface ON commonness (surface);
 

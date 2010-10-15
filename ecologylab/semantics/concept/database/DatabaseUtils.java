@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +26,7 @@ public class DatabaseUtils extends Debug
 	private DatabaseAdapter	da;
 
 	private Set<String>			surfaces					= new HashSet<String>();
-	
+
 	public boolean hasSurface(String surface)
 	{
 		if (surfaces.contains(surface))
@@ -44,7 +45,7 @@ public class DatabaseUtils extends Debug
 			ResultSet rs = st.executeQuery();
 			if (rs.next())
 			{
-				double kp =  rs.getDouble("keyphraseness");
+				double kp = rs.getDouble("keyphraseness");
 				rs.close();
 				return kp;
 			}
@@ -110,42 +111,16 @@ public class DatabaseUtils extends Debug
 	}
 
 	/**
-	 * 
-	 * @param concept a concept title
-	 * @return all the surfaces corresponding to this concept
-	 */
-	public List<String> querySurfaces(String concept)
-	{
-		PreparedStatement st = da.getPreparedStatement("SELECT surface FROM wikilinks WHERE to_title=?;");
-		List<String> rst = new ArrayList<String>();
-		try
-		{
-			st.setString(1, concept);
-			ResultSet rs = st.executeQuery();
-			while (rs.next())
-			{
-				rst.add(rs.getString("surface"));
-			}
-			rs.close();
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-		}
-		return rst;
-	}
-	
-	/**
 	 * return a ASCENDINGLY ORDERED list of from_concept (source of a link) given a to_concept
 	 * (destination of a link).
 	 * 
 	 * @param toConcept
 	 * @return
 	 */
-	public List<String> queryFromConceptsForConcept(String toConcept)
+	public List<String> queryInlinkConceptsForConcept(String toConcept)
 	{
 		PreparedStatement st = da
-				.getPreparedStatement("SELECT DISTINCT from_concept FROM inlinks WHERE to_concept=? ORDER BY from_concept ASC;");
+				.getPreparedStatement("SELECT DISTINCT from_concept FROM inlinks WHERE to_concept=?;");
 		List<String> rst = new ArrayList<String>();
 		try
 		{
@@ -161,6 +136,9 @@ public class DatabaseUtils extends Debug
 		{
 			e.printStackTrace();
 		}
+		// using Java's sort() instead of SQL ORDER BY, since ORDER BY seems to treat upper / lower
+		// cases differently from sort().
+		Collections.sort(rst);
 		return rst;
 	}
 
@@ -178,7 +156,7 @@ public class DatabaseUtils extends Debug
 			}
 			br.close();
 			debug("frequent surfaces loaded.");
-			
+
 			da = DatabaseAdapter.get();
 		}
 		catch (IOException e)
@@ -198,7 +176,7 @@ public class DatabaseUtils extends Debug
 		}
 		return utils;
 	}
-	
+
 	public static void main(String[] args)
 	{
 		DatabaseUtils.get();

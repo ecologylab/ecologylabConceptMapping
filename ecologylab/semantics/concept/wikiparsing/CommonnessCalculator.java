@@ -76,7 +76,7 @@ public class CommonnessCalculator implements PreparationConstants
 	{
 		Map<String, Integer> cc = new HashMap<String, Integer>();
 
-		String sql = "SELECT to_title, count(*) AS count FROM wikilinks WHERE surface=? GROUP BY to_title ORDER BY count DESC;";
+		String sql = "SELECT to_title, count(to_title) AS count FROM wikilinks WHERE surface=? GROUP BY to_title ORDER BY count DESC;";
 		PreparedStatement pst = DatabaseAdapter.get().getPreparedStatement(sql);
 		pst.setString(1, surface);
 		ResultSet rs = (ResultSet) pst.executeQuery();

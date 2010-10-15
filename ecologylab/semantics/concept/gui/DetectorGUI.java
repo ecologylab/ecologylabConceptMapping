@@ -25,6 +25,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import ecologylab.semantics.concept.detect.Detector;
+import ecologylab.semantics.concept.detect.Doc;
+import ecologylab.semantics.concept.detect.TrieDict;
 import ecologylab.semantics.concept.detect.Detector.DetectionListener;
 import ecologylab.semantics.concept.detect.Instance;
 
@@ -50,10 +52,16 @@ public class DetectorGUI extends JPanel
 		@Override
 		public String toString()
 		{
-			return String.format("(%.2f) %s -> %s (%.2f)", confidence, surface, concept,
-					disambiguationConfidence);
+			return String.format("(%.2f) %s -> %s (%.2f)",
+					confidence,
+					surface,
+					concept,
+					disambiguationConfidence
+					);
 		}
 	}
+
+	private TrieDict							dictionary;
 
 	private Detector							detector;
 
@@ -71,7 +79,7 @@ public class DetectorGUI extends JPanel
 
 	private double								threshold;
 
-	public DetectorGUI()
+	public DetectorGUI() throws IOException
 	{
 		super();
 
@@ -123,7 +131,8 @@ public class DetectorGUI extends JPanel
 					{
 						try
 						{
-							detector.detect(textArea.getText());
+							String text = textArea.getText();
+							detector.detect(new Doc(text, dictionary));
 						}
 						catch (IOException e1)
 						{
@@ -210,7 +219,7 @@ public class DetectorGUI extends JPanel
 		list.validate();
 	}
 
-	public static void createGUI()
+	public static void createGUI() throws IOException
 	{
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -221,7 +230,7 @@ public class DetectorGUI extends JPanel
 		frame.setVisible(true);
 	}
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
 		createGUI();
 	}

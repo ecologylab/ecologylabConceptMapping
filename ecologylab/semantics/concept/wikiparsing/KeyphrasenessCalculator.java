@@ -12,25 +12,35 @@ import java.util.Set;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.database.DatabaseAdapter;
-import ecologylab.semantics.concept.text.SurfaceExtractor;
-import ecologylab.semantics.concept.text.TrieDict;
+import ecologylab.semantics.concept.detect.Doc;
+import ecologylab.semantics.concept.detect.Surface;
+import ecologylab.semantics.concept.detect.TrieDict;
 
 public class KeyphrasenessCalculator extends Debug
 {
 
-	SurfaceExtractor	surfaceExtractor;
+	TrieDict dictionary;
 
 	public KeyphrasenessCalculator(TrieDict dictionary)
 	{
-		surfaceExtractor = new SurfaceExtractor(dictionary);
+		this.dictionary = dictionary;
 		init(dictionary);
 	}
 
 	private void init(TrieDict dictionary)
 	{
+		int i = 0;
+		int interval = 1000;
+		
 		String[] words = dictionary.getAll();
 		for (String word : words)
 		{
+			i++;
+			if (i % interval == 0)
+			{
+				debug(i + " surfaces initiated.");
+			}
+
 			try
 			{
 				int c = initSurface(word);
@@ -53,20 +63,33 @@ public class KeyphrasenessCalculator extends Debug
 
 	public void compute(File primaryConcepts) throws IOException
 	{
+		int i = 0;
+		int interval = 1000;
+		
 		BufferedReader brPrimaryConcepts = new BufferedReader(new FileReader(primaryConcepts));
 		String line = null;
 		while ((line = brPrimaryConcepts.readLine()) != null)
 		{
 			String concept = line.trim();
+			
+			i++;
+			if (i % interval == 0)
+			{
+				debug(i + " primary concepts processed.");
+			}
 
 			try
 			{
 				// count all occurrences
 				String text = getWikiText(concept);
-				Set<String> allSurfaces = surfaceExtractor.extract(text);
-				for (String surface : allSurfaces)
+				Doc doc = new Doc(text, dictionary);
+				for (Surface surface : doc.getUnambiSurfaces())
 				{
-					countSurfaceOccurrence(surface);
+					countSurfaceOccurrence(surface.word);
+				}
+				for (Surface surface : doc.getAmbiSurfaces())
+				{
+					countSurfaceOccurrence(surface.word);
 				}
 
 				// count linked occurrences

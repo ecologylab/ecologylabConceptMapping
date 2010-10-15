@@ -54,6 +54,13 @@ CREATE TABLE wikitexts (
 -- create secondary tables --
 -----------------------------
 
+-- frequent surfaces with reference count
+DROP TABLE IF EXISTS freq_surfaces;
+CREATE TABLE freq_surfaces (
+  surface VARCHAR PRIMARY KEY,
+  count_of_references INTEGER NOT NULL
+) WITHOUT OIDS;
+
 -- commonness of a concept to a surface.
 DROP TABLE IF EXISTS commonness;
 CREATE TABLE commonness (
