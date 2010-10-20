@@ -28,27 +28,24 @@ public class Concept implements Comparable<Concept>
 	 * @param title
 	 * @return
 	 */
-	public static Concept get(String title, Surface surface)
+	public static Concept get(String title)
 	{
 		if (!pool.containsKey(title))
 		{
-			pool.put(title, new Concept(title, surface));
+			pool.put(title, new Concept(title));
 		}
 		return pool.get(title);
 	}
 
 	public final String						title;
 
-	public final Surface					surface;
-
 	private List<String>					inlinkConcepts	= null;
 
 	private Map<Concept, Double>	relatedness			= new HashMap<Concept, Double>();
 
-	private Concept(String title, Surface surface)
+	private Concept(String title)
 	{
 		this.title = title;
-		this.surface = surface;
 	}
 
 	/**

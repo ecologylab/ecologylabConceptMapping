@@ -139,7 +139,7 @@ public class DetectorGUI extends JPanel
 						try
 						{
 							String text = textArea.getText();
-							detector.detect(new Doc(text, dictionary));
+							detector.detect(new Doc("untitled", text, dictionary));
 						}
 						catch (IOException e1)
 						{

@@ -30,7 +30,7 @@ public class DatabaseFacade extends Debug
 		return the;
 	}
 
-	public static final int	NUM_ALL_CONCEPTS	= 2283272;
+	public static final int	NUM_ALL_CONCEPTS	= 3056348;
 
 	private Connection			conn;
 
@@ -194,12 +194,12 @@ public class DatabaseFacade extends Debug
 		List<String> rst = new ArrayList<String>();
 
 		PreparedStatement st = conn
-				.prepareStatement("SELECT DISTINCT from_concept FROM inlinks WHERE to_concept=?;");
+				.prepareStatement("SELECT DISTINCT from_title FROM wikilinks WHERE to_title=?;");
 		st.setString(1, toConcept);
 		ResultSet rs = st.executeQuery();
 		while (rs.next())
 		{
-			rst.add(rs.getString("from_concept"));
+			rst.add(rs.getString("from_title"));
 		}
 		rs.close();
 		st.close();

@@ -101,7 +101,7 @@ public class KeyphrasenessCalculator extends Debug
 			{
 				// count all occurrences
 				String text = getWikiText(concept);
-				Doc doc = new Doc(text, dictionary);
+				Doc doc = new Doc(concept.toString(), text, dictionary);
 				for (Surface surface : doc.getUnambiSurfaces())
 				{
 					countSurfaceOccurrence(surface.word);

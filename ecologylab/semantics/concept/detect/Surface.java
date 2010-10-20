@@ -2,7 +2,9 @@ package ecologylab.semantics.concept.detect;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import ecologylab.semantics.concept.database.DatabaseFacade;
 
@@ -42,29 +44,40 @@ public class Surface
 		return pool.get(word);
 	}
 
-	public final String					word;
+	public final String						word;
 
-	private Map<String, Double>	senses				= null;
+	private Set<Concept>					senses				= null;
 
-	private double							keyphraseness	= -1;
-	
+	private Map<Concept, Double>	commonness		= null;
+
+	private double								keyphraseness	= -1;
+
 	private Surface(String word)
 	{
 		this.word = word;
 	}
 
 	/**
-	 * get senses represented by a map from a concept to a commonness value.
+	 * get senses represented by a set of concepts.
 	 * 
 	 * @return
 	 */
-	public Map<String, Double> getSenses()
+	public Set<Concept> getSenses()
 	{
 		if (senses == null)
 		{
 			try
 			{
-				senses = DatabaseFacade.get().querySenses(word);
+				senses = new HashSet<Concept>();
+				commonness = new HashMap<Concept, Double>();
+
+				Map<String, Double> commonness0 = DatabaseFacade.get().querySenses(word);
+				for (String title : commonness0.keySet())
+				{
+					Concept concept = Concept.get(title);
+					senses.add(concept);
+					commonness.put(concept, commonness0.get(title));
+				}
 			}
 			catch (SQLException e)
 			{
@@ -73,6 +86,24 @@ public class Surface
 			}
 		}
 		return senses;
+	}
+
+	/**
+	 * get commonness value for a concept w.r.t this surface.
+	 * 
+	 * @param concept
+	 * @return
+	 */
+	public double getCommonness(Concept concept)
+	{
+		if (commonness == null)
+		{
+			getSenses();
+		}
+
+		if (commonness.containsKey(concept))
+			return commonness.get(concept);
+		return 0;
 	}
 
 	/**

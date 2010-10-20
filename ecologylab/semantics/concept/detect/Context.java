@@ -20,6 +20,8 @@ public class Context extends Debug
 {
 
 	private Set<Concept>					concepts						= new HashSet<Concept>();
+	
+	private Map<Concept, Surface> surfaces= new HashMap<Concept, Surface>();
 
 	private Map<Concept, Double>	weights							= new HashMap<Concept, Double>();
 
@@ -56,10 +58,11 @@ public class Context extends Debug
 	 * 
 	 * @param concept
 	 */
-	public void addConcept(Concept concept)
+	public void addConcept(Concept concept, Surface surface)
 	{
 		int n = concepts.size();
 		concepts.add(concept);
+		surfaces.put(concept, surface);
 
 		// update average relatedness and weights
 		double avgRel = 0;
@@ -82,7 +85,7 @@ public class Context extends Debug
 
 	private double getWeight(Concept concept, double averageRelatedness)
 	{
-		return concept.surface.getKeyphraseness() * ConceptConstants.WEIGHT_KEYPHRASENESS
+		return surfaces.get(concept).getKeyphraseness() * ConceptConstants.WEIGHT_KEYPHRASENESS
 				+ averageRelatedness * ConceptConstants.WEIGHT_MUTUAL_RELATEDNESS;
 	}
 

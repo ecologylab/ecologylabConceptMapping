@@ -49,4 +49,19 @@ public class Instance
 		return s;
 	}
 
+	public static Instance get(Doc doc, Context context, Surface surface, Concept sense)
+	{
+		Instance instance = new Instance(surface);
+
+		instance.commonness = surface.getCommonness(sense);
+		instance.contextQuality = context.getQuality();
+		instance.contextualRelatedness = context.getContextualRelatedness(sense);
+
+		instance.keyphraseness = surface.getKeyphraseness();
+		instance.occurrence = doc.getNumberOfOccurrences(surface);
+		instance.frequency = ((double) instance.occurrence) / doc.getTotalWords();
+
+		return instance;
+	}
+
 }

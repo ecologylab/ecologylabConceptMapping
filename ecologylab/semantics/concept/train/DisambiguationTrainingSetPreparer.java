@@ -1,96 +1,74 @@
 package ecologylab.semantics.concept.train;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ecologylab.net.ParsedURL;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.ConceptTrainingConstants;
-import ecologylab.semantics.concept.database.DatabaseUtils;
+import ecologylab.semantics.concept.database.DatabaseFacade;
+import ecologylab.semantics.concept.detect.Concept;
 import ecologylab.semantics.concept.detect.Context;
 import ecologylab.semantics.concept.detect.Doc;
 import ecologylab.semantics.concept.detect.Instance;
-import ecologylab.semantics.generated.library.GeneratedMetadataTranslationScope;
-import ecologylab.semantics.metametadata.MetaMetadataRepository;
+import ecologylab.semantics.concept.detect.Surface;
+import ecologylab.semantics.concept.detect.TrieDict;
 
-public class DisambiguationTrainingSetPreparer
+public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 {
 
-	private BufferedWriter	out;
-
-	public DisambiguationTrainingSetPreparer() throws IOException
+	public DisambiguationTrainingSetPreparer(TrieDict dict) throws IOException, SQLException
 	{
-		out = new BufferedWriter(new FileWriter(ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH, true));
-	}
-
-	public Set<Instance> getTrainingSamples(Doc doc)
-	{
-		Set<Instance> insts = new HashSet<Instance>();
-
-		
-		
-		return insts;
+		super(dict);
 	}
 
 	/**
-	 * overridden to generate a training set for disambiguation, and also prepare disambiguation
-	 * features for use by concept detection feature extractor.
+	 * find those ambiguous, linked surfaces from a wikipedia article, extract features for them
+	 * (using the context consists of unambiguous and linked surfaces), convert them into instances
+	 * and report.
+	 * 
+	 * @param doc
+	 * @param linkedConcepts
+	 * @throws SQLException
 	 */
 	@Override
-	protected void disambiguateAndGenerateInstances()
+	protected void prepare(Doc doc, Map<Concept, Surface> linkedConcepts) throws SQLException
 	{
-		try
+		// build the context
+		Context context = new Context();
+		for (Concept concept : linkedConcepts.keySet())
 		{
-			for (ConceptAnchor anchor : context.getAnchors())
+			context.addConcept(concept, linkedConcepts.get(concept));
+		}
+		Set<Surface> unambiSurfaces = doc.getUnambiSurfaces();
+		for (Surface surface : unambiSurfaces)
+		{
+			Concept concept = (Concept) surface.getSenses().toArray()[0];
+			context.addConcept(concept, surface);
+		}
+
+		// feature extraction
+		Set<Surface> targetSurfaces = doc.getAmbiSurfaces();
+		targetSurfaces.retainAll(linkedConcepts.values());
+		for (Surface surface : targetSurfaces)
+		{
+			for (Concept concept : surface.getSenses())
 			{
-				String surface = anchor.getSurface();
-				if (!nGramGenerator.ngrams.containsKey(surface))
-					continue; // to deal with some citation anchors
-
-				debug("extracting features for surface: " + surface);
-
-				Map<String, Double> concepts = DatabaseUtils.get().querySenses(surface);
-				if (concepts.size() > 1)
-				{
-					for (String concept : concepts.keySet())
-					{
-						Instance inst = featureExtractor.extract(surface, concept, concepts.get(concept),
-								nGramGenerator.totalWordCount, nGramGenerator.ngrams.get(surface).count);
-						out.write(String.format("%d,%f,%f,%f # %s -> %s\n",
-								concept.equals(anchor.getConcept()) ? ConceptConstants.POS_CLASS_INT_LABEL
-										: ConceptConstants.NEG_CLASS_INT_LABEL, inst.commonness,
-								inst.contextualRelatedness, inst.contextQuality, surface, concept));
-					}
-				}
+				Instance inst = Instance.get(doc, context, surface, concept);
+				reportInstance(inst);
 			}
-			out.flush();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
 		}
 	}
 
-	/**
-	 * overridden to generate a training set for concept detection.
-	 */
-	@Override
-	protected void detectConcepts()
+	public static void main(String[] args) throws IOException, SQLException
 	{
-		// nothing to do
-	}
-
-	public static void main(String[] args) throws IOException
-	{
-		TrainingSetPreparer.phase = DISAMBIGUTION_PHASE;
-		TrainingSetPreparer.registerSemanticActions();
+		// prepare output
 		File outf = new File(ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH);
 		if (outf.exists())
 		{
@@ -98,28 +76,41 @@ public class DisambiguationTrainingSetPreparer
 					.println("training set data file already exists! if you want to regenerate it please delete the old one first.");
 			System.exit(-1);
 		}
+		final BufferedWriter out = new BufferedWriter(new FileWriter(outf));
 
-		MetaMetadataRepository repo = MetaMetadataRepository.load(new File(
-				ConceptConstants.METAMETADATA_REPOSITORY_LOCATION));
-		WikiInfoCollectorForTraining ic = new WikiInfoCollectorForTraining(repo,
-				GeneratedMetadataTranslationScope.get());
+		// read in title list for generating training set
+		List<String> titleList = new ArrayList<String>();
 
-		BufferedReader in = new BufferedReader(new FileReader("data/trainset-url.lst"));
-		String line = null;
-		while ((line = in.readLine()) != null)
-		{
-			ParsedURL purl = ParsedURL.getAbsolute(line);
-			ic.getContainerDownloadIfNeeded(null, purl, null, false, false, false);
-		}
-		try
-		{
-			Thread.sleep(5000);
-		}
-		catch (InterruptedException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		ic.getDownloadMonitor().stop();
+		// prepare
+		TrieDict dict = TrieDict.load(new File(ConceptConstants.DICTIONARY_PATH));
+		DisambiguationTrainingSetPreparer dtsp = new DisambiguationTrainingSetPreparer(dict) {
+
+			@Override
+			public void reportArticle(String title)
+			{
+				super.reportArticle(title);
+			}
+
+			@Override
+			public void reportInstance(Instance inst)
+			{
+				super.reportInstance(inst);
+				try
+				{
+					// TODO
+					out.write(inst.toString());
+					out.newLine();
+				}
+				catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		};
+		dtsp.prepareOnArticles(titleList);
+		
+		DatabaseFacade.get().close();
 	}
 }

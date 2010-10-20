@@ -21,6 +21,8 @@ import ecologylab.semantics.concept.utils.TextUtils;
 public class Doc
 {
 
+	private final String title;
+	
 	private final String					text;
 
 	private final int							totalWords;
@@ -31,8 +33,9 @@ public class Doc
 
 	private Map<Surface, Integer>	surfaceOccurrences	= new HashMap<Surface, Integer>();
 
-	public Doc(String text, TrieDict dictionary)
+	public Doc(String title, String text, TrieDict dictionary)
 	{
+		this.title = title;
 		this.text = TextUtils.normalize(text);
 		this.totalWords = TextUtils.count(text, " ") + 1;
 		
@@ -67,6 +70,11 @@ public class Doc
 				offset = TextUtils.nextNonWhitespaceIndex(text, offset);
 			}
 		}
+	}
+	
+	public String getTitle()
+	{
+		return title;
 	}
 
 	public String getText()
@@ -111,7 +119,7 @@ public class Doc
 		long t0 = System.currentTimeMillis();
 		for (int i = 0; i < n; ++i)
 		{
-			Doc doc = new Doc(text, TrieDict.load(new File("data/freq-surfaces.dat")));
+			Doc doc = new Doc("USA", text, TrieDict.load(new File("data/freq-surfaces.dat")));
 			for (Surface surface : doc.getUnambiSurfaces())
 			{
 				System.out.println(surface);

@@ -60,8 +60,7 @@ public class Disambiguator
 		// init
 		for (Surface surface : doc.getUnambiSurfaces())
 		{
-			String title = (String) surface.getSenses().keySet().toArray()[0];
-			context.addConcept(Concept.get(title, surface));
+			context.addConcept((Concept) surface.getSenses().toArray()[0], surface);
 		}
 
 		for (Surface surface : doc.getAmbiSurfaces())
@@ -118,7 +117,7 @@ public class Disambiguator
 			for (Instance instance : disambiguated)
 			{
 				Concept concept = instance.disambiguatedConcept;
-				context.addConcept(concept);
+				context.addConcept(concept, instance.surface);
 				candidateSurfaces.remove(instance.surface);
 			}
 		}
@@ -128,10 +127,9 @@ public class Disambiguator
 
 	private boolean isRelatedSurface(Surface surface, Context context)
 	{
-		Map<String, Double> senses = surface.getSenses();
-		for (String title : senses.keySet())
+		Set<Concept> senses = surface.getSenses();
+		for (Concept concept : senses)
 		{
-			Concept concept = Concept.get(title, surface);
 			for (Concept c : context.getConcepts())
 			{
 				double rel = c.getRelatedness(concept);
@@ -148,9 +146,9 @@ public class Disambiguator
 	{
 		Instance bestInst = null;
 
-		for (String sense : surface.getSenses().keySet())
+		for (Concept sense : surface.getSenses())
 		{
-			Instance inst = getInstance(surface, sense, context);
+			Instance inst = Instance.get(doc, context, surface, sense);
 			svm_node[] svmInst = Utils.constructSVMInstance(
 					inst.commonness,
 					inst.contextualRelatedness,
@@ -168,22 +166,6 @@ public class Disambiguator
 		}
 
 		return bestInst;
-	}
-
-	private Instance getInstance(Surface surface, String sense, Context context)
-	{
-		Instance instance = new Instance(surface);
-		Concept concept = Concept.get(sense, surface);
-
-		instance.commonness = surface.getSenses().get(sense);
-		instance.contextQuality = context.getQuality();
-		instance.contextualRelatedness = context.getContextualRelatedness(concept);
-
-		instance.keyphraseness = surface.getKeyphraseness();
-		instance.occurrence = doc.getNumberOfOccurrences(surface);
-		instance.frequency = ((double) instance.occurrence) / doc.getTotalWords();
-
-		return instance;
 	}
 
 }

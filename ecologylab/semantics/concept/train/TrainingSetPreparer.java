@@ -1,52 +1,143 @@
 package ecologylab.semantics.concept.train;
 
-import java.io.BufferedWriter;
+import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import ecologylab.semantics.actions.SemanticAction;
-import ecologylab.semantics.concept.detect.Context;
-import ecologylab.semantics.concept.detect.Detector;
+import ecologylab.semantics.concept.database.DatabaseFacade;
+import ecologylab.semantics.concept.detect.Concept;
+import ecologylab.semantics.concept.detect.Doc;
+import ecologylab.semantics.concept.detect.Instance;
+import ecologylab.semantics.concept.detect.Surface;
+import ecologylab.semantics.concept.detect.TrieDict;
 
-public abstract class TrainingSetPreparer extends Detector
+public abstract class TrainingSetPreparer
 {
 
-	protected Context					presetContext;
+	private TrieDict					dict;
 
-	protected BufferedWriter	out;
+	private PreparedStatement	pstLinkedConcepts;
 
-	public TrainingSetPreparer(Context presetContext)
+	private PreparedStatement	pstWikiText;
+
+	public TrainingSetPreparer(TrieDict dict) throws IOException, SQLException
 	{
-		this.presetContext = presetContext;
+		this.dict = dict;
+		pstLinkedConcepts = DatabaseFacade.get().getConnection()
+				.prepareStatement("SELECT to_title, surface FROM wikilinks WHERE from_title=?;");
+		pstWikiText = DatabaseFacade.get().getConnection()
+				.prepareStatement("SELECT text FROM wikitexts WHERE title=?;");
 	}
 
 	/**
-	 * overridden to enlarge the context with the preset context.
+	 * prepare a training set using a given article title list. these articles are from wikipedia.
+	 * 
+	 * @param titleList
 	 */
-	@Override
-	protected void findSurfacesAndGenerateContext()
+	public void prepareOnArticles(List<String> titleList)
 	{
-		super.findSurfacesAndGenerateContext();
-		context.addAll(presetContext);
+		for (String title : titleList)
+		{
+			try
+			{
+				prepareOnArticle(title);
+			}
+			catch (SQLException e)
+			{
+				System.err.println("error when preparing on article: " + title);
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			reportArticle(title);
+		}
+
+		// close prepared statement(s)
+		try
+		{
+			pstLinkedConcepts.close();
+			pstWikiText.close();
+		}
+		catch (SQLException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-	
-	public static void registerSemanticActions()
+
+	/**
+	 * prepare a Doc object and call prepare() to generate training examples on that article.
+	 * 
+	 * @param title
+	 * @throws SQLException
+	 */
+	private void prepareOnArticle(String title) throws SQLException
 	{
-		SemanticAction.register(WikiParsingLinkHandler.class, WikiParsingTextHandler.class);
+		String text = getWikiText(title);
+		if (text != null && text.length() > 0)
+		{
+			Doc doc = new Doc(title, text, dict);
+			Map<Concept, Surface> linkedConcepts = getLinkedConceptsAndSurfaces(doc.getTitle());
+			prepare(doc, linkedConcepts);
+		}
 	}
 
-	public static final int	DISAMBIGUTION_PHASE	= 1;
+	abstract protected void prepare(Doc doc, Map<Concept, Surface> linkedConcepts) throws SQLException;
 
-	public static final int	DETECTION_PHASE			= 2;
-
-	public static int				phase;
-
-	public static TrainingSetPreparer get(Context presetContext)
+	private String getWikiText(String title) throws SQLException
 	{
-		if (phase == DISAMBIGUTION_PHASE)
-			return new DisambiguationTrainingSetPreparer(presetContext);
-		else if (phase == DETECTION_PHASE)
-			return new DetectionTrainingSetPreparer(presetContext);
-		else
-			return null;
+		String wikiText = "";
+
+		pstWikiText.setString(1, title);
+		ResultSet rs = pstWikiText.executeQuery();
+		if (rs.next())
+		{
+			wikiText = rs.getString("text");
+		}
+		rs.close();
+
+		return wikiText;
+	}
+
+	private Map<Concept, Surface> getLinkedConceptsAndSurfaces(String title) throws SQLException
+	{
+		Map<Concept, Surface> rst = new HashMap<Concept, Surface>();
+
+		pstLinkedConcepts.setString(1, title);
+		ResultSet rs = pstLinkedConcepts.executeQuery();
+		while (rs.next())
+		{
+			String toTitle = rs.getString("to_title");
+			String surface = rs.getString("surface");
+			rst.put(Concept.get(toTitle), Surface.get(surface));
+		}
+		rs.close();
+
+		return rst;
+	}
+
+	/**
+	 * callback after an article is processed. override to customize.
+	 * 
+	 * @param title
+	 */
+	public void reportArticle(String title)
+	{
+		System.out.println(title);
+	}
+
+	/**
+	 * callback after an instance is generated. override to customize.
+	 * 
+	 * @param inst
+	 */
+	public void reportInstance(Instance inst)
+	{
+		System.out.println(inst);
 	}
 
 }

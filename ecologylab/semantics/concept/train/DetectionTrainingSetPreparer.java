@@ -6,55 +6,45 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.Set;
 
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.ConceptTrainingConstants;
+import ecologylab.semantics.concept.detect.Concept;
 import ecologylab.semantics.concept.detect.Context;
+import ecologylab.semantics.concept.detect.Doc;
 import ecologylab.semantics.concept.detect.Instance;
+import ecologylab.semantics.concept.detect.Surface;
+import ecologylab.semantics.concept.detect.TrieDict;
 import ecologylab.semantics.generated.library.GeneratedMetadataTranslationScope;
 import ecologylab.semantics.metametadata.MetaMetadataRepository;
 
 public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 {
 
-	public DetectionTrainingSetPreparer(Context presetContext)
+	public DetectionTrainingSetPreparer(TrieDict dict) throws IOException, SQLException
 	{
-		super(presetContext);
-		try
-		{
-			out = new BufferedWriter(new FileWriter(
-					ConceptTrainingConstants.DETECT_TRAINING_SET_FILE_PATH, true));
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		super(dict);
 	}
 
+	/**
+	 * find all ambiguous surfaces. for each one, disambiguate it in the context consisting of
+	 * unambiguous surfaces & linked concepts. linked ones are treated as positive samples, while
+	 * unlinked ones negative. 
+	 * 
+	 * @param doc
+	 * @param linkedConcepts
+	 * @throws SQLException
+	 */
 	@Override
-	protected void detectConcepts()
+	protected void prepare(Doc doc, Map<Concept, Surface> linkedConcepts) throws SQLException
 	{
-		try
-		{
-			for (Instance inst : instances)
-			{
-				String surface = inst.anchor.getSurface();
-				String concept = inst.anchor.getConcept();
-
-				out.write(String.format("%d,%f,%f,%f,%f,%f # %s -> %s\n", presetContext.getSurfaces()
-						.contains(surface) ? ConceptConstants.POS_CLASS_INT_LABEL
-						: ConceptConstants.NEG_CLASS_INT_LABEL, inst.keyphraseness, inst.contextualRelatedness,
-						inst.disambiguationConfidence, inst.occurrence, inst.frequency, surface, concept));
-			}
-			out.flush();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
 	}
 
+	/*
 	public static void main(String[] args) throws IOException
 	{
 		TrainingSetPreparer.phase = DETECTION_PHASE;
@@ -90,5 +80,6 @@ public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 		}
 		ic.getDownloadMonitor().stop();
 	}
+	*/
 
 }
