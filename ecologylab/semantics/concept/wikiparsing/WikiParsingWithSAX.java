@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +15,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.utils.CollectionUtils;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 
 public class WikiParsingWithSAX
 {
@@ -27,8 +28,9 @@ public class WikiParsingWithSAX
 	 * @param args
 	 * @throws SAXException
 	 * @throws IOException
+	 * @throws SQLException 
 	 */
-	public static void main(String[] args) throws SAXException, IOException
+	public static void main(String[] args) throws SAXException, IOException, SQLException
 	{
 		if (args.length != 2)
 		{
@@ -64,7 +66,7 @@ public class WikiParsingWithSAX
 				try
 				{
 					if (Collections.binarySearch(primaryConceptList, title) >= 0)
-						super.handleWikiText(title, wikiText);
+						handleWikiText(title, wikiText);
 					else
 						Debug.warning(WikiParsingWithSAX.class, "not found in primary concept list: " + title);
 				}
@@ -90,6 +92,8 @@ public class WikiParsingWithSAX
 		xr.setContentHandler(wpsh);
 
 		xr.parse(new InputSource(new FileInputStream(pargsArticleFilePath)));
+		
+		DatabaseFacade.get().close();
 	}
 
 }

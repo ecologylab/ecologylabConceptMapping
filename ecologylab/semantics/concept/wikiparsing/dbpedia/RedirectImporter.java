@@ -6,11 +6,18 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 
 public class RedirectImporter extends AbstractImporter
 {
 	public final static Pattern	redirectPattern	= Pattern.compile("<([^>]+)> <[^>]+> <([^>]+)> .");
+
+	private PreparedStatement		st;
+
+	public RedirectImporter() throws SQLException
+	{
+		st = DatabaseFacade.get().getConnection().prepareStatement("INSERT INTO dbp_redirects VALUES (?, ?);");
+	}
 
 	@Override
 	public void parseLine(String line)
@@ -40,17 +47,29 @@ public class RedirectImporter extends AbstractImporter
 
 	private void addRedirect(String from, String to) throws SQLException
 	{
-		PreparedStatement st = DatabaseAdapter.get().getPreparedStatement(
-				"INSERT INTO dbp_redirects VALUES (?, ?);");
 		st.setString(1, from);
 		st.setString(2, to);
 		st.execute();
 	}
+	
+	public void postParse()
+	{
+		try
+		{
+			st.close();
+		}
+		catch (SQLException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args) throws IOException, SQLException
 	{
 		RedirectImporter ri = new RedirectImporter();
 		ri.parse("C:/wikidata/redirects_en.nt");
+		DatabaseFacade.get().close();
 	}
 
 }

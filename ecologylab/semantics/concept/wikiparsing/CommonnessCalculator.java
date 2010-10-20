@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 
 /**
@@ -22,10 +22,17 @@ import ecologylab.semantics.concept.utils.CollectionUtils;
  */
 public class CommonnessCalculator implements PreparationConstants
 {
-	
+
+	private PreparedStatement	stInsertCommonness;
+
+	private PreparedStatement	stConceptCount;
+
 	public CommonnessCalculator() throws SQLException
 	{
-		DatabaseAdapter.get().executeSql("TRUNCATE commonness;");
+		stInsertCommonness = DatabaseFacade.get().getConnection().prepareStatement("INSERT INTO commonness VALUES (?, ?, ?)");
+		stConceptCount = DatabaseFacade.get().getConnection().prepareStatement("SELECT to_title, count(to_title) AS count FROM wikilinks, dbp_titles WHERE surface=? AND to_title=title GROUP BY to_title ORDER BY count DESC;");
+
+		DatabaseFacade.get().executeSql("TRUNCATE commonness;");
 	}
 
 	public void computeAll() throws IOException
@@ -64,27 +71,34 @@ public class CommonnessCalculator implements PreparationConstants
 		}
 		br.close();
 		bw.close();
+		
+		try
+		{
+			stInsertCommonness.close();
+			stConceptCount.close();
+		}
+		catch (SQLException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void storeCommonness(String surface, String concept, double commonness)
 			throws SQLException
 	{
-		PreparedStatement pst = DatabaseAdapter.get().getPreparedStatement(
-				"INSERT INTO commonness VALUES (?, ?, ?)");
-		pst.setString(1, surface);
-		pst.setString(2, concept);
-		pst.setDouble(3, commonness);
-		pst.executeUpdate();
+		stInsertCommonness.setString(1, surface);
+		stInsertCommonness.setString(2, concept);
+		stInsertCommonness.setDouble(3, commonness);
+		stInsertCommonness.executeUpdate();
 	}
 
 	private Map<String, Integer> getConceptCountForSurface(String surface) throws SQLException
 	{
 		Map<String, Integer> cc = new HashMap<String, Integer>();
 
-		String sql = "SELECT to_title, count(to_title) AS count FROM wikilinks, dbp_titles WHERE surface=? AND to_title=title GROUP BY to_title ORDER BY count DESC;";
-		PreparedStatement pst = DatabaseAdapter.get().getPreparedStatement(sql);
-		pst.setString(1, surface);
-		ResultSet rs = (ResultSet) pst.executeQuery();
+		stConceptCount.setString(1, surface);
+		ResultSet rs = (ResultSet) stConceptCount.executeQuery();
 		while (rs.next())
 		{
 			String concept = rs.getString("to_title");
@@ -92,13 +106,15 @@ public class CommonnessCalculator implements PreparationConstants
 			cc.put(concept, count);
 		}
 		rs.close();
+
 		return cc;
 	}
-	
+
 	public static void main(String[] args) throws IOException, SQLException
 	{
 		CommonnessCalculator cc = new CommonnessCalculator();
 		cc.computeAll();
+		DatabaseFacade.get().close();
 	}
 
 }

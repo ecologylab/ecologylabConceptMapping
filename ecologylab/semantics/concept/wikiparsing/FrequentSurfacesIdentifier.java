@@ -5,15 +5,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
-import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 
 public class FrequentSurfacesIdentifier implements PreparationConstants
 {
 	
 	public FrequentSurfacesIdentifier(int threshold) throws SQLException
 	{
-		DatabaseAdapter.get().executeSql("TRUNCATE freq_surfaces;");
+		DatabaseFacade.get().executeSql("TRUNCATE freq_surfaces;");
 		
 		String sql =
 				"INSERT INTO freq_surfaces" +
@@ -23,7 +24,7 @@ public class FrequentSurfacesIdentifier implements PreparationConstants
 						"  HAVING count(surface) > " + threshold +
 						"  ORDER BY count(surface) DESC;";
 
-		DatabaseAdapter.get().executeSql(sql);
+		DatabaseFacade.get().executeSql(sql);
 	}
 
 	public void identify() throws IOException, SQLException
@@ -31,7 +32,9 @@ public class FrequentSurfacesIdentifier implements PreparationConstants
 		String sql = "SELECT surface, count_of_references AS count FROM freq_surfaces ORDER BY count DESC";
 		int n = 0;
 		BufferedWriter bw = new BufferedWriter(new FileWriter(freqSurfacesFilePath));
-		ResultSet rs = DatabaseAdapter.get().executeQuerySql(sql);
+		
+		Statement st = DatabaseFacade.get().getConnection().createStatement();
+		ResultSet rs = st.executeQuery(sql);
 		while (rs.next())
 		{
 			String surface = rs.getString("surface");
@@ -44,8 +47,9 @@ public class FrequentSurfacesIdentifier implements PreparationConstants
 				System.out.println(n + " surfaces processed ...");
 		}
 		rs.close();
+		st.close();
+		
 		bw.close();
-
 		System.out.println(n + " frequent surfaces recognized.");
 	}
 
@@ -62,6 +66,7 @@ public class FrequentSurfacesIdentifier implements PreparationConstants
 
 		FrequentSurfacesIdentifier fsi = new FrequentSurfacesIdentifier(threshold);
 		fsi.identify();
+		DatabaseFacade.get().close();
 	}
 
 }

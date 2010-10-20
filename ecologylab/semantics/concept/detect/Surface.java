@@ -1,9 +1,10 @@
 package ecologylab.semantics.concept.detect;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import ecologylab.semantics.concept.database.DatabaseUtils;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 
 /**
  * this class represents a surface, i.e. anchor text for a concept.
@@ -61,7 +62,15 @@ public class Surface
 	{
 		if (senses == null)
 		{
-			senses = DatabaseUtils.get().querySenses(word);
+			try
+			{
+				senses = DatabaseFacade.get().querySenses(word);
+			}
+			catch (SQLException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return senses;
 	}
@@ -96,7 +105,15 @@ public class Surface
 	{
 		if (keyphraseness < 0)
 		{
-			keyphraseness = DatabaseUtils.get().queryKeyphraseness(word);
+			try
+			{
+				keyphraseness = DatabaseFacade.get().queryKeyphraseness(word);
+			}
+			catch (SQLException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return keyphraseness;
 	}

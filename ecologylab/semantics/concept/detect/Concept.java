@@ -1,10 +1,11 @@
 package ecologylab.semantics.concept.detect;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ecologylab.semantics.concept.database.DatabaseUtils;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 
 /**
  * this class represents a concept. inlink concepts and relatedness information is cached.
@@ -59,7 +60,15 @@ public class Concept implements Comparable<Concept>
 	{
 		if (inlinkConcepts == null)
 		{
-			inlinkConcepts = DatabaseUtils.get().queryInlinkConceptsForConcept(title);
+			try
+			{
+				inlinkConcepts = DatabaseFacade.get().queryInlinkConceptsForConcept(title);
+			}
+			catch (SQLException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return inlinkConcepts;
 	}
@@ -85,7 +94,7 @@ public class Concept implements Comparable<Concept>
 
 		if (!relatedness.containsKey(other.title))
 		{
-			double relatednessValue = DatabaseUtils.get().queryRelatedness(getInlinkConcepts(),
+			double relatednessValue = DatabaseFacade.get().queryRelatedness(getInlinkConcepts(),
 					other.getInlinkConcepts());
 			relatedness.put(other, relatednessValue);
 		}

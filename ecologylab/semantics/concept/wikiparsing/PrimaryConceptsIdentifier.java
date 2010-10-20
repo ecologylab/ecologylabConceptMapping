@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 
 /**
  * Used to sort primary concepts stored in database into a .lst file. This file is used in tasks
@@ -32,8 +32,8 @@ public class PrimaryConceptsIdentifier extends Debug implements PreparationConst
 						"  (SELECT name FROM dbp_titles" +
 						"  EXCEPT" +
 						"  SELECT name FROM dbp_redirects);";
-		DatabaseAdapter.get().executeSql(sql1);
-		DatabaseAdapter.get().executeSql(sql2);
+		DatabaseFacade.get().executeSql(sql1);
+		DatabaseFacade.get().executeSql(sql2);
 	}
 
 	public void identify() throws SQLException, IOException
@@ -41,7 +41,7 @@ public class PrimaryConceptsIdentifier extends Debug implements PreparationConst
 		String sql = "SELECT title FROM dbp_primary_concepts, dbp_titles WHERE dbp_primary_concepts.name = dbp_titles.name;";
 		List<String> primaryConceptList = new ArrayList<String>();
 
-		ResultSet rs = DatabaseAdapter.get().executeQuerySql(sql);
+		ResultSet rs = DatabaseFacade.get().executeQuerySql(sql);
 		while (rs.next())
 		{
 			String title = rs.getString("title");

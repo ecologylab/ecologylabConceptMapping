@@ -10,12 +10,20 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.junit.Test;
 
-import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 
 public class LabelImporter extends AbstractImporter
 {
 
 	public final static Pattern	labelPattern	= Pattern.compile("<([^>]+)> <[^>]+> \"(.*?)\"@en .");
+
+	private PreparedStatement		st;
+
+	public LabelImporter() throws SQLException
+	{
+		st = DatabaseFacade.get().getConnection()
+				.prepareStatement("INSERT INTO dbp_titles VALUES (?, ?);");
+	}
 
 	@Override
 	public void parseLine(String line)
@@ -45,11 +53,22 @@ public class LabelImporter extends AbstractImporter
 
 	private void addTitle(String dbpName, String wikiTitle) throws SQLException
 	{
-		PreparedStatement st = DatabaseAdapter.get().getPreparedStatement(
-				"INSERT INTO dbp_titles VALUES (?, ?);");
 		st.setString(1, dbpName);
 		st.setString(2, wikiTitle);
-		st.execute();
+		st.executeUpdate();
+	}
+
+	public void postParse()
+	{
+		try
+		{
+			st.close();
+		}
+		catch (SQLException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Test
@@ -61,15 +80,17 @@ public class LabelImporter extends AbstractImporter
 				"<http://dbpedia.org/resource/AtlasShrugged> <http://www.w3.org/2000/01/rdf-schema#label> \"\\\"AtlasShrugged\\\"\"@en .",
 				"<http://dbpedia.org/resource/AtlasShrugged> <http://www.w3.org/2000/01/rdf-schema#label> \"\\\"@AtlasShrugged\\\"\"@en .",
 				"<http://dbpedia.org/resource/AtlasShrugged> <http://www.w3.org/2000/01/rdf-schema#label> \"\\\"Atlas@enShrugged\\\"\"@en .",
-				"<http://dbpedia.org/resource/AtlasShrugged> <http://www.w3.org/2000/01/rdf-schema#label> \"Atlas\"@en .Shrugged\"@en .", };
+				"<http://dbpedia.org/resource/AtlasShrugged> <http://www.w3.org/2000/01/rdf-schema#label> \"Atlas\"@en .Shrugged\"@en .",
+		};
 
 		parse(Arrays.asList(tests));
 	}
 
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args) throws IOException, SQLException
 	{
 		LabelImporter li = new LabelImporter();
 		li.parse("C:/wikidata/labels_en.nt");
+		DatabaseFacade.get().close();
 	}
 
 }

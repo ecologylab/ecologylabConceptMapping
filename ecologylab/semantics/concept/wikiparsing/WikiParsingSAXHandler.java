@@ -9,7 +9,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 import ecologylab.semantics.concept.utils.TextUtils;
 import ecologylab.semantics.concept.utils.WikiUtils;
 
@@ -19,6 +19,19 @@ public class WikiParsingSAXHandler extends DefaultHandler
 	private StringBuilder	currentText;
 
 	private String				wikiTitle;
+	
+	private PreparedStatement pstSaveWikiLink;
+	private PreparedStatement pstSaveWikiText;
+	private PreparedStatement pstGetRedirected;
+	private PreparedStatement pstGetTrueTitle;
+	
+	public WikiParsingSAXHandler() throws SQLException
+	{
+		pstSaveWikiLink = DatabaseFacade.get().getConnection().prepareStatement("INSERT INTO wikilinks VALUES (?, ?, ?);");
+		pstSaveWikiText = DatabaseFacade.get().getConnection().prepareStatement("INSERT INTO wikitexts VALUES (?,?);");
+		pstGetRedirected = DatabaseFacade.get().getConnection().prepareStatement("SELECT to_title FROM redirects WHERE from_title=?;");
+		pstGetTrueTitle = DatabaseFacade.get().getConnection().prepareStatement("SELECT title FROM dbp_titles WHERE title=?;");
+	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException
@@ -44,6 +57,12 @@ public class WikiParsingSAXHandler extends DefaultHandler
 			throws SAXException
 	{
 		currentText = new StringBuilder();
+	}
+	
+	@Override
+	public void endDocument()
+	{
+		
 	}
 
 	protected void handleWikiText(final String title, String wikiText)
@@ -76,32 +95,33 @@ public class WikiParsingSAXHandler extends DefaultHandler
 
 	}
 
-	private static synchronized void saveWikiLink(String from, String to, String surface)
+	private synchronized void saveWikiLink(String from, String to, String surface)
 	{
-		if (from != null && to != null && surface != null)
+		synchronized (getClass())
 		{
-			String trueTarget = getRedirectedOrTrueTitle(initcap(to));
-			if (trueTarget == null)
+			if (from != null && to != null && surface != null)
 			{
-				// not a primary or redirected title, abandon this link since we don't know where it links to.
-				return;
-			}
-			String normedSurface = TextUtils.normalize(surface);
-
-			PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
-					"INSERT INTO wikilinks VALUES (?, ?, ?);");
-			try
-			{
-				ps.setString(1, from);
-				ps.setString(2, trueTarget);
-				ps.setString(3, normedSurface);
-				ps.execute();
-			}
-			catch (SQLException e)
-			{
-				Debug.warning(WikiParsingSAXHandler.class, String.format(
-						"error when saving wikilink: %s -> %s: %s, error message: %s", from, to, surface,
-						e.getMessage()));
+				String trueTarget = getRedirectedOrTrueTitle(initcap(to));
+				if (trueTarget == null)
+				{
+					// not a primary or redirected title, abandon this link since we don't know where it links to.
+					return;
+				}
+				String normedSurface = TextUtils.normalize(surface);
+	
+				try
+				{
+					pstSaveWikiLink.setString(1, from);
+					pstSaveWikiLink.setString(2, trueTarget);
+					pstSaveWikiLink.setString(3, normedSurface);
+					pstSaveWikiLink.execute();
+				}
+				catch (SQLException e)
+				{
+					Debug.warning(WikiParsingSAXHandler.class, String.format(
+							"error when saving wikilink: %s -> %s: %s, error message: %s", from, to, surface,
+							e.getMessage()));
+				}
 			}
 		}
 	}
@@ -112,74 +132,65 @@ public class WikiParsingSAXHandler extends DefaultHandler
 				s.length() == 0 ? "" : Character.toUpperCase(s.charAt(0)) + s.substring(1);
 	}
 
-	private static synchronized void saveWikiText(String title, String text)
+	private synchronized void saveWikiText(String title, String text)
 	{
-		if (title == null || text == null)
-			return;
-
-		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
-				"INSERT INTO wikitexts VALUES (?,?);");
-		try
+		synchronized (getClass())
 		{
-			ps.setString(1, title);
-			ps.setString(2, text);
-			ps.execute();
-		}
-		catch (SQLException e)
-		{
-			Debug.warning(
-					WikiParsingSAXHandler.class,
-					String.format("error when saving wikitext for %s, error message: %s", title,
-							e.getMessage()));
+			if (title == null || text == null)
+				return;
+	
+			try
+			{
+				pstSaveWikiText.setString(1, title);
+				pstSaveWikiText.setString(2, text);
+				pstSaveWikiText.execute();
+			}
+			catch (SQLException e)
+			{
+				Debug.warning(
+						WikiParsingSAXHandler.class,
+						String.format("error when saving wikitext for %s, error message: %s", title,
+								e.getMessage()));
+			}
 		}
 	}
 
-	private static synchronized String getRedirectedOrTrueTitle(String target)
+	private synchronized String getRedirectedOrTrueTitle(String target)
 	{
-		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
-				"SELECT to_title FROM redirects WHERE from_title=?;");
-		PreparedStatement ps2 = DatabaseAdapter.get().getPreparedStatement(
-				"SELECT title FROM dbp_titles WHERE title=?;");
-		try
+		synchronized (getClass())
 		{
-			ps.setString(1, target);
-			ResultSet rs = ps.executeQuery();
-			if (rs.next())
+			String trueTarget = null;
+			
+			try
 			{
-				return rs.getString("to_title");
-			}
-			else
-			{
-				ps2.setString(1, target);
-				rs = ps2.executeQuery();
+				pstGetRedirected.setString(1, target);
+				ResultSet rs = pstGetRedirected.executeQuery();
 				if (rs.next())
 				{
-					return target;
+					trueTarget = rs.getString("to_title");
 				}
+				else
+				{
+					pstGetTrueTitle.setString(1, target);
+					ResultSet rs1 = pstGetTrueTitle.executeQuery();
+					if (rs1.next())
+					{
+						trueTarget = target;
+					}
+					rs1.close();
+				}
+				rs.close();
 			}
+			catch (SQLException e)
+			{
+				Debug.warning(
+						WikiParsingSAXHandler.class,
+						String.format("error when looking up redirects for %s, error message: %s", target,
+								e.getMessage()));
+			}
+			
+			return trueTarget;
 		}
-		catch (SQLException e)
-		{
-			Debug.warning(
-					WikiParsingSAXHandler.class,
-					String.format("error when looking up redirects for %s, error message: %s", target,
-							e.getMessage()));
-		}
-		
-		return null;
-	}
-
-	private static void testSaveWikiLink(String from, String to, String surface)
-	{
-		String trueTarget = getRedirectedOrTrueTitle(to);
-		String normedSurface = TextUtils.normalize(surface);
-
-		System.out.format("LINK:\t%s\t(%s)\t%s\n", from, normedSurface, trueTarget);
-	}
-
-	private static void testSaveWikiText(String title, String text)
-	{
-		System.out.format("TEXT: %s\n%s\n\n", title, text);
 	}
 
 }

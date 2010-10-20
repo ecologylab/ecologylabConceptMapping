@@ -5,29 +5,34 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.database.DatabaseAdapter;
+import ecologylab.semantics.concept.database.DatabaseFacade;
 
-public class PrimaryConceptsRandomPicker extends Debug
+public class PrimaryConceptsRandomPicker
 {
 
-	public List<String> pick(int n) throws SQLException
+	public static List<String> pickRandomPrimaryConcepts(int n) throws SQLException
 	{
 		List<String> picked = new ArrayList<String>();
+		
+		Statement st = DatabaseFacade.get().getConnection().createStatement();
 		String sql = "SELECT title FROM dbp_primary_concepts, dbp_titles WHERE dbp_primary_concepts.name = dbp_titles.name;";
-		ResultSet rs = DatabaseAdapter.get().executeQuerySql(sql);
+		ResultSet rs = st.executeQuery(sql);
 		while (rs.next())
 		{
 			String concept = rs.getString("title");
 			picked.add(concept);
 		}
+		rs.close();
+		st.close();
+		
 		CollectionUtils.randomPermute(picked, n);
 		return picked.subList(0, n);
 	}
-
+	
 	public static void main(String[] args) throws FileNotFoundException, SQLException
 	{
 		if (args.length != 1)
@@ -37,9 +42,8 @@ public class PrimaryConceptsRandomPicker extends Debug
 		}
 		int n = Integer.parseInt(args[0]);
 
-		PrimaryConceptsRandomPicker pcrp = new PrimaryConceptsRandomPicker();
 		PrintWriter out = new PrintWriter(new File("data/primary-concepts-" + n + ".lst"));
-		for (String concept : pcrp.pick(n))
+		for (String concept : pickRandomPrimaryConcepts(n))
 		{
 			out.println(concept);
 		}

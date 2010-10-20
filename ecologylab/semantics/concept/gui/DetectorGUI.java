@@ -6,8 +6,11 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Vector;
 
@@ -25,6 +28,7 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import ecologylab.semantics.concept.database.DatabaseFacade;
 import ecologylab.semantics.concept.detect.Detector;
 import ecologylab.semantics.concept.detect.Doc;
 import ecologylab.semantics.concept.detect.TrieDict;
@@ -231,6 +235,23 @@ public class DetectorGUI extends JPanel
 		frame.setContentPane(gui);
 		frame.pack();
 		frame.setVisible(true);
+		
+		frame.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowClosing(WindowEvent e)
+			{
+				try
+				{
+					DatabaseFacade.get().close();
+				}
+				catch (SQLException e1)
+				{
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
 	}
 
 	public static void main(String[] args) throws IOException
