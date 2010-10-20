@@ -64,23 +64,28 @@ public class WikiParsingSAXHandler extends DefaultHandler
 		String ft = wu.filter(wikiText);
 		String nt = TextUtils.normalize(ft);
 		saveWikiText(title, nt);
-		
+
 		tick(title);
 	}
-	
+
 	/**
 	 * for counter.
 	 */
 	protected void tick(String title)
 	{
-		
+
 	}
 
 	private static synchronized void saveWikiLink(String from, String to, String surface)
 	{
 		if (from != null && to != null && surface != null)
 		{
-			String trueTarget = getRedirectedTitle(to);
+			String trueTarget = getRedirectedOrTrueTitle(initcap(to));
+			if (trueTarget == null)
+			{
+				// not a primary or redirected title, abandon this link since we don't know where it links to.
+				return;
+			}
 			String normedSurface = TextUtils.normalize(surface);
 
 			PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
@@ -99,6 +104,12 @@ public class WikiParsingSAXHandler extends DefaultHandler
 						e.getMessage()));
 			}
 		}
+	}
+
+	private static String initcap(String s)
+	{
+		return s == null ? null :
+				s.length() == 0 ? "" : Character.toUpperCase(s.charAt(0)) + s.substring(1);
 	}
 
 	private static synchronized void saveWikiText(String title, String text)
@@ -123,10 +134,12 @@ public class WikiParsingSAXHandler extends DefaultHandler
 		}
 	}
 
-	private static synchronized String getRedirectedTitle(String target)
+	private static synchronized String getRedirectedOrTrueTitle(String target)
 	{
 		PreparedStatement ps = DatabaseAdapter.get().getPreparedStatement(
 				"SELECT to_title FROM redirects WHERE from_title=?;");
+		PreparedStatement ps2 = DatabaseAdapter.get().getPreparedStatement(
+				"SELECT title FROM dbp_titles WHERE title=?;");
 		try
 		{
 			ps.setString(1, target);
@@ -134,6 +147,15 @@ public class WikiParsingSAXHandler extends DefaultHandler
 			if (rs.next())
 			{
 				return rs.getString("to_title");
+			}
+			else
+			{
+				ps2.setString(1, target);
+				rs = ps2.executeQuery();
+				if (rs.next())
+				{
+					return target;
+				}
 			}
 		}
 		catch (SQLException e)
@@ -143,20 +165,21 @@ public class WikiParsingSAXHandler extends DefaultHandler
 					String.format("error when looking up redirects for %s, error message: %s", target,
 							e.getMessage()));
 		}
-		return target;
+		
+		return null;
 	}
 
 	private static void testSaveWikiLink(String from, String to, String surface)
 	{
-		String trueTarget = getRedirectedTitle(to);
+		String trueTarget = getRedirectedOrTrueTitle(to);
 		String normedSurface = TextUtils.normalize(surface);
-		
+
 		System.out.format("LINK:\t%s\t(%s)\t%s\n", from, normedSurface, trueTarget);
 	}
-	
+
 	private static void testSaveWikiText(String title, String text)
 	{
 		System.out.format("TEXT: %s\n%s\n\n", title, text);
 	}
-	
+
 }

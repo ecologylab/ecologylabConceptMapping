@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Vector;
@@ -30,6 +31,7 @@ import ecologylab.semantics.concept.detect.TrieDict;
 import ecologylab.semantics.concept.detect.Detector.DetectionListener;
 import ecologylab.semantics.concept.detect.Instance;
 
+@SuppressWarnings("serial")
 public class DetectorGUI extends JPanel
 {
 
@@ -83,6 +85,7 @@ public class DetectorGUI extends JPanel
 	{
 		super();
 
+		dictionary = TrieDict.load(new File("data/freq-surfaces.dict"));
 		detected = new Vector<ConceptRecord>();
 
 		detector = new Detector();

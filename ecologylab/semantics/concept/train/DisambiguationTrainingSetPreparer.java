@@ -6,33 +6,37 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.ConceptTrainingConstants;
 import ecologylab.semantics.concept.database.DatabaseUtils;
 import ecologylab.semantics.concept.detect.Context;
+import ecologylab.semantics.concept.detect.Doc;
 import ecologylab.semantics.concept.detect.Instance;
-import ecologylab.semantics.concept.text.ConceptAnchor;
 import ecologylab.semantics.generated.library.GeneratedMetadataTranslationScope;
 import ecologylab.semantics.metametadata.MetaMetadataRepository;
 
-public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
+public class DisambiguationTrainingSetPreparer
 {
 
-	public DisambiguationTrainingSetPreparer(Context presetContext)
+	private BufferedWriter	out;
+
+	public DisambiguationTrainingSetPreparer() throws IOException
 	{
-		super(presetContext);
-		try
-		{
-			out = new BufferedWriter(new FileWriter(
-					ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH, true));
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		out = new BufferedWriter(new FileWriter(ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH, true));
+	}
+
+	public Set<Instance> getTrainingSamples(Doc doc)
+	{
+		Set<Instance> insts = new HashSet<Instance>();
+
+		
+		
+		return insts;
 	}
 
 	/**

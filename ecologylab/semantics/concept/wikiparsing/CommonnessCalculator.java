@@ -22,6 +22,11 @@ import ecologylab.semantics.concept.utils.CollectionUtils;
  */
 public class CommonnessCalculator implements PreparationConstants
 {
+	
+	public CommonnessCalculator() throws SQLException
+	{
+		DatabaseAdapter.get().executeSql("TRUNCATE commonness;");
+	}
 
 	public void computeAll() throws IOException
 	{
@@ -30,7 +35,7 @@ public class CommonnessCalculator implements PreparationConstants
 		String line = null;
 		while ((line = br.readLine()) != null)
 		{
-			String surface = line.trim();
+			String surface = line.trim().split("\t")[0];
 
 			try
 			{
@@ -76,7 +81,7 @@ public class CommonnessCalculator implements PreparationConstants
 	{
 		Map<String, Integer> cc = new HashMap<String, Integer>();
 
-		String sql = "SELECT to_title, count(to_title) AS count FROM wikilinks WHERE surface=? GROUP BY to_title ORDER BY count DESC;";
+		String sql = "SELECT to_title, count(to_title) AS count FROM wikilinks, dbp_titles WHERE surface=? AND to_title=title GROUP BY to_title ORDER BY count DESC;";
 		PreparedStatement pst = DatabaseAdapter.get().getPreparedStatement(sql);
 		pst.setString(1, surface);
 		ResultSet rs = (ResultSet) pst.executeQuery();
@@ -90,7 +95,7 @@ public class CommonnessCalculator implements PreparationConstants
 		return cc;
 	}
 	
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args) throws IOException, SQLException
 	{
 		CommonnessCalculator cc = new CommonnessCalculator();
 		cc.computeAll();

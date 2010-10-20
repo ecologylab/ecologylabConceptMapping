@@ -53,7 +53,7 @@ public class Detector extends Debug
 
 	private Disambiguator							disambiguator;
 
-	public Set<Concept>								detectedConcepts;
+	private Set<Concept>							detectedConcepts;
 
 	private SVMGaussianNormalization	norm;
 

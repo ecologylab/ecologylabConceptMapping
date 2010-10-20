@@ -7,13 +7,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ecologylab.semantics.concept.database.DatabaseAdapter;
-import ecologylab.semantics.concept.detect.Surface;
 
 public class FrequentSurfacesIdentifier implements PreparationConstants
 {
 	
 	public FrequentSurfacesIdentifier(int threshold) throws SQLException
 	{
+		DatabaseAdapter.get().executeSql("TRUNCATE freq_surfaces;");
+		
 		String sql =
 				"INSERT INTO freq_surfaces" +
 						"  SELECT surface, count(surface)" +
@@ -34,10 +35,13 @@ public class FrequentSurfacesIdentifier implements PreparationConstants
 		while (rs.next())
 		{
 			String surface = rs.getString("surface");
-			Surface s = Surface.get(surface);
-			bw.write(String.format("%s\t%d", surface, s.getSenses().size()));
+			int count_ref = rs.getInt("count");
+			bw.write(String.format("%s\t%d", surface, count_ref));
 			bw.newLine();
+			
 			n++;
+			if (n % 1000 == 0)
+				System.out.println(n + " surfaces processed ...");
 		}
 		rs.close();
 		bw.close();
