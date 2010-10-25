@@ -30,9 +30,11 @@ public class DatabaseFacade extends Debug
 		return the;
 	}
 
-	public static final int	NUM_ALL_CONCEPTS	= 3056348;
+	public static final int									NUM_ALL_CONCEPTS		= 3056348;
 
-	private Connection			conn;
+	private Connection											conn;
+
+	private Map<String, PreparedStatement>	preparedStatements	= new HashMap<String, PreparedStatement>();
 
 	private DatabaseFacade()
 	{
@@ -57,22 +59,58 @@ public class DatabaseFacade extends Debug
 			error("database connection failed.");
 			e.printStackTrace();
 		}
+
+		// register a clean up hook
+		Thread t = new Thread(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				cleanUp();
+			}
+		});
+		Runtime.getRuntime().addShutdownHook(t);
 	}
-	
-	public Connection getConnection()
+
+	private void cleanUp()
 	{
-		return conn;
-	}
-	
-	/**
-	 * close the connection. <b>MUST CALL AFTER USE!</b>
-	 * 
-	 * @throws SQLException
-	 */
-	public void close() throws SQLException
-	{
-		conn.close();
-		the = null;
+		// clean up prepared statements & connection
+		if (preparedStatements != null)
+		{
+			debug("cleaning up prepared statements ...");
+			for (String sql : preparedStatements.keySet())
+			{
+				try
+				{
+					PreparedStatement pst = preparedStatements.get(sql);
+					if (!pst.isClosed())
+						pst.close();
+				}
+				catch (SQLException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			preparedStatements = null;
+			debug("done.");
+		}
+
+		if (conn != null)
+		{
+			try
+			{
+				debug("closing database connection ...");
+				if (!conn.isClosed())
+					conn.close();
+				debug("done.");
+			}
+			catch (SQLException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void executeSql(String sql) throws SQLException
@@ -81,7 +119,7 @@ public class DatabaseFacade extends Debug
 		st.execute(sql);
 		st.close();
 	}
-	
+
 	public int executeUpdateSql(String sql) throws SQLException
 	{
 		Statement st = conn.createStatement();
@@ -89,13 +127,32 @@ public class DatabaseFacade extends Debug
 		st.close();
 		return rst;
 	}
-	
+
 	public ResultSet executeQuerySql(String sql) throws SQLException
 	{
 		Statement st = conn.createStatement();
 		ResultSet rs = st.executeQuery(sql);
 		st.close();
 		return rs;
+	}
+
+	public PreparedStatement getPreparedStatement(String sql)
+	{
+		if (!preparedStatements.containsKey(sql))
+		{
+			try
+			{
+				PreparedStatement pst = conn.prepareStatement(sql);
+				preparedStatements.put(sql, pst);
+			}
+			catch (SQLException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return preparedStatements.get(sql);
 	}
 
 	/**
@@ -109,8 +166,7 @@ public class DatabaseFacade extends Debug
 	{
 		double kp = 0;
 
-		PreparedStatement st = conn
-				.prepareStatement("SELECT keyphraseness FROM keyphraseness WHERE surface=?;");
+		PreparedStatement st = getPreparedStatement("SELECT keyphraseness FROM keyphraseness WHERE surface=?;");
 		st.setString(1, surface.toLowerCase().replaceAll("[^a-z0-9]", " "));
 		ResultSet rs = st.executeQuery();
 		if (rs.next())
@@ -121,9 +177,8 @@ public class DatabaseFacade extends Debug
 		{
 			warning("keyphraseness not found: " + surface);
 		}
-
 		rs.close();
-		st.close();
+		
 		return kp;
 	}
 
@@ -167,8 +222,7 @@ public class DatabaseFacade extends Debug
 	{
 		Map<String, Double> rst = new HashMap<String, Double>();
 
-		PreparedStatement st = conn
-				.prepareStatement("SELECT concept, commonness FROM commonness WHERE surface=?;");
+		PreparedStatement st = getPreparedStatement("SELECT concept, commonness FROM commonness WHERE surface=?;");
 		st.setString(1, surface);
 		ResultSet rs = st.executeQuery();
 		while (rs.next())
@@ -176,7 +230,6 @@ public class DatabaseFacade extends Debug
 			rst.put(rs.getString("concept"), rs.getDouble("commonness"));
 		}
 		rs.close();
-		st.close();
 
 		return rst;
 	}
@@ -187,14 +240,13 @@ public class DatabaseFacade extends Debug
 	 * 
 	 * @param toConcept
 	 * @return
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	public List<String> queryInlinkConceptsForConcept(String toConcept) throws SQLException
 	{
 		List<String> rst = new ArrayList<String>();
 
-		PreparedStatement st = conn
-				.prepareStatement("SELECT DISTINCT from_title FROM wikilinks WHERE to_title=?;");
+		PreparedStatement st = getPreparedStatement("SELECT DISTINCT from_title FROM wikilinks WHERE to_title=?;");
 		st.setString(1, toConcept);
 		ResultSet rs = st.executeQuery();
 		while (rs.next())
@@ -202,7 +254,6 @@ public class DatabaseFacade extends Debug
 			rst.add(rs.getString("from_title"));
 		}
 		rs.close();
-		st.close();
 
 		// using Java's sort() instead of SQL ORDER BY, since ORDER BY seems to treat upper / lower
 		// cases differently from sort().

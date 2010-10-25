@@ -1,68 +1,38 @@
 package ecologylab.semantics.concept.detect;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-import libsvm.svm_node;
-
 import ecologylab.semantics.concept.ConceptConstants;
-import ecologylab.semantics.concept.learning.svm.SVMGaussianNormalization;
-import ecologylab.semantics.concept.learning.svm.SVMPredicter;
-import ecologylab.semantics.concept.learning.svm.Utils;
 
-public class Disambiguator
+/**
+ * internal class used for disambiguation.
+ * 
+ * @author quyin
+ * 
+ */
+class Disambiguator
 {
 
-	// TODO
-	public static final double				threshold1	= 0;
+	private Doc	doc;
 
-	// TODO
-	public static final double				threshold2	= 0;
-
-	private Doc												doc;
-
-	private Context										context;
-
-	private Set<Surface>							candidateSurfaces;
-
-	private Set<Instance>							resultInstances;
-
-	private SVMGaussianNormalization	normalizer;
-
-	private SVMPredicter							predictor;
-
-	public Disambiguator() throws IOException
+	public Disambiguator(Doc doc)
 	{
-		normalizer = new SVMGaussianNormalization(ConceptConstants.DETECT_PARAM_FILE_PATH);
-		predictor = new SVMPredicter(ConceptConstants.DETECT_MODEL_FILE_PATH);
+		this.doc = doc;
 	}
 
-	public Set<Instance> disambiguate(Doc doc)
-	{
-		if (resultInstances == null)
-		{
-			this.doc = doc;
-			context = new Context();
-			candidateSurfaces = new HashSet<Surface>();
-
-			resultInstances = disambiguate();
-		}
-		return resultInstances;
-	}
-
-	private Set<Instance> disambiguate()
+	public Set<Instance> disambiguate() throws IOException
 	{
 		HashSet<Instance> rst = new HashSet<Instance>();
 
 		// init
+		Context context = new Context();
 		for (Surface surface : doc.getUnambiSurfaces())
 		{
 			context.addConcept((Concept) surface.getSenses().toArray()[0], surface);
 		}
-
+		Set<Surface> candidateSurfaces = new HashSet<Surface>();
 		for (Surface surface : doc.getAmbiSurfaces())
 		{
 			candidateSurfaces.add(surface);
@@ -94,18 +64,10 @@ public class Disambiguator
 			Set<Instance> disambiguated = new HashSet<Instance>();
 			for (Surface surface : relatedSurfaces)
 			{
-				try
+				Instance instance = context.disambiguate(surface);
+				if (instance.disambiguationConfidence > ConceptConstants.threshold2)
 				{
-					Instance instance = disambiguate(surface, context);
-					if (instance.disambiguationConfidence > threshold2)
-					{
-						disambiguated.add(instance);
-					}
-				}
-				catch (IOException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					disambiguated.add(instance);
 				}
 			}
 
@@ -133,39 +95,13 @@ public class Disambiguator
 			for (Concept c : context.getConcepts())
 			{
 				double rel = c.getRelatedness(concept);
-				if (rel > threshold1)
+				if (rel > ConceptConstants.threshold1)
 				{
 					return true;
 				}
 			}
 		}
 		return false;
-	}
-
-	private Instance disambiguate(Surface surface, Context context) throws IOException
-	{
-		Instance bestInst = null;
-
-		for (Concept sense : surface.getSenses())
-		{
-			Instance inst = Instance.get(doc, context, surface, sense);
-			svm_node[] svmInst = Utils.constructSVMInstance(
-					inst.commonness,
-					inst.contextualRelatedness,
-					inst.contextQuality
-					);
-			normalizer.normalize(svmInst);
-			Map<Integer, Double> buf = new HashMap<Integer, Double>();
-			predictor.predict(svmInst, buf);
-			inst.disambiguationConfidence = buf.get(ConceptConstants.POS_CLASS_INT_LABEL);
-
-			if (bestInst == null || inst.disambiguationConfidence > bestInst.disambiguationConfidence)
-			{
-				bestInst = inst;
-			}
-		}
-
-		return bestInst;
 	}
 
 }

@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,16 +17,14 @@ public class PrimaryConceptsRandomPicker
 	{
 		List<String> picked = new ArrayList<String>();
 		
-		Statement st = DatabaseFacade.get().getConnection().createStatement();
 		String sql = "SELECT title FROM dbp_primary_concepts, dbp_titles WHERE dbp_primary_concepts.name = dbp_titles.name;";
-		ResultSet rs = st.executeQuery(sql);
+		ResultSet rs = DatabaseFacade.get().executeQuerySql(sql);
 		while (rs.next())
 		{
 			String concept = rs.getString("title");
 			picked.add(concept);
 		}
 		rs.close();
-		st.close();
 		
 		CollectionUtils.randomPermute(picked, n);
 		return picked.subList(0, n);

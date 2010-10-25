@@ -16,7 +16,7 @@ public class RedirectImporter extends AbstractImporter
 
 	public RedirectImporter() throws SQLException
 	{
-		st = DatabaseFacade.get().getConnection().prepareStatement("INSERT INTO dbp_redirects VALUES (?, ?);");
+		st = DatabaseFacade.get().getPreparedStatement("INSERT INTO dbp_redirects VALUES (?, ?);");
 	}
 
 	@Override
@@ -69,7 +69,6 @@ public class RedirectImporter extends AbstractImporter
 	{
 		RedirectImporter ri = new RedirectImporter();
 		ri.parse("C:/wikidata/redirects_en.nt");
-		DatabaseFacade.get().close();
 	}
 
 }

@@ -29,8 +29,8 @@ public class CommonnessCalculator implements PreparationConstants
 
 	public CommonnessCalculator() throws SQLException
 	{
-		stInsertCommonness = DatabaseFacade.get().getConnection().prepareStatement("INSERT INTO commonness VALUES (?, ?, ?)");
-		stConceptCount = DatabaseFacade.get().getConnection().prepareStatement("SELECT to_title, count(to_title) AS count FROM wikilinks, dbp_titles WHERE surface=? AND to_title=title GROUP BY to_title ORDER BY count DESC;");
+		stInsertCommonness = DatabaseFacade.get().getPreparedStatement("INSERT INTO commonness VALUES (?, ?, ?)");
+		stConceptCount = DatabaseFacade.get().getPreparedStatement("SELECT to_title, count(to_title) AS count FROM wikilinks, dbp_titles WHERE surface=? AND to_title=title GROUP BY to_title ORDER BY count DESC;");
 
 		DatabaseFacade.get().executeSql("TRUNCATE commonness;");
 	}
@@ -114,7 +114,6 @@ public class CommonnessCalculator implements PreparationConstants
 	{
 		CommonnessCalculator cc = new CommonnessCalculator();
 		cc.computeAll();
-		DatabaseFacade.get().close();
 	}
 
 }

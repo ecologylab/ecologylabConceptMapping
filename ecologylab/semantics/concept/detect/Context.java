@@ -1,12 +1,18 @@
 package ecologylab.semantics.concept.detect;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import libsvm.svm_node;
+
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.learning.svm.NormalizerFactory;
+import ecologylab.semantics.concept.learning.svm.PredicterFactory;
+import ecologylab.semantics.concept.learning.svm.LearningUtils;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 
 /**
@@ -141,6 +147,39 @@ public class Context extends Debug
 	public String toString()
 	{
 		return "Context[" + size() + " concepts]";
+	}
+
+	/**
+	 * disambiguate a surface using this context.
+	 * 
+	 * @param surface
+	 * @return the instance containing both features and disambiguation results.
+	 * @throws IOException
+	 */
+	public Instance disambiguate(Surface surface) throws IOException
+	{
+		Instance bestInst = null;
+
+		for (Concept sense : surface.getSenses())
+		{
+			Instance inst = Instance.getForDisambiguation(this, surface, sense);
+			svm_node[] svmInst = LearningUtils.constructSVMInstance(
+					inst.commonness,
+					inst.contextualRelatedness,
+					inst.contextQuality
+					);
+			NormalizerFactory.get(ConceptConstants.DISAMBI_PARAM_FILE_PATH).normalize(svmInst);
+			Map<Integer, Double> buf = new HashMap<Integer, Double>();
+			PredicterFactory.get(ConceptConstants.DISAMBI_MODEL_FILE_PATH).predict(svmInst, buf);
+			inst.disambiguationConfidence = buf.get(ConceptConstants.POS_CLASS_INT_LABEL);
+
+			if (bestInst == null || inst.disambiguationConfidence > bestInst.disambiguationConfidence)
+			{
+				bestInst = inst;
+			}
+		}
+
+		return bestInst;
 	}
 
 }

@@ -9,4 +9,6 @@ public class ConceptTrainingConstants
 
 	public static final String	DICTIONARY_PATH	= "data/freq-surfaces.dict";
 
+	public static final String	TRAINSET_ARTICLE_LIST_FILE_PATH	= null;
+
 }

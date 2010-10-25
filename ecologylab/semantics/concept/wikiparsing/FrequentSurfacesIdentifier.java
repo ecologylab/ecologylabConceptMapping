@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import ecologylab.semantics.concept.database.DatabaseFacade;
 
@@ -33,8 +32,7 @@ public class FrequentSurfacesIdentifier implements PreparationConstants
 		int n = 0;
 		BufferedWriter bw = new BufferedWriter(new FileWriter(freqSurfacesFilePath));
 		
-		Statement st = DatabaseFacade.get().getConnection().createStatement();
-		ResultSet rs = st.executeQuery(sql);
+		ResultSet rs = DatabaseFacade.get().executeQuerySql(sql);
 		while (rs.next())
 		{
 			String surface = rs.getString("surface");
@@ -47,7 +45,6 @@ public class FrequentSurfacesIdentifier implements PreparationConstants
 				System.out.println(n + " surfaces processed ...");
 		}
 		rs.close();
-		st.close();
 		
 		bw.close();
 		System.out.println(n + " frequent surfaces recognized.");
@@ -66,7 +63,6 @@ public class FrequentSurfacesIdentifier implements PreparationConstants
 
 		FrequentSurfacesIdentifier fsi = new FrequentSurfacesIdentifier(threshold);
 		fsi.identify();
-		DatabaseFacade.get().close();
 	}
 
 }

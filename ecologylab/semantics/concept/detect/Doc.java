@@ -16,29 +16,33 @@ import ecologylab.semantics.concept.utils.TextUtils;
  * recorded, based on which frequencies can be computed.
  * 
  * @author quyin
- *
+ * 
  */
 public class Doc
 {
 
-	private final String title;
-	
+	private final String					title;
+
 	private final String					text;
 
 	private final int							totalWords;
-	
-	private Set<Surface>					unambiSurfaces			= new HashSet<Surface>();
 
-	private Set<Surface>					ambiSurfaces				= new HashSet<Surface>();
+	private Set<Surface>					unambiSurfaces				= new HashSet<Surface>();
 
-	private Map<Surface, Integer>	surfaceOccurrences	= new HashMap<Surface, Integer>();
+	private Set<Surface>					ambiSurfaces					= new HashSet<Surface>();
+
+	private Map<Surface, Integer>	surfaceOccurrences		= new HashMap<Surface, Integer>();
+
+	private Set<Instance>					disambiguationResults	= null;
+
+	private Set<Instance>					detectionResults			= null;
 
 	public Doc(String title, String text, TrieDict dictionary)
 	{
 		this.title = title;
 		this.text = TextUtils.normalize(text);
 		this.totalWords = TextUtils.count(text, " ") + 1;
-		
+
 		// extract surfaces
 		int offset = 0;
 		while (offset < text.length())
@@ -54,7 +58,7 @@ public class Doc
 					ambiSurfaces.add(surface);
 				else
 					unambiSurfaces.add(surface);
-				
+
 				if (!surfaceOccurrences.containsKey(surface))
 					surfaceOccurrences.put(surface, 1);
 				else
@@ -71,7 +75,7 @@ public class Doc
 			}
 		}
 	}
-	
+
 	public String getTitle()
 	{
 		return title;
@@ -101,7 +105,7 @@ public class Doc
 	{
 		return surfaceOccurrences;
 	}
-	
+
 	public int getNumberOfOccurrences(Surface surface)
 	{
 		if (surfaceOccurrences.containsKey(surface))
@@ -110,6 +114,45 @@ public class Doc
 		}
 		return 0;
 	}
+
+	public Set<Instance> disambiguate()
+	{
+		if (disambiguationResults == null)
+		{
+			Disambiguator disambiguator = new Disambiguator(this);
+			try
+			{
+				disambiguationResults = disambiguator.disambiguate();
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return disambiguationResults;
+	}
+
+	public Set<Instance> detect()
+	{
+		if (detectionResults == null)
+		{
+			Set<Instance> instances = disambiguate();
+			Detector detector = new Detector(this);
+			try
+			{
+				detectionResults = detector.detect(instances);
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return detectionResults;
+	}
+
+	/* ==================== test ==================== */
 
 	public static void main(String[] args) throws IOException
 	{

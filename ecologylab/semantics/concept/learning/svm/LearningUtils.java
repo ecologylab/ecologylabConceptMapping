@@ -2,7 +2,7 @@ package ecologylab.semantics.concept.learning.svm;
 
 import libsvm.svm_node;
 
-public class Utils
+public class LearningUtils
 {
 	
 	public static String instanceToString(svm_node[] instance)

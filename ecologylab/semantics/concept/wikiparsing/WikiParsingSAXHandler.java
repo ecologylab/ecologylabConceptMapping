@@ -27,10 +27,10 @@ public class WikiParsingSAXHandler extends DefaultHandler
 	
 	public WikiParsingSAXHandler() throws SQLException
 	{
-		pstSaveWikiLink = DatabaseFacade.get().getConnection().prepareStatement("INSERT INTO wikilinks VALUES (?, ?, ?);");
-		pstSaveWikiText = DatabaseFacade.get().getConnection().prepareStatement("INSERT INTO wikitexts VALUES (?,?);");
-		pstGetRedirected = DatabaseFacade.get().getConnection().prepareStatement("SELECT to_title FROM redirects WHERE from_title=?;");
-		pstGetTrueTitle = DatabaseFacade.get().getConnection().prepareStatement("SELECT title FROM dbp_titles WHERE title=?;");
+		pstSaveWikiLink = DatabaseFacade.get().getPreparedStatement("INSERT INTO wikilinks VALUES (?, ?, ?);");
+		pstSaveWikiText = DatabaseFacade.get().getPreparedStatement("INSERT INTO wikitexts VALUES (?,?);");
+		pstGetRedirected = DatabaseFacade.get().getPreparedStatement("SELECT to_title FROM redirects WHERE from_title=?;");
+		pstGetTrueTitle = DatabaseFacade.get().getPreparedStatement("SELECT title FROM dbp_titles WHERE title=?;");
 	}
 
 	@Override

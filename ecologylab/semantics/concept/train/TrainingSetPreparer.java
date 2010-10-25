@@ -1,143 +1,127 @@
 package ecologylab.semantics.concept.train;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import ecologylab.semantics.concept.database.DatabaseFacade;
-import ecologylab.semantics.concept.detect.Concept;
-import ecologylab.semantics.concept.detect.Doc;
+import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.ConceptTrainingConstants;
 import ecologylab.semantics.concept.detect.Instance;
-import ecologylab.semantics.concept.detect.Surface;
 import ecologylab.semantics.concept.detect.TrieDict;
 
 public abstract class TrainingSetPreparer
 {
 
-	private TrieDict					dict;
+	public abstract void prepare(WikiDoc doc, BufferedWriter out);
 
-	private PreparedStatement	pstLinkedConcepts;
+	protected abstract void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance,
+			boolean isPositiveSample);
 
-	private PreparedStatement	pstWikiText;
-
-	public TrainingSetPreparer(TrieDict dict) throws IOException, SQLException
+	public static void reportDisambiguationInstance(BufferedWriter out, WikiDoc doc,
+			Instance instance, boolean isPositiveSample)
 	{
-		this.dict = dict;
-		pstLinkedConcepts = DatabaseFacade.get().getConnection()
-				.prepareStatement("SELECT to_title, surface FROM wikilinks WHERE from_title=?;");
-		pstWikiText = DatabaseFacade.get().getConnection()
-				.prepareStatement("SELECT text FROM wikitexts WHERE title=?;");
-	}
-
-	/**
-	 * prepare a training set using a given article title list. these articles are from wikipedia.
-	 * 
-	 * @param titleList
-	 */
-	public void prepareOnArticles(List<String> titleList)
-	{
-		for (String title : titleList)
-		{
-			try
-			{
-				prepareOnArticle(title);
-			}
-			catch (SQLException e)
-			{
-				System.err.println("error when preparing on article: " + title);
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			reportArticle(title);
-		}
-
-		// close prepared statement(s)
+		String line = String.format("%d,%f,%f,%f # %s:%s->%s",
+						isPositiveSample ? 1 : -1,
+						instance.commonness,
+						instance.contextualRelatedness,
+						instance.contextQuality,
+						doc.getTitle(),
+						instance.surface.word,
+						instance.disambiguatedConcept.title
+						);
 		try
 		{
-			pstLinkedConcepts.close();
-			pstWikiText.close();
+			out.write(line);
+			out.newLine();
 		}
-		catch (SQLException e)
+		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	/**
-	 * prepare a Doc object and call prepare() to generate training examples on that article.
-	 * 
-	 * @param title
-	 * @throws SQLException
-	 */
-	private void prepareOnArticle(String title) throws SQLException
+	public static void reportDetectionInstance(BufferedWriter out, WikiDoc doc, Instance instance,
+			boolean isPositiveSample)
 	{
-		String text = getWikiText(title);
-		if (text != null && text.length() > 0)
+		String line = String.format("%d,%f,%f,%f,%f,%f,%f,%f  # %s:%s->%s",
+						isPositiveSample ? 1 : -1,
+						instance.commonness,
+						instance.contextualRelatedness,
+						instance.contextQuality,
+						instance.disambiguationConfidence,
+						instance.keyphraseness,
+						instance.occurrence,
+						instance.frequency,
+						doc.getTitle(),
+						instance.surface.word,
+						instance.disambiguatedConcept.title
+						);
+		try
 		{
-			Doc doc = new Doc(title, text, dict);
-			Map<Concept, Surface> linkedConcepts = getLinkedConceptsAndSurfaces(doc.getTitle());
-			prepare(doc, linkedConcepts);
+			out.write(line);
+			out.newLine();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
-	abstract protected void prepare(Doc doc, Map<Concept, Surface> linkedConcepts) throws SQLException;
-
-	private String getWikiText(String title) throws SQLException
+	public static void main(String[] args) throws IOException, SQLException
 	{
-		String wikiText = "";
-
-		pstWikiText.setString(1, title);
-		ResultSet rs = pstWikiText.executeQuery();
-		if (rs.next())
+		// prepare output
+		File outf = new File(ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH);
+		if (outf.exists())
 		{
-			wikiText = rs.getString("text");
+			System.err.println("training set data file already exists at " + outf.getAbsolutePath());
+			System.err.println("if you want to regenerate it please delete the old one first.");
+			System.exit(-1);
 		}
-		rs.close();
+		BufferedWriter out = new BufferedWriter(new FileWriter(outf));
 
-		return wikiText;
-	}
-
-	private Map<Concept, Surface> getLinkedConceptsAndSurfaces(String title) throws SQLException
-	{
-		Map<Concept, Surface> rst = new HashMap<Concept, Surface>();
-
-		pstLinkedConcepts.setString(1, title);
-		ResultSet rs = pstLinkedConcepts.executeQuery();
-		while (rs.next())
+		// read in title list for generating training set
+		List<String> titleList = new ArrayList<String>();
+		File inf = new File(ConceptTrainingConstants.TRAINSET_ARTICLE_LIST_FILE_PATH);
+		if (!inf.exists())
 		{
-			String toTitle = rs.getString("to_title");
-			String surface = rs.getString("surface");
-			rst.put(Concept.get(toTitle), Surface.get(surface));
+			System.err.println("training set article list file not found at " + inf.getAbsolutePath());
+			System.exit(-1);
 		}
-		rs.close();
+		BufferedReader br = new BufferedReader(new FileReader(inf));
+		String line = null;
+		while ((line = br.readLine()) != null)
+		{
+			titleList.add(line);
+		}
+		br.close();
 
-		return rst;
-	}
+		// prepare
+		TrieDict dict = TrieDict.load(new File(ConceptConstants.DICTIONARY_PATH));
+		TrainingSetPreparer tsp = new DisambiguationTrainingSetPreparer()
+		{
+			@Override
+			public void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance,
+					boolean isPositiveSample)
+			{
+				reportDisambiguationInstance(out, doc, instance, isPositiveSample);
+			}
+		};
 
-	/**
-	 * callback after an article is processed. override to customize.
-	 * 
-	 * @param title
-	 */
-	public void reportArticle(String title)
-	{
-		System.out.println(title);
-	}
+		for (String title : titleList)
+		{
+			WikiDoc doc = WikiDoc.get(title, dict);
+			tsp.prepare(doc, out);
+		}
 
-	/**
-	 * callback after an instance is generated. override to customize.
-	 * 
-	 * @param inst
-	 */
-	public void reportInstance(Instance inst)
-	{
-		System.out.println(inst);
+		out.close();
 	}
 
 }

@@ -6,12 +6,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Collections;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -28,11 +26,8 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import ecologylab.semantics.concept.database.DatabaseFacade;
-import ecologylab.semantics.concept.detect.Detector;
 import ecologylab.semantics.concept.detect.Doc;
 import ecologylab.semantics.concept.detect.TrieDict;
-import ecologylab.semantics.concept.detect.Detector.DetectionListener;
 import ecologylab.semantics.concept.detect.Instance;
 
 @SuppressWarnings("serial")
@@ -69,8 +64,6 @@ public class DetectorGUI extends JPanel
 
 	private TrieDict							dictionary;
 
-	private Detector							detector;
-
 	private Vector<ConceptRecord>	detected;
 
 	private Vector<ConceptRecord>	displayed;
@@ -90,25 +83,8 @@ public class DetectorGUI extends JPanel
 		super();
 
 		dictionary = TrieDict.load(new File("data/freq-surfaces.dict"));
+		
 		detected = new Vector<ConceptRecord>();
-
-		detector = new Detector();
-		detector.addDetectionListener(new DetectionListener()
-		{
-			@Override
-			public void conceptDetected(String surface, String concept, boolean prediction,
-					double confidence, Instance inst)
-			{
-				ConceptRecord rec = new ConceptRecord();
-				rec.surface = surface;
-				rec.concept = concept;
-				rec.confidence = confidence;
-				rec.disambiguationConfidence = inst.disambiguationConfidence;
-				detected.add(rec);
-
-				filterAndUpdate();
-			}
-		});
 
 		// setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setLayout(new GridBagLayout());
@@ -136,16 +112,13 @@ public class DetectorGUI extends JPanel
 					@Override
 					public void run()
 					{
-						try
-						{
 							String text = textArea.getText();
-							detector.detect(new Doc("untitled", text, dictionary));
-						}
-						catch (IOException e1)
-						{
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+							Doc doc = new Doc("untitled", text, dictionary);
+							Set<Instance> concepts = doc.detect();
+							for (Instance concept : concepts)
+							{
+								newConcept(concept);
+							}
 					}
 				});
 				t.start();
@@ -210,6 +183,18 @@ public class DetectorGUI extends JPanel
 
 		setBorder(border);
 	}
+	
+	private void newConcept(Instance concept)
+	{
+		ConceptRecord rec = new ConceptRecord();
+		rec.surface = concept.surface.word;
+		rec.concept = concept.disambiguatedConcept.title;
+		rec.confidence = concept.detectionConfidence;
+		rec.disambiguationConfidence = concept.disambiguationConfidence;
+		detected.add(rec);
+
+		filterAndUpdate();
+	}
 
 	public synchronized void filterAndUpdate()
 	{
@@ -235,23 +220,6 @@ public class DetectorGUI extends JPanel
 		frame.setContentPane(gui);
 		frame.pack();
 		frame.setVisible(true);
-		
-		frame.addWindowListener(new WindowAdapter()
-		{
-			@Override
-			public void windowClosing(WindowEvent e)
-			{
-				try
-				{
-					DatabaseFacade.get().close();
-				}
-				catch (SQLException e1)
-				{
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
 	}
 
 	public static void main(String[] args) throws IOException

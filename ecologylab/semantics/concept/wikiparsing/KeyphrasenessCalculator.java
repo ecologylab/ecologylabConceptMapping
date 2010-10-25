@@ -36,16 +36,11 @@ public class KeyphrasenessCalculator extends Debug
 		this.dictionary = dictionary;
 		init(dictionary);
 
-		pstInitSurface = DatabaseFacade.get().getConnection()
-				.prepareStatement("INSERT INTO surface_occurrences VALUES (?, 0, 0);");
-		pstWikiText = DatabaseFacade.get().getConnection()
-				.prepareStatement("SELECT text FROM wikitexts WHERE title=?;");
-		pstOutlinkSurfaces = DatabaseFacade.get().getConnection()
-				.prepareStatement("SELECT surface FROM wikilinks WHERE from_title=?;");
-		pstTotalOccurrence = DatabaseFacade.get().getConnection()
-				.prepareStatement("UPDATE surface_occurrences SET total = total + 1 WHERE surface = ?;");
-		pstLabeledOccurrence = DatabaseFacade.get().getConnection()
-				.prepareStatement("UPDATE surface_occurrences SET labeled = labeled + 1 WHERE surface = ?;");
+		pstInitSurface = DatabaseFacade.get().getPreparedStatement("INSERT INTO surface_occurrences VALUES (?, 0, 0);");
+		pstWikiText = DatabaseFacade.get().getPreparedStatement("SELECT text FROM wikitexts WHERE title=?;");
+		pstOutlinkSurfaces = DatabaseFacade.get().getPreparedStatement("SELECT surface FROM wikilinks WHERE from_title=?;");
+		pstTotalOccurrence = DatabaseFacade.get().getPreparedStatement("UPDATE surface_occurrences SET total = total + 1 WHERE surface = ?;");
+		pstLabeledOccurrence = DatabaseFacade.get().getPreparedStatement("UPDATE surface_occurrences SET labeled = labeled + 1 WHERE surface = ?;");
 	}
 
 	private void init(TrieDict dictionary)
@@ -204,7 +199,6 @@ public class KeyphrasenessCalculator extends Debug
 	{
 		KeyphrasenessCalculator kc = new KeyphrasenessCalculator(TrieDict.load(new File("freq-surfaces.dict")));
 		kc.compute(new File("data/primary-concepts.lst"));
-		DatabaseFacade.get().close();
 	}
 
 }

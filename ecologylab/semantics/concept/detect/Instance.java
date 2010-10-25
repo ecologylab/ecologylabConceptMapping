@@ -37,10 +37,8 @@ public class Instance
 
 	public double		frequency;
 
-	public boolean	isDetected;
-
 	public double		detectionConfidence;
-
+	
 	@Override
 	public String toString()
 	{
@@ -49,17 +47,23 @@ public class Instance
 		return s;
 	}
 
-	public static Instance get(Doc doc, Context context, Surface surface, Concept sense)
+	/**
+	 * extract features for disambiguation (including commonness, contextual relatedness and quality.
+	 *  
+	 * @param context
+	 * @param surface
+	 * @param sense
+	 * @return
+	 */
+	public static Instance getForDisambiguation(Context context, Surface surface, Concept sense)
 	{
 		Instance instance = new Instance(surface);
 
 		instance.commonness = surface.getCommonness(sense);
 		instance.contextQuality = context.getQuality();
 		instance.contextualRelatedness = context.getContextualRelatedness(sense);
-
-		instance.keyphraseness = surface.getKeyphraseness();
-		instance.occurrence = doc.getNumberOfOccurrences(surface);
-		instance.frequency = ((double) instance.occurrence) / doc.getTotalWords();
+		
+		instance.disambiguatedConcept = sense;
 
 		return instance;
 	}

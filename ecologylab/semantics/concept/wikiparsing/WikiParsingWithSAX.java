@@ -15,7 +15,6 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.database.DatabaseFacade;
 
 public class WikiParsingWithSAX
 {
@@ -92,8 +91,6 @@ public class WikiParsingWithSAX
 		xr.setContentHandler(wpsh);
 
 		xr.parse(new InputSource(new FileInputStream(pargsArticleFilePath)));
-		
-		DatabaseFacade.get().close();
 	}
 
 }

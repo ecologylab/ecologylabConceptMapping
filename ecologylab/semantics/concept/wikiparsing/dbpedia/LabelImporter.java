@@ -21,8 +21,7 @@ public class LabelImporter extends AbstractImporter
 
 	public LabelImporter() throws SQLException
 	{
-		st = DatabaseFacade.get().getConnection()
-				.prepareStatement("INSERT INTO dbp_titles VALUES (?, ?);");
+		st = DatabaseFacade.get().getPreparedStatement("INSERT INTO dbp_titles VALUES (?, ?);");
 	}
 
 	@Override
@@ -90,7 +89,6 @@ public class LabelImporter extends AbstractImporter
 	{
 		LabelImporter li = new LabelImporter();
 		li.parse("C:/wikidata/labels_en.nt");
-		DatabaseFacade.get().close();
 	}
 
 }

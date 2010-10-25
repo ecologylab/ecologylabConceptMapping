@@ -25,4 +25,8 @@ public class ConceptConstants
 
 	public static final String	DICTIONARY_PATH										= "data/freq-surfaces.dict";
 
+	public static final double	threshold1												= 0;
+
+	public static final double	threshold2												= 0;
+
 }
