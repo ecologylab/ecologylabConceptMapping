@@ -41,7 +41,7 @@ public class CommonnessCalculator implements PreparationConstants
 		int i = 0; // counter
 		
 		Statement st = DatabaseFacade.get().getStatement();
-		ResultSet rs = st.executeQuery("SELECT surface FROM freq_surfaces LIMIT 10;");
+		ResultSet rs = st.executeQuery("SELECT surface FROM freq_surfaces;");
 		while (rs.next())
 		{
 			try
