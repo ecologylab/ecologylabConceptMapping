@@ -1,18 +1,21 @@
 package ecologylab.semantics.concept.wikiparsing;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileReader;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ecologylab.semantics.concept.database.DatabaseFacade;
 import ecologylab.semantics.concept.utils.CollectionUtils;
+import ecologylab.semantics.concept.utils.TextUtils;
 
 /**
  * This class is used to extract commonness given the sorted surface file.
@@ -22,31 +25,29 @@ import ecologylab.semantics.concept.utils.CollectionUtils;
  */
 public class CommonnessCalculator implements PreparationConstants
 {
+	
+	private List<String> primaryConcepts;
 
-	private PreparedStatement	stInsertCommonness;
-
-	private PreparedStatement	stConceptCount;
-
-	public CommonnessCalculator() throws SQLException
+	public CommonnessCalculator() throws SQLException, IOException
 	{
-		stInsertCommonness = DatabaseFacade.get().getPreparedStatement("INSERT INTO commonness VALUES (?, ?, ?)");
-		stConceptCount = DatabaseFacade.get().getPreparedStatement("SELECT to_title, count(to_title) AS count FROM wikilinks, dbp_titles WHERE surface=? AND to_title=title GROUP BY to_title ORDER BY count DESC;");
-
+		primaryConcepts = TextUtils.loadTxtAsSortedList(new File(primaryConceptsFilePath));
 		DatabaseFacade.get().executeSql("TRUNCATE commonness;");
 	}
 
-	public void computeAll() throws IOException
+	public void computeAll() throws IOException, SQLException
 	{
 		BufferedWriter bw = new BufferedWriter(new FileWriter(freqSurfacesWithConceptCountFilePath));
-		BufferedReader br = new BufferedReader(new FileReader(freqSurfacesFilePath));
-		String line = null;
-		while ((line = br.readLine()) != null)
+		
+		int i = 0; // counter
+		
+		Statement st = DatabaseFacade.get().getStatement();
+		ResultSet rs = st.executeQuery("SELECT surface FROM freq_surfaces LIMIT 10;");
+		while (rs.next())
 		{
-			String surface = line.trim().split("\t")[0];
-
 			try
 			{
 				// compute commonness and store
+				String surface = rs.getString("surface");
 				Map<String, Integer> cc = getConceptCountForSurface(surface);
 				int n = (int) CollectionUtils.sum(cc.values());
 				for (String concept : cc.keySet())
@@ -68,46 +69,54 @@ public class CommonnessCalculator implements PreparationConstants
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			i++;
+			System.out.print(".");
+			if (i % 1000 == 0)
+			{
+				System.out.println(i + " surfaces processed.");
+			}
 		}
-		br.close();
-		bw.close();
+		rs.close();
+		st.close();
 		
-		try
-		{
-			stInsertCommonness.close();
-			stConceptCount.close();
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		bw.close();
 	}
 
 	private void storeCommonness(String surface, String concept, double commonness)
 			throws SQLException
 	{
-		stInsertCommonness.setString(1, surface);
-		stInsertCommonness.setString(2, concept);
-		stInsertCommonness.setDouble(3, commonness);
-		stInsertCommonness.executeUpdate();
+		PreparedStatement pst = DatabaseFacade.get().getPreparedStatement("INSERT INTO commonness VALUES (?, ?, ?)");
+		pst.setString(1, surface);
+		pst.setString(2, concept);
+		pst.setDouble(3, commonness);
+		pst.executeUpdate();
 	}
 
 	private Map<String, Integer> getConceptCountForSurface(String surface) throws SQLException
 	{
 		Map<String, Integer> cc = new HashMap<String, Integer>();
 
-		stConceptCount.setString(1, surface);
-		ResultSet rs = (ResultSet) stConceptCount.executeQuery();
+		PreparedStatement pst = DatabaseFacade.get().getPreparedStatement(
+				"SELECT to_title, count(to_title) AS count FROM wikilinks WHERE surface=? GROUP BY to_title ORDER BY count DESC;");
+		pst.setString(1, surface);
+		ResultSet rs = (ResultSet) pst.executeQuery();
 		while (rs.next())
 		{
 			String concept = rs.getString("to_title");
 			int count = rs.getInt("count");
-			cc.put(concept, count);
+			
+			if (isPrimaryConcept(concept))
+				cc.put(concept, count);
 		}
 		rs.close();
 
 		return cc;
+	}
+
+	private boolean isPrimaryConcept(String concept)
+	{
+		return Collections.binarySearch(primaryConcepts, concept) >= 0;
 	}
 
 	public static void main(String[] args) throws IOException, SQLException

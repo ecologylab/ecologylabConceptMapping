@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,13 +42,15 @@ public class PrimaryConceptsIdentifier extends Debug implements PreparationConst
 		String sql = "SELECT title FROM dbp_primary_concepts, dbp_titles WHERE dbp_primary_concepts.name = dbp_titles.name;";
 		List<String> primaryConceptList = new ArrayList<String>();
 
-		ResultSet rs = DatabaseFacade.get().executeQuerySql(sql);
+		Statement st = DatabaseFacade.get().getStatement();
+		ResultSet rs = st.executeQuery(sql);
 		while (rs.next())
 		{
 			String title = rs.getString("title");
 			primaryConceptList.add(title);
 		}
 		rs.close();
+		st.close();
 
 		Collections.sort(primaryConceptList);
 

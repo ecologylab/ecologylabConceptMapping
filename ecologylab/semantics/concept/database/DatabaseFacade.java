@@ -128,12 +128,15 @@ public class DatabaseFacade extends Debug
 		return rst;
 	}
 
-	public ResultSet executeQuerySql(String sql) throws SQLException
+	/**
+	 * BE CAREFUL! you need to close the statement and its result set (if any) manually after use.
+	 * 
+	 * @return
+	 * @throws SQLException
+	 */
+	public Statement getStatement() throws SQLException
 	{
-		Statement st = conn.createStatement();
-		ResultSet rs = st.executeQuery(sql);
-		st.close();
-		return rs;
+		return conn.createStatement();
 	}
 
 	public PreparedStatement getPreparedStatement(String sql)
