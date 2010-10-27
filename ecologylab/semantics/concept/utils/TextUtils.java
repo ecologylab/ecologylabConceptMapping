@@ -129,16 +129,34 @@ public class TextUtils
 			int p = 0;
 			while (p < text.length())
 			{
-				int n = s.substring(p).indexOf(s);
+				int n = text.substring(p).indexOf(s);
 				if (n < 0)
 					break;
-				p += n;
+				p += n + 1;
+				count++;
 			}
 		}
 
 		return count;
 	}
-
+	
+	@Test
+	public void testCount()
+	{
+		String[] tests = {
+				"a bcd efg abba",
+				" ahaha this is another one",
+				"and another another one ",
+				" and at last ... ",
+		};
+		int[] results = {3, 5, 4, 5};
+		for (int i = 0; i < tests.length; ++i)
+		{
+			int r = count(tests[i], " ");
+			Assert.assertEquals(results[i], r);
+		}
+	}
+	
 	public static List<String> loadTxtAsSortedList(File f) throws IOException
 	{
 		List<String> list = new ArrayList<String>();
