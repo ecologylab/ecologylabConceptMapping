@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.ConceptTrainingConstants;
 import ecologylab.semantics.concept.database.DatabaseFacade;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 import ecologylab.semantics.concept.utils.TextUtils;
@@ -23,20 +25,20 @@ import ecologylab.semantics.concept.utils.TextUtils;
  * @author quyin
  * 
  */
-public class CommonnessCalculator implements PreparationConstants
+public class CommonnessCalculator
 {
 	
 	private List<String> primaryConcepts;
 
 	public CommonnessCalculator() throws SQLException, IOException
 	{
-		primaryConcepts = TextUtils.loadTxtAsSortedList(new File(primaryConceptsFilePath));
+		primaryConcepts = TextUtils.loadTxtAsSortedList(new File(ConceptTrainingConstants.PRIMARY_CONCEPTS_FILE_PATH));
 		DatabaseFacade.get().executeSql("TRUNCATE commonness;");
 	}
 
 	public void computeAll() throws IOException, SQLException
 	{
-		BufferedWriter bw = new BufferedWriter(new FileWriter(freqSurfacesWithConceptCountFilePath));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(ConceptConstants.DICTIONARY_PATH));
 		
 		int i = 0; // counter
 		

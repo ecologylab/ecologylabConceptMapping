@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ecologylab.generic.Debug;
+import ecologylab.semantics.concept.ConceptTrainingConstants;
 import ecologylab.semantics.concept.database.DatabaseFacade;
 
 /**
@@ -21,7 +22,7 @@ import ecologylab.semantics.concept.database.DatabaseFacade;
  * @author quyin
  * 
  */
-public class PrimaryConceptsIdentifier extends Debug implements PreparationConstants
+public class PrimaryConceptsIdentifier extends Debug
 {
 
 	public PrimaryConceptsIdentifier() throws SQLException
@@ -54,7 +55,8 @@ public class PrimaryConceptsIdentifier extends Debug implements PreparationConst
 
 		Collections.sort(primaryConceptList);
 
-		BufferedWriter bw = new BufferedWriter(new FileWriter(primaryConceptsFilePath));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(
+				ConceptTrainingConstants.PRIMARY_CONCEPTS_FILE_PATH));
 		for (String concept : primaryConceptList)
 		{
 			bw.write(concept);

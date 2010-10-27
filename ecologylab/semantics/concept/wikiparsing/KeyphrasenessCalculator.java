@@ -1,15 +1,15 @@
 package ecologylab.semantics.concept.wikiparsing;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
+import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.database.DatabaseFacade;
 import ecologylab.semantics.concept.detect.Doc;
 import ecologylab.semantics.concept.detect.Surface;
@@ -29,19 +29,22 @@ public class KeyphrasenessCalculator
 		System.out.println("surface_occurrences initialized.");
 	}
 
-	public void compute(File primaryConcepts) throws IOException
+	public void compute() throws SQLException
 	{
 		int i = 0;
 		int interval = 1000;
+		long t0 = System.currentTimeMillis();
 
-		BufferedReader brPrimaryConcepts = new BufferedReader(new FileReader(primaryConcepts));
-		String line = null;
-		while ((line = brPrimaryConcepts.readLine()) != null)
+		Statement st = DatabaseFacade.get().getStatement();
+		ResultSet rs = st.executeQuery("SELECT title FROM freq_concepts;");
+		while (rs.next())
 		{
-			String concept = line.trim();
+			String concept = "";
 
 			try
 			{
+				concept = rs.getString("title");
+
 				// count all occurrences
 				String text = getWikiText(concept);
 				Doc doc = new Doc(concept, text, dictionary);
@@ -69,14 +72,17 @@ public class KeyphrasenessCalculator
 			i++;
 			if (i % interval == 0)
 			{
-				System.out.println(i + " primary concepts processed.");
+				long dt = System.currentTimeMillis() - t0;
+				System.out.println(i + " primary concepts processed, " + dt + " ms.");
+				t0 += dt;
 			}
 			else
 			{
 				System.out.print(".");
 			}
 		}
-		brPrimaryConcepts.close();
+		rs.close();
+		st.close();
 
 		// calculate keyphraseness based on surface occurrences
 		try
@@ -84,7 +90,7 @@ public class KeyphrasenessCalculator
 			int c = DatabaseFacade
 					.get()
 					.executeUpdateSql(
-							"INSERT INTO keyphraseness SELECT surface, labeled*1.0/total AS keyphraseness FROM surface_occurrences;");
+							"INSERT INTO keyphraseness SELECT surface, labeled*1.0/total AS keyphraseness FROM surface_occurrences WHERE total > 0;");
 			System.out.println(c + " surfaces calculated keyphraseness.");
 		}
 		catch (SQLException e)
@@ -152,8 +158,8 @@ public class KeyphrasenessCalculator
 	public static void main(String[] args) throws IOException, SQLException
 	{
 		KeyphrasenessCalculator kc = new KeyphrasenessCalculator(TrieDict.load(new File(
-				"data/freq-surfaces-with-concept-count.lst")));
-		kc.compute(new File("data/primary-concepts.lst"));
+				ConceptConstants.DICTIONARY_PATH)));
+		kc.compute();
 	}
 
 }
