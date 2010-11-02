@@ -11,7 +11,7 @@ import ecologylab.semantics.concept.detect.Concept;
 import ecologylab.semantics.concept.detect.Context;
 import ecologylab.semantics.concept.detect.Doc;
 import ecologylab.semantics.concept.detect.Surface;
-import ecologylab.semantics.concept.detect.TrieDict;
+import ecologylab.semantics.concept.detect.SurfaceDictionary;
 
 public class WikiDoc extends Doc
 {
@@ -28,7 +28,7 @@ public class WikiDoc extends Doc
 				"SELECT to_title, surface FROM wikilinks WHERE from_title=?;");
 	}
 
-	public static WikiDoc get(String title, TrieDict dict) throws SQLException
+	public static WikiDoc get(String title, SurfaceDictionary dict) throws SQLException
 	{
 		String text = getWikiText(title);
 		if (text != null && text.length() > 0)
@@ -59,7 +59,7 @@ public class WikiDoc extends Doc
 
 	private Map<Surface, Concept>	linkedSurfaces;
 
-	public WikiDoc(String title, String text, TrieDict dictionary) throws SQLException
+	public WikiDoc(String title, String text, SurfaceDictionary dictionary) throws SQLException
 	{
 		super(title, text, dictionary);
 	}

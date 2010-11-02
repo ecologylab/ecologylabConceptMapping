@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.utils.TextUtils;
 
 /**
@@ -37,42 +38,26 @@ public class Doc
 
 	private Set<Instance>					detectionResults			= null;
 
-	public Doc(String title, String text, TrieDict dictionary)
+	public Doc(String title, String text, SurfaceDictionary dictionary)
 	{
 		this.title = title;
 		this.text = TextUtils.normalize(text);
 		this.totalWords = TextUtils.count(text, " ") + 1;
 
 		// extract surfaces
-		int offset = 0;
-		while (offset < text.length())
+		for (String surfaceWord : dictionary.extractSurfaces(text))
 		{
-			int len = dictionary.longestMatch(text, offset);
-			if (len > 0)
-			{
-				// matched, find the matched surface & count
-				String matchedSurface = text.substring(offset, offset + len);
-				Surface surface = Surface.get(matchedSurface);
+			Surface surface = Surface.get(surfaceWord);
 
-				if (dictionary.isAmbiguous(matchedSurface))
-					ambiSurfaces.add(surface);
-				else
-					unambiSurfaces.add(surface);
-
-				if (!surfaceOccurrences.containsKey(surface))
-					surfaceOccurrences.put(surface, 1);
-				else
-					surfaceOccurrences.put(surface, surfaceOccurrences.get(surface) + 1);
-
-				offset += len;
-				offset = TextUtils.nextNonWhitespaceIndex(text, offset);
-			}
+			if (dictionary.isAmbiguous(surfaceWord))
+				ambiSurfaces.add(surface);
 			else
-			{
-				// not matched, skip a word
-				offset = TextUtils.nextWhitespaceIndex(text, offset);
-				offset = TextUtils.nextNonWhitespaceIndex(text, offset);
-			}
+				unambiSurfaces.add(surface);
+
+			if (!surfaceOccurrences.containsKey(surface))
+				surfaceOccurrences.put(surface, 1);
+			else
+				surfaceOccurrences.put(surface, surfaceOccurrences.get(surface) + 1);
 		}
 	}
 
@@ -157,20 +142,27 @@ public class Doc
 	public static void main(String[] args) throws IOException
 	{
 		String text = readString("usa.wiki");
+		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
+		Doc doc = null;
 
-		int n = 1000;
+		int n = 100;
 		long t0 = System.currentTimeMillis();
 		for (int i = 0; i < n; ++i)
 		{
-			Doc doc = new Doc("USA", text, TrieDict.load(new File("data/freq-surfaces.dat")));
-			for (Surface surface : doc.getUnambiSurfaces())
-			{
-				System.out.println(surface);
-			}
+			doc = new Doc("USA", text, dict);
 		}
 		long t1 = System.currentTimeMillis();
 
-		System.out.println("average time in ms: " + (t1 - t0) * 1.0 / n);
+		if (doc != null)
+		{
+			System.out.println(doc.getUnambiSurfaces().size() + " unambiguous surfaces found.");
+			System.out.println(doc.getAmbiSurfaces().size() + " ambiguous surfaces found.");
+			System.out.println("average time in ms: " + (t1 - t0) * 1.0 / n);
+		}
+		else
+		{
+			System.out.println("oops! failed.");
+		}
 	}
 
 	private static String readString(String filePath) throws IOException

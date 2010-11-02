@@ -27,7 +27,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import ecologylab.semantics.concept.detect.Doc;
-import ecologylab.semantics.concept.detect.TrieDict;
+import ecologylab.semantics.concept.detect.SurfaceDictionary;
 import ecologylab.semantics.concept.detect.Instance;
 
 @SuppressWarnings("serial")
@@ -62,7 +62,7 @@ public class DetectorGUI extends JPanel
 		}
 	}
 
-	private TrieDict							dictionary;
+	private SurfaceDictionary							dictionary;
 
 	private Vector<ConceptRecord>	detected;
 
@@ -82,7 +82,7 @@ public class DetectorGUI extends JPanel
 	{
 		super();
 
-		dictionary = TrieDict.load(new File("data/freq-surfaces.dict"));
+		dictionary = SurfaceDictionary.load(new File("data/freq-surfaces.dict"));
 		
 		detected = new Vector<ConceptRecord>();
 

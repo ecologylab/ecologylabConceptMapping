@@ -13,7 +13,7 @@ import java.util.List;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.ConceptTrainingConstants;
 import ecologylab.semantics.concept.detect.Instance;
-import ecologylab.semantics.concept.detect.TrieDict;
+import ecologylab.semantics.concept.detect.SurfaceDictionary;
 
 public abstract class TrainingSetPreparer
 {
@@ -104,7 +104,7 @@ public abstract class TrainingSetPreparer
 		br.close();
 
 		// prepare
-		TrieDict dict = TrieDict.load(new File(ConceptConstants.DICTIONARY_PATH));
+		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
 		TrainingSetPreparer tsp = new DisambiguationTrainingSetPreparer()
 		{
 			@Override

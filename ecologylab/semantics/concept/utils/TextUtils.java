@@ -139,24 +139,26 @@ public class TextUtils
 
 		return count;
 	}
-	
+
 	@Test
 	public void testCount()
 	{
-		String[] tests = {
+		String[] tests =
+		{
 				"a bcd efg abba",
 				" ahaha this is another one",
 				"and another another one ",
 				" and at last ... ",
 		};
-		int[] results = {3, 5, 4, 5};
+		int[] results =
+		{ 3, 5, 4, 5 };
 		for (int i = 0; i < tests.length; ++i)
 		{
 			int r = count(tests[i], " ");
 			Assert.assertEquals(results[i], r);
 		}
 	}
-	
+
 	public static List<String> loadTxtAsSortedList(File f) throws IOException
 	{
 		List<String> list = new ArrayList<String>();
@@ -169,6 +171,44 @@ public class TextUtils
 		}
 		Collections.sort(list);
 		return list;
+	}
+
+	public static String getWords(String text, int offset, int wordCount)
+	{
+		StringBuilder sb = new StringBuilder();
+		int n = 0;
+		for (int i = offset; i < text.length(); ++i)
+		{
+			char c = text.charAt(i);
+			if (c == ' ')
+				n++;
+			if (n == wordCount)
+				return sb.toString();
+			else
+				sb.append(c);
+		}
+		return sb.toString();
+	}
+
+	@Test
+	public void testGetWords()
+	{
+		String test1 = "this is an example";
+		String test2 = "and";
+		String test3 = "another one ";
+
+		Assert.assertEquals("this is an example", getWords(test1, 0, 4));
+		Assert.assertEquals("this is an", getWords(test1, 0, 3));
+		Assert.assertEquals("this is", getWords(test1, 0, 2));
+		Assert.assertEquals("this", getWords(test1, 0, 1));
+		Assert.assertEquals("is an example", getWords(test1, 5, 3));
+		Assert.assertEquals("an example", getWords(test1, 8, 2));
+		Assert.assertEquals("an example", getWords(test1, 8, 3));
+		Assert.assertEquals("", getWords(test1, 100, 1));
+		Assert.assertEquals("and", getWords(test2, 0, 1));
+		Assert.assertEquals("", getWords(test2, 0, 0));
+		Assert.assertEquals("another", getWords(test3, 0, 1));
+		Assert.assertEquals("another one", getWords(test3, 0, 2));
 	}
 
 }

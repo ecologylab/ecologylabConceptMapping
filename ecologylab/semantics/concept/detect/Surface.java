@@ -122,7 +122,7 @@ public class Surface
 	 * @param dict
 	 * @return
 	 */
-	public boolean isAmbiguous(TrieDict dict)
+	public boolean isAmbiguous(SurfaceDictionary dict)
 	{
 		return dict.isAmbiguous(word);
 	}
