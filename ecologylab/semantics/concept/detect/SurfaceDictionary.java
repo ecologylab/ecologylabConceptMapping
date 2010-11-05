@@ -18,7 +18,58 @@ import ecologylab.semantics.concept.utils.TextUtils;
 public class SurfaceDictionary extends Debug
 {
 
-	private int						longestInWord			= 0;
+	public static final String	DELIM_SEQ		= "|";
+
+	public static final String	DELIM_REGEX	= "\\|";
+
+	static class SurfaceRecord implements Comparable<SurfaceRecord>
+	{
+		public String	surface;
+
+		public int		senseCount;
+
+		public static SurfaceRecord get(String line)
+		{
+			if (line == null)
+				return null;
+
+			String[] parts = line.trim().split(SurfaceDictionary.DELIM_REGEX);
+			if (parts.length != 2)
+				return null;
+
+			String surface = parts[0];
+			if (surface == null || surface.isEmpty())
+				return null;
+			if (!StopWordsUtils.containsLetter(surface) || StopWordsUtils.isStopWord(surface))
+				return null;
+
+			int count = Integer.parseInt(parts[1]);
+
+			SurfaceRecord sr = new SurfaceRecord();
+			sr.surface = surface;
+			sr.senseCount = count;
+			return sr;
+		}
+
+		private SurfaceRecord()
+		{
+
+		}
+
+		@Override
+		public int compareTo(SurfaceRecord other)
+		{
+			return surface.compareTo(other.surface);
+		}
+
+		@Override
+		public String toString()
+		{
+			return String.format("%s%s%d", surface, SurfaceDictionary.DELIM_SEQ, senseCount);
+		}
+	}
+
+	private int						longestInWord			= ConceptConstants.DICTIONARY_LONGEST_IN_WORD;
 
 	private List<String>	surfaces					= new ArrayList<String>();
 
@@ -37,27 +88,21 @@ public class SurfaceDictionary extends Debug
 		String line = null;
 		while ((line = br.readLine()) != null)
 		{
-			String[] parts = line.trim().split("\t");
-
-			String surface = parts[0];
-			if (StopWordsUtils.isStopWord(surface))
-				continue;
-			
-			dict.surfaces.add(surface);
-			int len = TextUtils.count(surface, " ") + 1;
-			if (len > dict.longestInWord)
-				dict.longestInWord = len;
-
-			int countSenses = Integer.parseInt(parts[1]);
-			if (countSenses > 1)
+			SurfaceRecord sr = SurfaceRecord.get(line);
+			if (sr == null)
 			{
-				dict.ambiguousSurfaces.add(surface);
+				System.err.println("ignoring dictionary line: " + line);
+				continue;
+			}
+
+			dict.surfaces.add(sr.surface);
+			if (sr.senseCount > 1)
+			{
+				dict.ambiguousSurfaces.add(sr.surface);
 			}
 		}
 		br.close();
 
-		Collections.sort(dict.surfaces);
-		Collections.sort(dict.ambiguousSurfaces);
 		return dict;
 	}
 
@@ -81,7 +126,7 @@ public class SurfaceDictionary extends Debug
 	{
 		return Collections.binarySearch(ambiguousSurfaces, surface) >= 0;
 	}
-	
+
 	public List<String> getAll()
 	{
 		return surfaces;
@@ -90,7 +135,7 @@ public class SurfaceDictionary extends Debug
 	public Set<String> extractSurfaces(String text)
 	{
 		Set<String> surfaces = new HashSet<String>();
-		
+
 		int offset = 0;
 		while (offset < text.length())
 		{
@@ -102,7 +147,7 @@ public class SurfaceDictionary extends Debug
 			offset = TextUtils.nextWhitespaceIndex(text, offset);
 			offset = TextUtils.nextNonWhitespaceIndex(text, offset);
 		}
-		
+
 		return surfaces;
 	}
 

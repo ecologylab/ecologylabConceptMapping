@@ -10,7 +10,7 @@ package ecologylab.semantics.concept.detect;
 public class Instance
 {
 
-	public final Surface	surface;
+	public Surface	surface;
 
 	public Instance(Surface surface)
 	{
@@ -66,6 +66,12 @@ public class Instance
 		instance.disambiguatedConcept = sense;
 
 		return instance;
+	}
+	
+	public void recycle()
+	{
+		surface = null;
+		disambiguatedConcept = null;
 	}
 
 }

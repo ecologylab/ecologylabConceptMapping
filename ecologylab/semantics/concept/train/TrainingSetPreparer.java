@@ -23,62 +23,11 @@ public abstract class TrainingSetPreparer
 	protected abstract void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance,
 			boolean isPositiveSample);
 
-	public static void reportDisambiguationInstance(BufferedWriter out, WikiDoc doc,
-			Instance instance, boolean isPositiveSample)
-	{
-		String line = String.format("%d,%f,%f,%f # %s:%s->%s",
-						isPositiveSample ? 1 : -1,
-						instance.commonness,
-						instance.contextualRelatedness,
-						instance.contextQuality,
-						doc.getTitle(),
-						instance.surface.word,
-						instance.disambiguatedConcept.title
-						);
-		try
-		{
-			out.write(line);
-			out.newLine();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void reportDetectionInstance(BufferedWriter out, WikiDoc doc, Instance instance,
-			boolean isPositiveSample)
-	{
-		String line = String.format("%d,%f,%f,%f,%f,%f,%f,%f  # %s:%s->%s",
-						isPositiveSample ? 1 : -1,
-						instance.commonness,
-						instance.contextualRelatedness,
-						instance.contextQuality,
-						instance.disambiguationConfidence,
-						instance.keyphraseness,
-						instance.occurrence,
-						instance.frequency,
-						doc.getTitle(),
-						instance.surface.word,
-						instance.disambiguatedConcept.title
-						);
-		try
-		{
-			out.write(line);
-			out.newLine();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void main(String[] args) throws IOException, SQLException
+	public static void prepare(String trainSetFilePath, TrainingSetPreparer preparer)
+			throws IOException, SQLException
 	{
 		// prepare output
-		File outf = new File(ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH);
+		File outf = new File(trainSetFilePath);
 		if (outf.exists())
 		{
 			System.err.println("training set data file already exists at " + outf.getAbsolutePath());
@@ -104,21 +53,30 @@ public abstract class TrainingSetPreparer
 		br.close();
 
 		// prepare
+		int i = 0;
+		long t0 = System.currentTimeMillis();
 		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
-		TrainingSetPreparer tsp = new DisambiguationTrainingSetPreparer()
-		{
-			@Override
-			public void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance,
-					boolean isPositiveSample)
-			{
-				reportDisambiguationInstance(out, doc, instance, isPositiveSample);
-			}
-		};
-
 		for (String title : titleList)
 		{
+			long t1 = System.currentTimeMillis();
 			WikiDoc doc = WikiDoc.get(title, dict);
-			tsp.prepare(doc, out);
+			if (doc != null)
+			{
+				preparer.prepare(doc, out);
+				doc.recycle();
+			}
+			else
+			{
+				System.out.println("warning: wikidoc not exist for " + title);
+			}
+			System.out.println("doc time: " + (System.currentTimeMillis() - t1));
+			
+			i++;
+			if (i % 10 == 0)
+			{
+				long dt = System.currentTimeMillis() - t0;
+				System.out.println(i + " of " + titleList.size() + " wiki articles processed: " + dt + " ms.");
+			}
 		}
 
 		out.close();

@@ -2,8 +2,10 @@ package ecologylab.semantics.concept.train;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Set;
 
+import ecologylab.semantics.concept.ConceptTrainingConstants;
 import ecologylab.semantics.concept.detect.Context;
 import ecologylab.semantics.concept.detect.Instance;
 import ecologylab.semantics.concept.detect.Surface;
@@ -47,6 +49,48 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public static void reportDetectionInstance(BufferedWriter out, WikiDoc doc, Instance instance,
+			boolean isPositiveSample)
+	{
+		String line = String.format("%d,%f,%f,%f,%f,%f,%f,%f  # %s:%s->%s",
+						isPositiveSample ? 1 : -1,
+						instance.commonness,
+						instance.contextualRelatedness,
+						instance.contextQuality,
+						instance.disambiguationConfidence,
+						instance.keyphraseness,
+						instance.occurrence,
+						instance.frequency,
+						doc.getTitle(),
+						instance.surface.word,
+						instance.disambiguatedConcept.title
+						);
+		try
+		{
+			out.write(line);
+			out.newLine();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void main(String[] args) throws IOException, SQLException
+	{
+		DisambiguationTrainingSetPreparer preparer = new DisambiguationTrainingSetPreparer()
+		{
+			@Override
+			protected void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance,
+					boolean isPositiveSample)
+			{
+				reportDetectionInstance(out, doc, instance, isPositiveSample);
+			}
+		};
+		prepare(ConceptTrainingConstants.DETECT_TRAINING_SET_FILE_PATH, preparer);
 	}
 
 }

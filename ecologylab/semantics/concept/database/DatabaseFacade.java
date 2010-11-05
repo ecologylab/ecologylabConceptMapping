@@ -113,14 +113,14 @@ public class DatabaseFacade extends Debug
 		}
 	}
 
-	public void executeSql(String sql) throws SQLException
+	public synchronized void executeSql(String sql) throws SQLException
 	{
 		Statement st = conn.createStatement();
 		st.execute(sql);
 		st.close();
 	}
 
-	public int executeUpdateSql(String sql) throws SQLException
+	public synchronized int executeUpdateSql(String sql) throws SQLException
 	{
 		Statement st = conn.createStatement();
 		int rst = st.executeUpdate(sql);
@@ -134,12 +134,12 @@ public class DatabaseFacade extends Debug
 	 * @return
 	 * @throws SQLException
 	 */
-	public Statement getStatement() throws SQLException
+	public synchronized Statement getStatement() throws SQLException
 	{
 		return conn.createStatement();
 	}
 
-	public PreparedStatement getPreparedStatement(String sql)
+	public synchronized PreparedStatement getPreparedStatement(String sql)
 	{
 		if (!preparedStatements.containsKey(sql))
 		{
@@ -165,7 +165,7 @@ public class DatabaseFacade extends Debug
 	 * @return the keyphraseness value, or 0 if surface not found
 	 * @throws SQLException
 	 */
-	public double queryKeyphraseness(String surface) throws SQLException
+	public synchronized double queryKeyphraseness(String surface) throws SQLException
 	{
 		double kp = 0;
 
@@ -194,7 +194,7 @@ public class DatabaseFacade extends Debug
 	 * @param inlinkList2
 	 * @return
 	 */
-	public double queryRelatedness(List<String> inlinkList1, List<String> inlinkList2)
+	public synchronized double queryRelatedness(List<String> inlinkList1, List<String> inlinkList2)
 	{
 		if (inlinkList1.equals(inlinkList2))
 			return 0;
@@ -221,7 +221,7 @@ public class DatabaseFacade extends Debug
 	 * @return a map from sense (concept) to commonness.
 	 * @throws SQLException
 	 */
-	public Map<String, Double> querySenses(String surface) throws SQLException
+	public synchronized Map<String, Double> querySenses(String surface) throws SQLException
 	{
 		Map<String, Double> rst = new HashMap<String, Double>();
 
@@ -245,7 +245,7 @@ public class DatabaseFacade extends Debug
 	 * @return
 	 * @throws SQLException
 	 */
-	public List<String> queryInlinkConceptsForConcept(String toConcept) throws SQLException
+	public synchronized List<String> queryInlinkConceptsForConcept(String toConcept) throws SQLException
 	{
 		List<String> rst = new ArrayList<String>();
 

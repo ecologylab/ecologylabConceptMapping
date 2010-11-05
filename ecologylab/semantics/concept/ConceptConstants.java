@@ -7,6 +7,8 @@ public class ConceptConstants
 
 	public static final String	DICTIONARY_PATH										= "data/freq-surfaces.dict";
 
+	public static final int			DICTIONARY_LONGEST_IN_WORD				= 21;
+
 	public static final String	DISAMBI_PARAM_FILE_PATH						= "model/disambi-norm-params.dat";
 
 	public static final String	DISAMBI_MODEL_FILE_PATH						= "model/disambi-tuning-models-C=8.000000_g=2.000000.model";

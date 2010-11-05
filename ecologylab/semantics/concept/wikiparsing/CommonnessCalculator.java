@@ -1,8 +1,6 @@
 package ecologylab.semantics.concept.wikiparsing;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.ConceptTrainingConstants;
 import ecologylab.semantics.concept.database.DatabaseFacade;
 import ecologylab.semantics.concept.utils.CollectionUtils;
@@ -38,8 +35,6 @@ public class CommonnessCalculator
 
 	public void computeAll() throws IOException, SQLException
 	{
-		BufferedWriter bw = new BufferedWriter(new FileWriter(ConceptConstants.DICTIONARY_PATH));
-		
 		int i = 0; // counter
 		
 		Statement st = DatabaseFacade.get().getStatement();
@@ -57,16 +52,8 @@ public class CommonnessCalculator
 					double commonness = cc.get(concept) / (double) n;
 					storeCommonness(surface, concept, commonness);
 				}
-
-				bw.write(surface + "\t" + cc.size());
-				bw.newLine();
 			}
 			catch (SQLException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			catch (IOException e)
 			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -81,8 +68,6 @@ public class CommonnessCalculator
 		}
 		rs.close();
 		st.close();
-		
-		bw.close();
 	}
 
 	private void storeCommonness(String surface, String concept, double commonness)
@@ -126,5 +111,5 @@ public class CommonnessCalculator
 		CommonnessCalculator cc = new CommonnessCalculator();
 		cc.computeAll();
 	}
-
+	
 }

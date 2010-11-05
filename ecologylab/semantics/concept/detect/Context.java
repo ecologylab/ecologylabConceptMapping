@@ -181,5 +181,13 @@ public class Context extends Debug
 
 		return bestInst;
 	}
+	
+	public void recycle()
+	{
+		concepts.clear();
+		surfaces.clear();
+		weights.clear();
+		averageRelatedness.clear();
+	}
 
 }

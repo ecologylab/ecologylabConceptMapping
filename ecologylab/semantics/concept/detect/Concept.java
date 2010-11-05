@@ -28,13 +28,18 @@ public class Concept implements Comparable<Concept>
 	 * @param title
 	 * @return
 	 */
-	public static Concept get(String title)
+	public synchronized static Concept get(String title)
 	{
 		if (!pool.containsKey(title))
 		{
 			pool.put(title, new Concept(title));
 		}
 		return pool.get(title);
+	}
+
+	public synchronized static void recycleAll()
+	{
+		pool.clear();
 	}
 
 	public final String						title;
@@ -53,7 +58,7 @@ public class Concept implements Comparable<Concept>
 	 * 
 	 * @return
 	 */
-	public List<String> getInlinkConcepts()
+	public synchronized List<String> getInlinkConcepts()
 	{
 		if (inlinkConcepts == null)
 		{
@@ -77,13 +82,13 @@ public class Concept implements Comparable<Concept>
 	 * @param other
 	 * @return relatedness value if different concepts, or 0 if identical concepts
 	 */
-	public double getRelatedness(Concept other)
+	public synchronized double getRelatedness(Concept other)
 	{
 		if (equals(other))
 		{
 			return 0; // relatedness = 0 for identical concepts (predefined)
 		}
-		
+
 		if (compareTo(other) > 0)
 		{
 			return other.getRelatedness(this);
@@ -125,6 +130,22 @@ public class Concept implements Comparable<Concept>
 	public int compareTo(Concept other)
 	{
 		return title.compareTo(other.title);
+	}
+
+	public synchronized void recycle()
+	{
+		if (pool != null)
+		{
+			synchronized (pool)
+			{
+				if (pool.containsKey(title))
+					pool.remove(title);
+				if (inlinkConcepts != null)
+					inlinkConcepts.clear();
+				if (relatedness != null)
+					relatedness.clear();
+			}
+		}
 	}
 
 }

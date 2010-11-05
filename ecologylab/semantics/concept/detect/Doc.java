@@ -136,6 +136,17 @@ public class Doc
 		}
 		return detectionResults;
 	}
+	
+	public void recycle()
+	{
+		unambiSurfaces.clear();
+		ambiSurfaces.clear();
+		surfaceOccurrences.clear();
+		if (disambiguationResults != null)
+			disambiguationResults.clear();
+		if (detectionResults != null)
+			detectionResults.clear();
+	}
 
 	/* ==================== test ==================== */
 

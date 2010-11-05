@@ -16,18 +16,6 @@ import ecologylab.semantics.concept.detect.SurfaceDictionary;
 public class WikiDoc extends Doc
 {
 
-	private static PreparedStatement	pstLinkedConcepts;
-
-	private static PreparedStatement	pstWikiText;
-
-	static
-	{
-		pstLinkedConcepts = DatabaseFacade.get().getPreparedStatement(
-				"SELECT text FROM wikitexts WHERE title=?;");
-		pstWikiText = DatabaseFacade.get().getPreparedStatement(
-				"SELECT to_title, surface FROM wikilinks WHERE from_title=?;");
-	}
-
 	public static WikiDoc get(String title, SurfaceDictionary dict) throws SQLException
 	{
 		String text = getWikiText(title);
@@ -42,13 +30,18 @@ public class WikiDoc extends Doc
 	{
 		String wikiText = "";
 
-		pstWikiText.setString(1, title);
-		ResultSet rs = pstWikiText.executeQuery();
-		if (rs.next())
+		PreparedStatement pstWikiText = DatabaseFacade.get().getPreparedStatement(
+				"SELECT text FROM wikitexts WHERE title=?;");
+		synchronized (pstWikiText)
 		{
-			wikiText = rs.getString("text");
+			pstWikiText.setString(1, title);
+			ResultSet rs = pstWikiText.executeQuery();
+			if (rs.next())
+			{
+				wikiText = rs.getString("text");
+			}
+			rs.close();
 		}
-		rs.close();
 
 		return wikiText;
 	}
@@ -68,6 +61,7 @@ public class WikiDoc extends Doc
 	{
 		if (context == null)
 		{
+			long t1 = System.currentTimeMillis();
 			context = new Context();
 
 			for (Concept concept : getLinkedConcepts().keySet())
@@ -80,6 +74,7 @@ public class WikiDoc extends Doc
 				Concept concept = (Concept) surface.getSenses().toArray()[0];
 				context.addConcept(concept, surface);
 			}
+			System.out.println("context time: " + (System.currentTimeMillis() - t1));
 		}
 		return context;
 	}
@@ -120,9 +115,12 @@ public class WikiDoc extends Doc
 
 	private void getLinks() throws SQLException
 	{
+		long t0 = System.currentTimeMillis();
 		linkedConcepts = new HashMap<Concept, Surface>();
 		linkedSurfaces = new HashMap<Surface, Concept>();
 
+		PreparedStatement pstLinkedConcepts = DatabaseFacade.get().getPreparedStatement(
+				"SELECT to_title, surface FROM wikilinks WHERE from_title=?;");
 		synchronized (pstLinkedConcepts)
 		{
 			pstLinkedConcepts.setString(1, getTitle());
@@ -139,6 +137,18 @@ public class WikiDoc extends Doc
 			}
 			rs.close();
 		}
+		System.out.println("getLinks() time: " + (System.currentTimeMillis() - t0));
+	}
+	
+	public void recycle()
+	{
+		super.recycle();
+		if (context != null)
+			context.recycle();
+		if (linkedConcepts != null)
+			linkedConcepts.clear();
+		if (linkedSurfaces != null)
+			linkedSurfaces.clear();
 	}
 
 }

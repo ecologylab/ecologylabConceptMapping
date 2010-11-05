@@ -35,13 +35,18 @@ public class Surface
 	 * @param word
 	 * @return
 	 */
-	public static Surface get(String word)
+	public synchronized static Surface get(String word)
 	{
 		if (!pool.containsKey(word))
 		{
 			pool.put(word, new Surface(word));
 		}
 		return pool.get(word);
+	}
+
+	public synchronized static void recycleAll()
+	{
+		pool.clear();
 	}
 
 	public final String						word;
@@ -62,7 +67,7 @@ public class Surface
 	 * 
 	 * @return
 	 */
-	public Set<Concept> getSenses()
+	public synchronized Set<Concept> getSenses()
 	{
 		if (senses == null)
 		{
@@ -94,10 +99,11 @@ public class Surface
 	 * @param concept
 	 * @return
 	 */
-	public double getCommonness(Concept concept)
+	public synchronized double getCommonness(Concept concept)
 	{
 		if (commonness == null)
 		{
+			System.out.println("fetching commonness ...");
 			getSenses();
 		}
 
@@ -111,7 +117,7 @@ public class Surface
 	 * 
 	 * @return
 	 */
-	public boolean isAmbiguous()
+	public synchronized boolean isAmbiguous()
 	{
 		return getSenses().size() > 1;
 	}
@@ -122,7 +128,7 @@ public class Surface
 	 * @param dict
 	 * @return
 	 */
-	public boolean isAmbiguous(SurfaceDictionary dict)
+	public synchronized boolean isAmbiguous(SurfaceDictionary dict)
 	{
 		return dict.isAmbiguous(word);
 	}
@@ -132,7 +138,7 @@ public class Surface
 	 * 
 	 * @return
 	 */
-	public double getKeyphraseness()
+	public synchronized double getKeyphraseness()
 	{
 		if (keyphraseness < 0)
 		{
@@ -170,6 +176,24 @@ public class Surface
 	public String toString()
 	{
 		return word;
+	}
+	
+	public synchronized void recycle()
+	{
+		if (pool != null)
+		{
+			synchronized (pool)
+			{
+				if (pool.containsKey(word))
+				{
+					pool.remove(word);
+					if (senses != null)
+						senses.clear();
+					if (commonness != null)
+						commonness.clear();
+				}
+			}
+		}
 	}
 
 }
