@@ -1,11 +1,11 @@
 package ecologylab.semantics.concept.train;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 
-import ecologylab.semantics.concept.ConceptTrainingConstants;
 import ecologylab.semantics.concept.detect.Context;
 import ecologylab.semantics.concept.detect.Instance;
 import ecologylab.semantics.concept.detect.Surface;
@@ -81,6 +81,18 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 
 	public static void main(String[] args) throws IOException, SQLException
 	{
+		if (args.length != 2)
+		{
+			System.err.println("args: <in:title-list-file-path> <out:result-train-set-file-path>");
+			System.exit(-1);
+		}
+		
+		String infp = args[0];
+		String oufp = args[1];
+		
+		File inf = new File(infp);
+		File ouf = new File(oufp);
+		
 		DisambiguationTrainingSetPreparer preparer = new DisambiguationTrainingSetPreparer()
 		{
 			@Override
@@ -90,7 +102,7 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 				reportDetectionInstance(out, doc, instance, isPositiveSample);
 			}
 		};
-		prepare(ConceptTrainingConstants.DETECT_TRAINING_SET_FILE_PATH, preparer);
+		prepare(inf, ouf, preparer);
 	}
 
 }

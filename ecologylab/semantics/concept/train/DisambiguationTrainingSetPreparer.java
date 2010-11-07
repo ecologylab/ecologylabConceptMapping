@@ -1,11 +1,11 @@
 package ecologylab.semantics.concept.train;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 
-import ecologylab.semantics.concept.ConceptTrainingConstants;
 import ecologylab.semantics.concept.detect.Concept;
 import ecologylab.semantics.concept.detect.Instance;
 import ecologylab.semantics.concept.detect.Surface;
@@ -29,23 +29,14 @@ public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPrepa
 		targetSurfaces.retainAll(doc.getLinkedSurfaces().keySet());
 		for (Surface surface : targetSurfaces)
 		{
-			long t1 = System.currentTimeMillis();
 			for (Concept concept : surface.getSenses())
 			{
-				long t2 = System.currentTimeMillis();
 				Instance inst = Instance.getForDisambiguation(doc.getContext(), surface, concept);
 				boolean isTarget = false;
 				if (concept.equals(doc.getLinkedSurfaces().get(surface)))
 					isTarget = true;
 				reportInstance(out, doc, inst, isTarget);
-				long senseTime = System.currentTimeMillis() - t2;
-				System.out.println("doc.surface.sense time: " + senseTime);
-				if (senseTime > 1000)
-				{
-					System.out.println(doc.getTitle() + "/" + surface + "/" + concept);
-				}
 			}
-			System.out.println("doc.surface time: " + (System.currentTimeMillis() - t1));
 		}
 	}
 
@@ -75,6 +66,18 @@ public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPrepa
 
 	public static void main(String[] args) throws IOException, SQLException
 	{
+		if (args.length != 2)
+		{
+			System.err.println("args: <in:title-list-file-path> <out:result-train-set-file-path>");
+			System.exit(-1);
+		}
+		
+		String infp = args[0];
+		String oufp = args[1];
+		
+		File inf = new File(infp);
+		File ouf = new File(oufp);
+		
 		DisambiguationTrainingSetPreparer preparer = new DisambiguationTrainingSetPreparer()
 		{
 			@Override
@@ -84,7 +87,7 @@ public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPrepa
 				reportDisambiguationInstance(out, doc, instance, isPositiveSample);
 			}
 		};
-		prepare(ConceptTrainingConstants.DISAMBI_TRAINING_SET_FILE_PATH, preparer);
+		prepare(inf, ouf, preparer);
 	}
 
 }

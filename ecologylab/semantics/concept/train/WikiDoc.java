@@ -61,7 +61,6 @@ public class WikiDoc extends Doc
 	{
 		if (context == null)
 		{
-			long t1 = System.currentTimeMillis();
 			context = new Context();
 
 			for (Concept concept : getLinkedConcepts().keySet())
@@ -74,7 +73,6 @@ public class WikiDoc extends Doc
 				Concept concept = (Concept) surface.getSenses().toArray()[0];
 				context.addConcept(concept, surface);
 			}
-			System.out.println("context time: " + (System.currentTimeMillis() - t1));
 		}
 		return context;
 	}
@@ -115,7 +113,6 @@ public class WikiDoc extends Doc
 
 	private void getLinks() throws SQLException
 	{
-		long t0 = System.currentTimeMillis();
 		linkedConcepts = new HashMap<Concept, Surface>();
 		linkedSurfaces = new HashMap<Surface, Concept>();
 
@@ -137,7 +134,6 @@ public class WikiDoc extends Doc
 			}
 			rs.close();
 		}
-		System.out.println("getLinks() time: " + (System.currentTimeMillis() - t0));
 	}
 	
 	public void recycle()

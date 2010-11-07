@@ -71,23 +71,15 @@ public class Surface
 	{
 		if (senses == null)
 		{
-			try
-			{
-				senses = new HashSet<Concept>();
-				commonness = new HashMap<Concept, Double>();
+			senses = new HashSet<Concept>();
+			commonness = new HashMap<Concept, Double>();
 
-				Map<String, Double> commonness0 = DatabaseFacade.get().querySenses(word);
-				for (String title : commonness0.keySet())
-				{
-					Concept concept = Concept.get(title);
-					senses.add(concept);
-					commonness.put(concept, commonness0.get(title));
-				}
-			}
-			catch (SQLException e)
+			Map<String, Double> commonness0 = DatabaseFacade.get().querySenses(word);
+			for (String title : commonness0.keySet())
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Concept concept = Concept.get(title);
+				senses.add(concept);
+				commonness.put(concept, commonness0.get(title));
 			}
 		}
 		return senses;
@@ -142,15 +134,7 @@ public class Surface
 	{
 		if (keyphraseness < 0)
 		{
-			try
-			{
-				keyphraseness = DatabaseFacade.get().queryKeyphraseness(word);
-			}
-			catch (SQLException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			keyphraseness = DatabaseFacade.get().queryKeyphraseness(word);
 		}
 		return keyphraseness;
 	}
@@ -177,7 +161,7 @@ public class Surface
 	{
 		return word;
 	}
-	
+
 	public synchronized void recycle()
 	{
 		if (pool != null)

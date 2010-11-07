@@ -159,7 +159,7 @@ public class TextUtils
 		}
 	}
 
-	public static List<String> loadTxtAsSortedList(File f) throws IOException
+	public static List<String> loadTxtAsList(File f, boolean sort) throws IOException
 	{
 		List<String> list = new ArrayList<String>();
 		BufferedReader br;
@@ -169,7 +169,8 @@ public class TextUtils
 		{
 			list.add(line.trim());
 		}
-		Collections.sort(list);
+		if (sort)
+			Collections.sort(list);
 		return list;
 	}
 

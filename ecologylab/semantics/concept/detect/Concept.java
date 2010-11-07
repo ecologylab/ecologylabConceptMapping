@@ -62,15 +62,7 @@ public class Concept implements Comparable<Concept>
 	{
 		if (inlinkConcepts == null)
 		{
-			try
-			{
-				inlinkConcepts = DatabaseFacade.get().queryInlinkConceptsForConcept(title);
-			}
-			catch (SQLException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			inlinkConcepts = DatabaseFacade.get().queryInlinkConceptsForConcept(title);
 		}
 		return inlinkConcepts;
 	}

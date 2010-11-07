@@ -1,11 +1,13 @@
 package ecologylab.semantics.concept.database;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -165,23 +167,24 @@ public class DatabaseFacade extends Debug
 	 * @return the keyphraseness value, or 0 if surface not found
 	 * @throws SQLException
 	 */
-	public synchronized double queryKeyphraseness(String surface) throws SQLException
+	public synchronized double queryKeyphraseness(String surface)
 	{
 		double kp = 0;
 
-		PreparedStatement st = getPreparedStatement("SELECT keyphraseness FROM keyphraseness WHERE surface=?;");
-		st.setString(1, surface.toLowerCase().replaceAll("[^a-z0-9]", " "));
-		ResultSet rs = st.executeQuery();
-		if (rs.next())
+		try
 		{
-			kp = rs.getDouble("keyphraseness");
+			CallableStatement cst = conn.prepareCall("{ ? = call query_keyphraseness(?) }");
+			cst.registerOutParameter(1, Types.DOUBLE);
+
+			cst.setString(2, surface);
+			cst.execute();
+			kp = cst.getDouble(1);
 		}
-		else
+		catch (SQLException e)
 		{
-			warning("keyphraseness not found: " + surface);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		rs.close();
-		
 		return kp;
 	}
 
@@ -221,18 +224,27 @@ public class DatabaseFacade extends Debug
 	 * @return a map from sense (concept) to commonness.
 	 * @throws SQLException
 	 */
-	public synchronized Map<String, Double> querySenses(String surface) throws SQLException
+	public synchronized Map<String, Double> querySenses(String surface)
 	{
 		Map<String, Double> rst = new HashMap<String, Double>();
 
-		PreparedStatement st = getPreparedStatement("SELECT concept, commonness FROM commonness WHERE surface=?;");
-		st.setString(1, surface);
-		ResultSet rs = st.executeQuery();
-		while (rs.next())
+		try
 		{
-			rst.put(rs.getString("concept"), rs.getDouble("commonness"));
+			PreparedStatement pst = getPreparedStatement("SELECT * FROM query_senses(?);");
+			pst.setString(1, surface);
+			ResultSet rs = pst.executeQuery();
+			while (rs.next())
+			{
+				rst.put(rs.getString("concept"), rs.getDouble("commonness"));
+			}
+			rs.close();
 		}
-		rs.close();
+		catch (SQLException e)
+		{
+			// TODO Auto-generated catch block
+			System.err.println("surface=" + surface);
+			e.printStackTrace();
+		}
 
 		return rst;
 	}
@@ -245,18 +257,27 @@ public class DatabaseFacade extends Debug
 	 * @return
 	 * @throws SQLException
 	 */
-	public synchronized List<String> queryInlinkConceptsForConcept(String toConcept) throws SQLException
+	public synchronized List<String> queryInlinkConceptsForConcept(String toConcept)
 	{
 		List<String> rst = new ArrayList<String>();
 
-		PreparedStatement st = getPreparedStatement("SELECT DISTINCT from_title FROM wikilinks WHERE to_title=?;");
-		st.setString(1, toConcept);
-		ResultSet rs = st.executeQuery();
-		while (rs.next())
+		try
 		{
-			rst.add(rs.getString("from_title"));
+			PreparedStatement pst = getPreparedStatement("SELECT * FROM query_inlink_concepts(?);");
+			pst.setString(1, toConcept);
+			ResultSet rs = pst.executeQuery();
+			while (rs.next())
+			{
+				rst.add(rs.getString("from_title"));
+			}
+			rs.close();
 		}
-		rs.close();
+		catch (SQLException e)
+		{
+			// TODO Auto-generated catch block
+			System.err.println("toConcept=" + toConcept);
+			e.printStackTrace();
+		}
 
 		// using Java's sort() instead of SQL ORDER BY, since ORDER BY seems to treat upper / lower
 		// cases differently from sort().

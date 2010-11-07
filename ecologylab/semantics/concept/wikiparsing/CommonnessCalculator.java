@@ -29,7 +29,7 @@ public class CommonnessCalculator
 
 	public CommonnessCalculator() throws SQLException, IOException
 	{
-		primaryConcepts = TextUtils.loadTxtAsSortedList(new File(ConceptTrainingConstants.PRIMARY_CONCEPTS_FILE_PATH));
+		primaryConcepts = TextUtils.loadTxtAsList(new File(ConceptTrainingConstants.PRIMARY_CONCEPTS_FILE_PATH), true);
 		DatabaseFacade.get().executeSql("TRUNCATE commonness;");
 	}
 
