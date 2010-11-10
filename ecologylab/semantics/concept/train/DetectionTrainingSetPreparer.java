@@ -93,8 +93,9 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 		File inf = new File(infp);
 		File ouf = new File(oufp);
 		
-		DisambiguationTrainingSetPreparer preparer = new DisambiguationTrainingSetPreparer()
+		DetectionTrainingSetPreparer preparer = new DetectionTrainingSetPreparer()
 		{
+			
 			@Override
 			protected void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance,
 					boolean isPositiveSample)

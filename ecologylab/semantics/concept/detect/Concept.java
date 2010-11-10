@@ -1,6 +1,5 @@
 package ecologylab.semantics.concept.detect;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +27,15 @@ public class Concept implements Comparable<Concept>
 	 * @param title
 	 * @return
 	 */
-	public synchronized static Concept get(String title)
+	public static Concept get(String title)
 	{
 		if (!pool.containsKey(title))
 		{
-			pool.put(title, new Concept(title));
+			synchronized (pool)
+			{
+				if (!pool.containsKey(title))
+					pool.put(title, new Concept(title));
+			}
 		}
 		return pool.get(title);
 	}
@@ -48,6 +51,8 @@ public class Concept implements Comparable<Concept>
 
 	private Map<Concept, Double>	relatedness			= new HashMap<Concept, Double>();
 
+	private boolean								recycled;
+
 	private Concept(String title)
 	{
 		this.title = title;
@@ -58,11 +63,15 @@ public class Concept implements Comparable<Concept>
 	 * 
 	 * @return
 	 */
-	public synchronized List<String> getInlinkConcepts()
+	public List<String> getInlinkConcepts()
 	{
 		if (inlinkConcepts == null)
 		{
-			inlinkConcepts = DatabaseFacade.get().queryInlinkConceptsForConcept(title);
+			synchronized (this)
+			{
+				if (inlinkConcepts == null)
+					inlinkConcepts = DatabaseFacade.get().queryInlinkConceptsForConcept(title);
+			}
 		}
 		return inlinkConcepts;
 	}
@@ -74,7 +83,7 @@ public class Concept implements Comparable<Concept>
 	 * @param other
 	 * @return relatedness value if different concepts, or 0 if identical concepts
 	 */
-	public synchronized double getRelatedness(Concept other)
+	public double getRelatedness(Concept other)
 	{
 		if (equals(other))
 		{
@@ -88,9 +97,15 @@ public class Concept implements Comparable<Concept>
 
 		if (!relatedness.containsKey(other.title))
 		{
-			double relatednessValue = DatabaseFacade.get().queryRelatedness(getInlinkConcepts(),
-					other.getInlinkConcepts());
-			relatedness.put(other, relatednessValue);
+			synchronized (this)
+			{
+				if (!relatedness.containsKey(other.title))
+				{
+					double relatednessValue = DatabaseFacade.get().queryRelatedness(getInlinkConcepts(),
+							other.getInlinkConcepts());
+					relatedness.put(other, relatednessValue);
+				}
+			}
 		}
 		return relatedness.get(other);
 	}
@@ -126,18 +141,24 @@ public class Concept implements Comparable<Concept>
 
 	public synchronized void recycle()
 	{
+		if (recycled)
+			return;
+
 		if (pool != null)
 		{
 			synchronized (pool)
 			{
 				if (pool.containsKey(title))
 					pool.remove(title);
-				if (inlinkConcepts != null)
-					inlinkConcepts.clear();
-				if (relatedness != null)
-					relatedness.clear();
 			}
 		}
+
+		if (inlinkConcepts != null)
+			inlinkConcepts.clear();
+		if (relatedness != null)
+			relatedness.clear();
+
+		recycled = true;
 	}
 
 }

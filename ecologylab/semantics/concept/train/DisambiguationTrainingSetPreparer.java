@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import ecologylab.semantics.concept.detect.Concept;
+import ecologylab.semantics.concept.detect.Context;
 import ecologylab.semantics.concept.detect.Instance;
 import ecologylab.semantics.concept.detect.Surface;
 
@@ -27,11 +28,13 @@ public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPrepa
 		// feature extraction
 		Set<Surface> targetSurfaces = doc.getAmbiSurfaces();
 		targetSurfaces.retainAll(doc.getLinkedSurfaces().keySet());
+
+		Context context = doc.getContext();
 		for (Surface surface : targetSurfaces)
 		{
 			for (Concept concept : surface.getSenses())
 			{
-				Instance inst = Instance.getForDisambiguation(doc.getContext(), surface, concept);
+				Instance inst = Instance.getForDisambiguation(context, surface, concept);
 				boolean isTarget = false;
 				if (concept.equals(doc.getLinkedSurfaces().get(surface)))
 					isTarget = true;
@@ -71,13 +74,13 @@ public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPrepa
 			System.err.println("args: <in:title-list-file-path> <out:result-train-set-file-path>");
 			System.exit(-1);
 		}
-		
+
 		String infp = args[0];
 		String oufp = args[1];
-		
+
 		File inf = new File(infp);
 		File ouf = new File(oufp);
-		
+
 		DisambiguationTrainingSetPreparer preparer = new DisambiguationTrainingSetPreparer()
 		{
 			@Override

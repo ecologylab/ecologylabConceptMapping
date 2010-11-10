@@ -1,11 +1,10 @@
 package ecologylab.semantics.concept.detect;
 
-
 /**
  * Instance augments Surface with extracted features & prediction results.
  * 
  * @author quyin
- *
+ * 
  */
 public class Instance
 {
@@ -18,7 +17,7 @@ public class Instance
 	}
 
 	// for disambiguation
-	
+
 	public double		commonness;
 
 	public double		contextualRelatedness;
@@ -38,7 +37,7 @@ public class Instance
 	public double		frequency;
 
 	public double		detectionConfidence;
-	
+
 	@Override
 	public String toString()
 	{
@@ -49,7 +48,7 @@ public class Instance
 
 	/**
 	 * extract features for disambiguation (including commonness, contextual relatedness and quality.
-	 *  
+	 * 
 	 * @param context
 	 * @param surface
 	 * @param sense
@@ -60,14 +59,16 @@ public class Instance
 		Instance instance = new Instance(surface);
 
 		instance.commonness = surface.getCommonness(sense);
+
 		instance.contextQuality = context.getQuality();
+
 		instance.contextualRelatedness = context.getContextualRelatedness(sense);
-		
+
 		instance.disambiguatedConcept = sense;
 
 		return instance;
 	}
-	
+
 	public void recycle()
 	{
 		surface = null;

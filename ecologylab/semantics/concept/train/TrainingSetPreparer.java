@@ -34,6 +34,9 @@ public abstract class TrainingSetPreparer
 			System.out.format("doc [%s]: ", title);
 			long t1 = System.currentTimeMillis();
 			WikiDoc doc = WikiDoc.get(title, dict);
+			long d1 = System.currentTimeMillis() - t1;
+			System.out.format("%d ms + ", d1);
+			long t2 = System.currentTimeMillis();
 			if (doc != null)
 			{
 				preparer.prepare(doc, out);
@@ -43,13 +46,14 @@ public abstract class TrainingSetPreparer
 			{
 				System.out.println("warning: wikidoc not exist for " + title);
 			}
-			System.out.println(System.currentTimeMillis() - t1);
+			long d2 = System.currentTimeMillis() - t2;
+			System.out.format("%d ms.\n", d2);
 			
 			i++;
 			if (i % 10 == 0)
 			{
-				long dt = System.currentTimeMillis() - t0;
-				System.out.println(i + " of " + titleList.size() + " wiki articles processed: " + dt + " ms.");
+				long d0 = System.currentTimeMillis() - t0;
+				System.out.println(i + " of " + titleList.size() + " wiki articles processed: " + d0 + " ms.");
 			}
 		}
 

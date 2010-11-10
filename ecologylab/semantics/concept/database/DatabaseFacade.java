@@ -22,17 +22,21 @@ public class DatabaseFacade extends Debug
 
 	private static DatabaseFacade	the	= null;
 
-	public static synchronized DatabaseFacade get()
+	public static DatabaseFacade get()
 	{
 		if (the == null)
 		{
-			the = new DatabaseFacade();
+			synchronized (DatabaseFacade.class)
+			{
+				if (the == null)
+					the = new DatabaseFacade();
+			}
 		}
 
 		return the;
 	}
 
-	public static final int									NUM_ALL_CONCEPTS		= 3056348;
+	public static final int									NUM_ALL_CONCEPTS		= 3000000;
 
 	private Connection											conn;
 
@@ -115,14 +119,14 @@ public class DatabaseFacade extends Debug
 		}
 	}
 
-	public synchronized void executeSql(String sql) throws SQLException
+	public void executeSql(String sql) throws SQLException
 	{
 		Statement st = conn.createStatement();
 		st.execute(sql);
 		st.close();
 	}
 
-	public synchronized int executeUpdateSql(String sql) throws SQLException
+	public int executeUpdateSql(String sql) throws SQLException
 	{
 		Statement st = conn.createStatement();
 		int rst = st.executeUpdate(sql);
@@ -136,25 +140,31 @@ public class DatabaseFacade extends Debug
 	 * @return
 	 * @throws SQLException
 	 */
-	public synchronized Statement getStatement() throws SQLException
+	public Statement getStatement() throws SQLException
 	{
 		return conn.createStatement();
 	}
 
-	public synchronized PreparedStatement getPreparedStatement(String sql)
+	public PreparedStatement getPreparedStatement(String sql)
 	{
 		if (!preparedStatements.containsKey(sql))
 		{
-			try
+			synchronized (preparedStatements)
 			{
-				PreparedStatement pst = conn.prepareStatement(sql);
-				preparedStatements.put(sql, pst);
-			}
-			catch (SQLException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
+				if (!preparedStatements.containsKey(sql))
+				{
+					try
+					{
+						PreparedStatement pst = conn.prepareStatement(sql);
+						preparedStatements.put(sql, pst);
+					}
+					catch (SQLException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return null;
+					}
+				}
 			}
 		}
 		return preparedStatements.get(sql);
@@ -167,7 +177,7 @@ public class DatabaseFacade extends Debug
 	 * @return the keyphraseness value, or 0 if surface not found
 	 * @throws SQLException
 	 */
-	public synchronized double queryKeyphraseness(String surface)
+	public double queryKeyphraseness(String surface)
 	{
 		double kp = 0;
 
@@ -179,6 +189,7 @@ public class DatabaseFacade extends Debug
 			cst.setString(2, surface);
 			cst.execute();
 			kp = cst.getDouble(1);
+			cst.close();
 		}
 		catch (SQLException e)
 		{
@@ -197,7 +208,7 @@ public class DatabaseFacade extends Debug
 	 * @param inlinkList2
 	 * @return
 	 */
-	public synchronized double queryRelatedness(List<String> inlinkList1, List<String> inlinkList2)
+	public double queryRelatedness(List<String> inlinkList1, List<String> inlinkList2)
 	{
 		if (inlinkList1.equals(inlinkList2))
 			return 0;
@@ -224,20 +235,28 @@ public class DatabaseFacade extends Debug
 	 * @return a map from sense (concept) to commonness.
 	 * @throws SQLException
 	 */
-	public synchronized Map<String, Double> querySenses(String surface)
+	public Map<String, Double> querySenses(String surface)
 	{
 		Map<String, Double> rst = new HashMap<String, Double>();
 
 		try
 		{
-			PreparedStatement pst = getPreparedStatement("SELECT * FROM query_senses(?);");
-			pst.setString(1, surface);
-			ResultSet rs = pst.executeQuery();
-			while (rs.next())
+			PreparedStatement pst = conn.prepareStatement("SELECT * FROM query_senses(?);");
+			ResultSet rs = null;
+			synchronized (pst)
 			{
-				rst.put(rs.getString("concept"), rs.getDouble("commonness"));
+				pst.setString(1, surface);
+				rs = pst.executeQuery();
 			}
-			rs.close();
+			if (rs != null)
+			{
+				while (rs.next())
+				{
+					rst.put(rs.getString("concept"), rs.getDouble("commonness"));
+				}
+				rs.close();
+			}
+			pst.close();
 		}
 		catch (SQLException e)
 		{
@@ -257,20 +276,28 @@ public class DatabaseFacade extends Debug
 	 * @return
 	 * @throws SQLException
 	 */
-	public synchronized List<String> queryInlinkConceptsForConcept(String toConcept)
+	public List<String> queryInlinkConceptsForConcept(String toConcept)
 	{
 		List<String> rst = new ArrayList<String>();
 
 		try
 		{
-			PreparedStatement pst = getPreparedStatement("SELECT * FROM query_inlink_concepts(?);");
-			pst.setString(1, toConcept);
-			ResultSet rs = pst.executeQuery();
-			while (rs.next())
+			PreparedStatement pst = conn.prepareStatement("SELECT * FROM query_inlink_concepts(?);");
+			ResultSet rs = null;
+			synchronized (pst)
 			{
-				rst.add(rs.getString("from_title"));
+				pst.setString(1, toConcept);
+				rs = pst.executeQuery();
 			}
-			rs.close();
+			if (rs != null)
+			{
+				while (rs.next())
+				{
+					rst.add(rs.getString("from_title"));
+				}
+				rs.close();
+			}
+			pst.close();
 		}
 		catch (SQLException e)
 		{

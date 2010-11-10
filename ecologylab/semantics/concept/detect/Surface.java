@@ -1,6 +1,5 @@
 package ecologylab.semantics.concept.detect;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,11 +34,15 @@ public class Surface
 	 * @param word
 	 * @return
 	 */
-	public synchronized static Surface get(String word)
+	public static Surface get(String word)
 	{
 		if (!pool.containsKey(word))
 		{
-			pool.put(word, new Surface(word));
+			synchronized (pool)
+			{
+				if (!pool.containsKey(word))
+					pool.put(word, new Surface(word));
+			}
 		}
 		return pool.get(word);
 	}
@@ -57,6 +60,8 @@ public class Surface
 
 	private double								keyphraseness	= -1;
 
+	private boolean								recycled;
+
 	private Surface(String word)
 	{
 		this.word = word;
@@ -67,19 +72,25 @@ public class Surface
 	 * 
 	 * @return
 	 */
-	public synchronized Set<Concept> getSenses()
+	public Set<Concept> getSenses()
 	{
 		if (senses == null)
 		{
-			senses = new HashSet<Concept>();
-			commonness = new HashMap<Concept, Double>();
-
-			Map<String, Double> commonness0 = DatabaseFacade.get().querySenses(word);
-			for (String title : commonness0.keySet())
+			synchronized (this)
 			{
-				Concept concept = Concept.get(title);
-				senses.add(concept);
-				commonness.put(concept, commonness0.get(title));
+				if (senses == null)
+				{
+					senses = new HashSet<Concept>();
+					commonness = new HashMap<Concept, Double>();
+
+					Map<String, Double> commonness0 = DatabaseFacade.get().querySenses(word);
+					for (String title : commonness0.keySet())
+					{
+						Concept concept = Concept.get(title);
+						senses.add(concept);
+						commonness.put(concept, commonness0.get(title));
+					}
+				}
 			}
 		}
 		return senses;
@@ -91,12 +102,15 @@ public class Surface
 	 * @param concept
 	 * @return
 	 */
-	public synchronized double getCommonness(Concept concept)
+	public double getCommonness(Concept concept)
 	{
 		if (commonness == null)
 		{
-			System.out.println("fetching commonness ...");
-			getSenses();
+			synchronized (this)
+			{
+				if (commonness == null)
+					getSenses();
+			}
 		}
 
 		if (commonness.containsKey(concept))
@@ -109,7 +123,7 @@ public class Surface
 	 * 
 	 * @return
 	 */
-	public synchronized boolean isAmbiguous()
+	public boolean isAmbiguous()
 	{
 		return getSenses().size() > 1;
 	}
@@ -120,7 +134,7 @@ public class Surface
 	 * @param dict
 	 * @return
 	 */
-	public synchronized boolean isAmbiguous(SurfaceDictionary dict)
+	public boolean isAmbiguous(SurfaceDictionary dict)
 	{
 		return dict.isAmbiguous(word);
 	}
@@ -130,11 +144,15 @@ public class Surface
 	 * 
 	 * @return
 	 */
-	public synchronized double getKeyphraseness()
+	public double getKeyphraseness()
 	{
 		if (keyphraseness < 0)
 		{
-			keyphraseness = DatabaseFacade.get().queryKeyphraseness(word);
+			synchronized (this)
+			{
+				if (keyphraseness < 0)
+					keyphraseness = DatabaseFacade.get().queryKeyphraseness(word);
+			}
 		}
 		return keyphraseness;
 	}
@@ -164,6 +182,9 @@ public class Surface
 
 	public synchronized void recycle()
 	{
+		if (recycled)
+			return;
+
 		if (pool != null)
 		{
 			synchronized (pool)
@@ -171,13 +192,16 @@ public class Surface
 				if (pool.containsKey(word))
 				{
 					pool.remove(word);
-					if (senses != null)
-						senses.clear();
-					if (commonness != null)
-						commonness.clear();
 				}
 			}
 		}
+
+		if (senses != null)
+			senses.clear();
+		if (commonness != null)
+			commonness.clear();
+
+		recycled = true;
 	}
 
 }
