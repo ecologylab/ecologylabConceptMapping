@@ -60,7 +60,11 @@ public class TrainingSetBalancer
 			secondaryClassLines = secondaryClassLines.subList(0, primaryClassLines.size());
 		}
 		
-		output(outFilepath, primaryClassLines, secondaryClassLines);
+		List<String> all = new ArrayList<String>(primaryClassLines);
+		all.addAll(secondaryClassLines);
+		CollectionUtils.randomPermute(all);
+		
+		output(outFilepath, all);
 	}
 	
 	private void output(String outFilepath, List<String>... lists) throws IOException
@@ -82,7 +86,7 @@ public class TrainingSetBalancer
 		TrainingSetBalancer tsb = new TrainingSetBalancer();
 		try
 		{
-			tsb.balance("data/detect-training.dat", "data/detect-training-balanced.dat");
+			tsb.balance("data/disambi-trainset.dat", "data/disambi-trainset-balanced.dat");
 		}
 		catch (IOException e)
 		{
