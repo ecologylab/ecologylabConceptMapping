@@ -80,7 +80,7 @@ public class SVMTuner extends Debug
 		SVMTrainer.saveModel(model, modelFilename);
 
 		BufferedWriter bw = new BufferedWriter(new FileWriter(precisionFilename));
-		bw.write("idx: precision, recall, average_precision");
+		bw.write("idx: true label, prediction, precision, recall, average_precision");
 		bw.newLine();
 
 		SVMPredicter pred = new SVMPredicter(modelFilename);
@@ -89,6 +89,7 @@ public class SVMTuner extends Debug
 		int tp = 0, tn = 0, fp = 0, fn = 0;
 		double sum_precision = 0;
 		double ap = 0;
+		double bestAp = 0;
 		for (int i = 0; i < size; ++i)
 		{
 			int label = testSet.getLabels().get(i);
@@ -108,23 +109,27 @@ public class SVMTuner extends Debug
 				// given that there are only 2 types of labels
 				tn++;
 
-			if (p == label)
+			if (p == ConceptConstants.POS_CLASS_INT_LABEL
+					&& label == ConceptConstants.POS_CLASS_INT_LABEL)
 			{
-				tp++;
-				double precision = tp / (tp + fp);
-				double recall = tp / (tp + fn);
+				double precision = (double) tp / (tp + fp);
+				double recall = (double) tp / (tp + fn);
 				sum_precision += precision;
 				ap = sum_precision / tp;
-				bw.write(String.format("%d: %f, %f, %f", i, precision, recall, ap));
+				if (bestAp < ap)
+					bestAp = ap;
+				
+				bw.write(String.format("%d: %d, %d, %.2f%%, %.2f%%, %.2f%%",
+						i, label, p, precision * 100, recall * 100, ap * 100));
 				bw.newLine();
 			}
 		}
 		bw.close();
 
-		report(C, gamma, ap);
+		report(C, gamma, bestAp);
 	}
 
-	public void report(double c, double gamma, double ap)
+	public void report(double c, double gamma, double bestAp)
 	{
 		// TODO Auto-generated method stub
 
@@ -153,11 +158,11 @@ public class SVMTuner extends Debug
 				new FileWriter("model/disambi-tuning-results.dat"));
 		SVMTuner tuner = new SVMTuner(trainSet, testSet, "model/disambi-tuning-models")
 		{
-			public void report(double c, double gamma, double ap)
+			public void report(double c, double gamma, double bestAp)
 			{
 				try
 				{
-					out.write(String.format("C=%f, gamma=%f, AP=%f\n", c, gamma, ap));
+					out.write(String.format("C=%f, gamma=%f, bestAP=%.2f%%\n", c, gamma, bestAp * 100));
 				}
 				catch (IOException e)
 				{
