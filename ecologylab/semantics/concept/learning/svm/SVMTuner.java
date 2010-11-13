@@ -72,7 +72,7 @@ public class SVMTuner extends Debug
 	{
 		SVMTrainer trainer = new SVMTrainer(trainSet);
 
-		String paramsString = String.format("-C=%f_g=%f.model", C, gamma);
+		String paramsString = String.format("-C=%f_g=%f", C, gamma);
 		String modelFilename = modelFilenamePrefix + paramsString + ".model";
 		String precisionFilename = modelFilenamePrefix + paramsString + ".pre";
 
