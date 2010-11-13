@@ -89,7 +89,6 @@ public class SVMTuner extends Debug
 		int tp = 0, tn = 0, fp = 0, fn = 0;
 		double sum_precision = 0;
 		double ap = 0;
-		double bestAp = 0;
 		for (int i = 0; i < size; ++i)
 		{
 			int label = testSet.getLabels().get(i);
@@ -116,8 +115,6 @@ public class SVMTuner extends Debug
 				double recall = (double) tp / (tp + fn);
 				sum_precision += precision;
 				ap = sum_precision / tp;
-				if (bestAp < ap)
-					bestAp = ap;
 				
 				bw.write(String.format("%d: %d, %d, %.2f%%, %.2f%%, %.2f%%",
 						i, label, p, precision * 100, recall * 100, ap * 100));
@@ -126,10 +123,10 @@ public class SVMTuner extends Debug
 		}
 		bw.close();
 
-		report(C, gamma, bestAp);
+		report(C, gamma, ap);
 	}
 
-	public void report(double c, double gamma, double bestAp)
+	public void report(double c, double gamma, double ap)
 	{
 		// TODO Auto-generated method stub
 
@@ -158,11 +155,11 @@ public class SVMTuner extends Debug
 				new FileWriter("model/disambi-tuning-results.dat"));
 		SVMTuner tuner = new SVMTuner(trainSet, testSet, "model/disambi-tuning-models")
 		{
-			public void report(double c, double gamma, double bestAp)
+			public void report(double c, double gamma, double ap)
 			{
 				try
 				{
-					out.write(String.format("C=%f, gamma=%f, bestAP=%.2f%%\n", c, gamma, bestAp * 100));
+					out.write(String.format("C=%f, gamma=%f, AP=%.2f%%\n", c, gamma, ap * 100));
 				}
 				catch (IOException e)
 				{
