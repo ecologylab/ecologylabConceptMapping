@@ -40,28 +40,45 @@ class Disambiguator
 
 		if (context.size() == 0)
 		{
-			// TODO no unambiguous surfaces? do a best guess ...
+			// no unambiguous surfaces? do a best guess ...
+			Surface s = findSurfaceWithLargestCommonness(doc);
+			candidateSurfaces.add(s);
 		}
 
 		while (candidateSurfaces.size() > 0)
 		{
 			// find related surfaces
 			Set<Surface> relatedSurfaces = new HashSet<Surface>();
+			Surface bestRelatedOne = null;
+			double bestRelatedOneRelatedness = 0;
 			for (Surface surface : candidateSurfaces)
 			{
-				if (isRelatedSurface(surface, context))
+				double relatedness = getRelatedness(surface, context);
+				if (relatedness > ConceptConstants.threshold1)
 				{
 					relatedSurfaces.add(surface);
 				}
-
+				if (bestRelatedOne == null ||
+						bestRelatedOneRelatedness < relatedness)
+				{
+					bestRelatedOne = surface;
+					bestRelatedOneRelatedness = relatedness;
+				}
 			}
 
 			if (relatedSurfaces.size() == 0)
 			{
-				// TODO no related surfaces? find the most related one ...
+				// no related surfaces? find the most related one ...
+				relatedSurfaces.add(bestRelatedOne);
+			}
+			if (relatedSurfaces.size() == 0)
+			{
+				// still no related surfaces, move on
+				continue;
 			}
 
 			Set<Instance> disambiguated = new HashSet<Instance>();
+			Instance bestConfidentOne = null;
 			for (Surface surface : relatedSurfaces)
 			{
 				Instance instance = context.disambiguate(surface);
@@ -69,11 +86,20 @@ class Disambiguator
 				{
 					disambiguated.add(instance);
 				}
+				if (bestConfidentOne == null ||
+							bestConfidentOne.disambiguationConfidence < instance.disambiguationConfidence)
+					bestConfidentOne = instance;
 			}
 
 			if (disambiguated.size() == 0)
 			{
-				// TODO no surfaces are disambiguated confidently enough? find the most confident one ...
+				// no surfaces are disambiguated confidently enough? find the most confident one ...
+				disambiguated.add(bestConfidentOne);
+			}
+			if (disambiguated.size() == 0)
+			{
+				// still no disambiguated surfaces, move on
+				continue;
 			}
 
 			for (Instance instance : disambiguated)
@@ -87,21 +113,42 @@ class Disambiguator
 		return rst;
 	}
 
-	private boolean isRelatedSurface(Surface surface, Context context)
+	private double getRelatedness(Surface surface, Context context)
 	{
+		double rst = 0;
 		Set<Concept> senses = surface.getSenses();
 		for (Concept concept : senses)
 		{
 			for (Concept c : context.getConcepts())
 			{
 				double rel = c.getRelatedness(concept);
-				if (rel > ConceptConstants.threshold1)
+				if (rel > rst)
+					rst = rel;
+			}
+		}
+		return rst;
+	}
+
+	private Surface findSurfaceWithLargestCommonness(Doc theDoc)
+	{
+		Surface best = null;
+		double bestCommonness = 0;
+		
+		for (Surface s : theDoc.getAmbiSurfaces())
+		{
+			for (Concept c : s.getSenses())
+			{
+				double commonness = s.getCommonness(c);
+				if (best == null ||
+						bestCommonness < commonness)
 				{
-					return true;
+					best = s;
+					bestCommonness = commonness;
 				}
 			}
 		}
-		return false;
+		
+		return best;
 	}
 
 }
