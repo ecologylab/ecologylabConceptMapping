@@ -9,9 +9,27 @@ import libsvm.svm_node;
 
 public class SVMPredicter
 {
-	
+
+	public static class Prediction
+	{
+
+		public int									trueLabel;
+
+		public svm_node[]						instance;
+
+		public Map<Integer, Double>	result;
+
+		public Prediction(int trueLabel, svm_node[] instance, Map<Integer, Double> result)
+		{
+			this.trueLabel = trueLabel;
+			this.instance = instance;
+			this.result = result;
+		}
+
+	}
+
 	private svm_model	model;
-	
+
 	/**
 	 * construct a predicter using a saved model.
 	 * 
@@ -45,12 +63,12 @@ public class SVMPredicter
 		int nr_class = svm.svm_get_nr_class(model);
 		int[] labels = new int[nr_class];
 		svm.svm_get_labels(model, labels);
-		
+
 		if (svm.svm_check_probability_model(model) == 1)
 		{
 			double[] prob_estimates = new double[nr_class];
 			svm.svm_predict_probability(model, instance, prob_estimates);
-	
+
 			int max_label = 0;
 			double max_prob = 0;
 			for (int j = 0; j < nr_class; j++)
@@ -59,7 +77,7 @@ public class SVMPredicter
 				{
 					results.put(labels[j], prob_estimates[j]);
 				}
-				
+
 				if (prob_estimates[j] > max_prob)
 				{
 					max_prob = prob_estimates[j];

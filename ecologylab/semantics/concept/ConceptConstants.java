@@ -11,7 +11,7 @@ public class ConceptConstants
 
 	public static final String	DISAMBI_PARAM_FILE_PATH						= "model/disambi-norm-params.dat";
 
-	public static final String	DISAMBI_MODEL_FILE_PATH						= "model/disambi-tuning-models-C=0.250000_g=0.062500.model";
+	public static final String	DISAMBI_MODEL_FILE_PATH						= "model/disambi-tuning-models-C=0.125000_g=0.062500.model";
 
 	public static final String	DETECT_PARAM_FILE_PATH						= "model/detect-norm-params.dat";
 

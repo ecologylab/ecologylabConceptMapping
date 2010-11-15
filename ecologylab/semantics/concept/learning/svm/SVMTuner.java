@@ -3,6 +3,12 @@ package ecologylab.semantics.concept.learning.svm;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +18,7 @@ import libsvm.svm_node;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.learning.svm.SVMPredicter.Prediction;
 
 /**
  * Tune a SVM model over a given range of parameters (C and gamma), using grid search. The criteria
@@ -80,44 +87,57 @@ public class SVMTuner extends Debug
 		SVMTrainer.saveModel(model, modelFilename);
 
 		BufferedWriter bw = new BufferedWriter(new FileWriter(precisionFilename));
-		bw.write("idx: true label, prediction, precision, recall, average_precision");
+		bw.write("idx: confidence, precision, recall, average_precision");
 		bw.newLine();
 
 		SVMPredicter pred = new SVMPredicter(modelFilename);
 		int size = testSet.getLabels().size();
+		
+		int nPosSamples = 0;
+		List<Prediction> preds = new ArrayList<Prediction>();
+		for (int i = 0; i < size; ++i)
+		{
+			int label = testSet.getLabels().get(i);
+			if (label == ConceptConstants.POS_CLASS_INT_LABEL)
+				nPosSamples++;
+			svm_node[] inst = testSet.getFeatures().get(i);
+			Map<Integer, Double> rst = new HashMap<Integer, Double>();
+			pred.predict(inst, rst);
+			Prediction p = new Prediction(label, inst, rst);
+			preds.add(p);
+		}
+		
+		Collections.sort(preds, new Comparator<Prediction>() {
+			@Override
+			public int compare(Prediction p1, Prediction p2)
+			{
+				double conf1 = p1.result.get(ConceptConstants.POS_CLASS_INT_LABEL);
+				double conf2 = p2.result.get(ConceptConstants.POS_CLASS_INT_LABEL);
+				return Double.compare(conf2, conf1);
+			}
+		});
 
-		int tp = 0, tn = 0, fp = 0, fn = 0;
+		int tp = 0, fp = 0;
 		double sum_precision = 0;
 		double ap = 0;
 		for (int i = 0; i < size; ++i)
 		{
-			int label = testSet.getLabels().get(i);
-			svm_node[] inst = testSet.getFeatures().get(i);
-			int p = pred.predict(inst, null);
-
-			if (p == ConceptConstants.POS_CLASS_INT_LABEL
-					&& label == ConceptConstants.POS_CLASS_INT_LABEL)
+			Prediction p = preds.get(i);
+			if (p.trueLabel == ConceptConstants.POS_CLASS_INT_LABEL)
 				tp++;
-			else if (p == ConceptConstants.POS_CLASS_INT_LABEL
-					&& label == ConceptConstants.NEG_CLASS_INT_LABEL)
-				fp++;
-			else if (p == ConceptConstants.NEG_CLASS_INT_LABEL
-					&& label == ConceptConstants.POS_CLASS_INT_LABEL)
-				fn++;
 			else
-				// given that there are only 2 types of labels
-				tn++;
+				fp++;
 
-			if (p == ConceptConstants.POS_CLASS_INT_LABEL
-					&& label == ConceptConstants.POS_CLASS_INT_LABEL)
+			if (p.trueLabel == ConceptConstants.POS_CLASS_INT_LABEL)
 			{
-				double precision = (double) tp / (tp + fp);
-				double recall = (double) tp / (tp + fn);
+				double precision = (double) tp / (i+1);
+				double recall = (double) tp / nPosSamples;
 				sum_precision += precision;
 				ap = sum_precision / tp;
 				
-				bw.write(String.format("%d: %d, %d, %.2f%%, %.2f%%, %.2f%%",
-						i, label, p, precision * 100, recall * 100, ap * 100));
+				double conf = p.result.get(ConceptConstants.POS_CLASS_INT_LABEL);
+				bw.write(String.format("%d: %.2f%%, %.2f%%, %.2f%%, %.2f%%",
+						i, conf * 100, precision * 100, recall * 100, ap * 100));
 				bw.newLine();
 			}
 		}
