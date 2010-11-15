@@ -14,7 +14,7 @@ else
 	split -d -l $split_line_count $1 $3-split-
 
 	for splitf in $(ls $3-split-*); do
-		$4 $splitf $splitf-result > $splitf.log &
+		$4 $splitf $splitf-result >$splitf.log 2>&1 &
 	done
 
 	echo "all jobs mapped. please reduce results after they are done."
