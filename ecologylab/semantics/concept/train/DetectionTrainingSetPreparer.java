@@ -32,6 +32,10 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 			{
 				Context context = doc.getContext();
 				Instance inst = context.disambiguate(surface);
+				inst.keyphraseness = inst.surface.getKeyphraseness();
+				inst.occurrence = doc.getNumberOfOccurrences(inst.surface);
+				inst.frequency = ((double) inst.occurrence) / doc.getTotalWords();
+			
 				if (doc.getLinkedSurfaces().containsKey(surface))
 				{
 					// linked, positive
@@ -95,7 +99,6 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 		
 		DetectionTrainingSetPreparer preparer = new DetectionTrainingSetPreparer()
 		{
-			
 			@Override
 			protected void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance,
 					boolean isPositiveSample)
