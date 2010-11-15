@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if (($# != 4)); then
-	echo "Usage: <input-file> <number-of-splits> <unique-prefix> <map-script>"
-	echo "    <map-script> should accept 2 arguments: <input-file> <output-file>, to carry out computation."
+	echo "Usage: <input-file> <number-of-splits> <unique-prefix> <op-script>"
+	echo "    <op-script> should accept 2 arguments: <input-file> <output-file>, to carry out computation."
 else
 	for currentf in $(ls $3-split-*); do
 		echo "removing $currentf..."
