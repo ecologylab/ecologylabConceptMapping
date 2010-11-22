@@ -97,14 +97,25 @@ public class Concept implements Comparable<Concept>
 			{
 				if (!relatedness.containsKey(other))
 				{
+					double relatednessValue = 0;
+					int W = DatabaseFacade.get().getTotalConceptCount();
+
 					int s1 = getInlinkCount();
 					int s2 = other.getInlinkCount();
-					int smin = ((s1 > s2) ? s2 : s1);
-					int smax = ((s1 > s2) ? s1 : s2);
-					int s = DatabaseFacade.get().queryCommonInlinkCount(title, other.title);
+					if (s1 > 0 && s2 > 0)
+					{
+						int smin = ((s1 > s2) ? s2 : s1);
+						int smax = ((s1 > s2) ? s1 : s2);
+						int s = DatabaseFacade.get().queryCommonInlinkCount(title, other.title);
 
-					int W = DatabaseFacade.get().getTotalConceptCount();
-					double relatednessValue = (Math.log(smax) - Math.log(s)) / (Math.log(W) - Math.log(smin));
+						if (s > 0)
+							relatednessValue = (Math.log(smax) - Math.log(s)) / (Math.log(W) - Math.log(smin));
+					}
+					else
+					{
+						System.err.println("zero length inlink count: " + (s1 == 0 ? this : "") + " "
+								+ (s2 == 0 ? other : ""));
+					}
 					relatedness.put(other, relatednessValue);
 				}
 			}

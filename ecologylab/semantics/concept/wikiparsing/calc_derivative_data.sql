@@ -54,7 +54,7 @@ DELETE FROM freq_surfaces WHERE surface NOT IN (SELECT DISTINCT surface FROM key
 -- /* filter freq_surfaces with stop words when generating the dictionary */
 
 -- clean wikilinks
-DELETE FROM wikilinks WHERE from_title NOT IN (SELECT DISTINCT title FROM freq_concepts);
+-- DELETE FROM wikilinks WHERE from_title NOT IN (SELECT DISTINCT title FROM freq_concepts);
 DELETE FROM wikilinks WHERE to_title NOT IN (SELECT DISTINCT title FROM freq_concepts);
 DELETE FROM wikilinks WHERE surface NOT IN (SELECT DISTINCT surface FROM freq_surfaces);
 
@@ -67,3 +67,8 @@ CREATE TABLE freq_concept_inlink_count (
 INSERT INTO freq_concept_inlink_count
   SELECT title, util_query_inlink_count(title) FROM freq_concepts;
   
+DELETE FROM freq_concepts USING freq_concept_inlink_count
+  WHERE inlink_count <= 0 AND freq_concepts.title = freq_concept_inlink_count.title;
+    
+DELETE FROM commonness WHERE concept NOT IN (SELECT DISTINCT title FROM freq_concepts);
+   

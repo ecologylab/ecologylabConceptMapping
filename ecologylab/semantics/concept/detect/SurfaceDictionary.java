@@ -4,13 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
-import ecologylab.semantics.concept.utils.StopWordsUtils;
 import ecologylab.semantics.concept.utils.TextUtils;
 import ecologylab.semantics.concept.utils.Trie;
 
@@ -130,9 +128,9 @@ public class SurfaceDictionary extends Debug
 	 *          NORMALIZEDA text.
 	 * @return
 	 */
-	public Set<String> extractSurfaces(String text)
+	public List<String> extractSurfaces(String text)
 	{
-		Set<String> rst = new HashSet<String>();
+		List<String> rst = new ArrayList<String>();
 
 		int offset = 0;
 		while (offset < text.length())

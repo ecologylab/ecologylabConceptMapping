@@ -90,6 +90,7 @@ public class Context extends Debug
 		weights.put(concept, getWeight(concept, avgRel));
 
 		quality = CollectionUtils.sum(weights.values());
+//		System.out.println(this + ": quality = " + quality);
 	}
 
 	private double getWeight(Concept concept, double averageRelatedness)
@@ -172,7 +173,9 @@ public class Context extends Debug
 					inst.contextualRelatedness,
 					inst.contextQuality
 					);
+//			System.out.format("before normalization: %.4f, %.4f, %.4f\n", svmInst[0].value, svmInst[1].value, svmInst[2].value);
 			NormalizerFactory.get(ConceptConstants.DISAMBI_PARAM_FILE_PATH).normalize(svmInst);
+//			System.out.format("after normalization: %.4f, %.4f, %.4f\n", svmInst[0].value, svmInst[1].value, svmInst[2].value);
 			Map<Integer, Double> buf = new HashMap<Integer, Double>();
 			SVMPredicter pred = PredicterFactory.get(ConceptConstants.DISAMBI_MODEL_FILE_PATH);
 			if (kvalueBuffer == null)

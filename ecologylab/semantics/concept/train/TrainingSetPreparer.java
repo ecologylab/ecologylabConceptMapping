@@ -31,11 +31,11 @@ public abstract class TrainingSetPreparer
 		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
 		for (String title : titleList)
 		{
-			System.out.format("doc [%s]: ", title);
+			System.out.format("doc [%s]:\n", title);
 			long t1 = System.currentTimeMillis();
 			WikiDoc doc = WikiDoc.get(title, dict);
 			long d1 = System.currentTimeMillis() - t1;
-			System.out.format("%d ms + ", d1);
+			System.out.format("\tdoc retrieval: %d ms\n", d1);
 			long t2 = System.currentTimeMillis();
 			if (doc != null)
 			{
@@ -47,7 +47,7 @@ public abstract class TrainingSetPreparer
 				System.out.println("warning: wikidoc not exist for " + title);
 			}
 			long d2 = System.currentTimeMillis() - t2;
-			System.out.format("%d ms.\n", d2);
+			System.out.format("\tdoc processing: %d ms\n", d2);
 			
 			i++;
 			if (i % 10 == 0)

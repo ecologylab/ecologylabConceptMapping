@@ -193,7 +193,7 @@ public class DatabaseFacade extends Debug
 		}
 		return preparedStatements.get(sql);
 	}
-
+	
 	/**
 	 * query for keyphraseness from the database.
 	 * 
@@ -277,10 +277,10 @@ public class DatabaseFacade extends Debug
 		try
 		{
 			CallableStatement cst = conn.prepareCall("{ ? = call query_inlink_count(?) }");
-			cst.registerOutParameter(1, Types.BIGINT);
+			cst.registerOutParameter(1, Types.INTEGER);
 			cst.setString(2, toConcept);
 			cst.execute();
-			inlinkCount = (int) cst.getLong(1);
+			inlinkCount = cst.getInt(1);
 			cst.close();
 		}
 		catch (SQLException e)

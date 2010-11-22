@@ -40,7 +40,7 @@ public class TestKeyphraseness extends KeyphrasenessCalculator
 		for (String fromTitle : fromTitles)
 		{
 			String text = getWikiText(fromTitle);
-			Set<String> surfaces = dict.extractSurfaces(text);
+			Set<String> surfaces = new HashSet<String>(dict.extractSurfaces(text));
 			Set<String> linkedSurfaces = getLinkedSurfaces(fromTitle);
 			
 			if (surfaces.contains(testSurface))

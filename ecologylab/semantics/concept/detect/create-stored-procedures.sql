@@ -15,7 +15,7 @@ CREATE FUNCTION query_keyphraseness(varchar) RETURNS double precision
   LANGUAGE SQL;
   
 DROP FUNCTION IF EXISTS query_inlink_count(varchar);
-CREATE FUNCTION query_inlink_count(varchar) RETURNS bigint
+CREATE FUNCTION query_inlink_count(varchar) RETURNS integer
   AS 'SELECT inlink_count FROM freq_concept_inlink_count WHERE title=$1;'
   STABLE
   RETURNS NULL ON NULL INPUT
