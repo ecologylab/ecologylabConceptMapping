@@ -16,6 +16,8 @@ import ecologylab.semantics.concept.utils.TextUtils;
  * textual context for given text. surfaces are recognized and sorted by ambiguity. occurrences are
  * recorded, based on which frequencies can be computed.
  * 
+ * NOT THREAD SAFE!
+ * 
  * @author quyin
  * 
  */

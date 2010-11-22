@@ -47,18 +47,27 @@ public class SVMPredicter
 		}
 	}
 
+	public int getNumOfSVs()
+	{
+		return model.getTotalNumOfSVs();
+	}
+
 	/**
 	 * Predict for a given instance. The resulted probability estimation is saved in results which
 	 * will be cleared first. The label with maximum probability estimation is returned.
+	 * <p />
+	 * This method is thread-safe, given thread-safe results and kvalueBuffer.
 	 * 
 	 * @param instance
 	 *          The instance to be predicted.
 	 * @param results
 	 *          A buffer to store the output probability estimation, in the format of a mapping from
 	 *          label to probability.
+	 * @param kvaluebuffer
+	 *          a buffer used to eliminate unnecessary creation of double[]s.
 	 * @return The label with maximum probability estimation.
 	 */
-	public int predict(svm_node[] instance, Map<Integer, Double> results)
+	public int predict(svm_node[] instance, Map<Integer, Double> results, double[] kvalueBuffer)
 	{
 		int nr_class = svm.svm_get_nr_class(model);
 		int[] labels = new int[nr_class];
@@ -67,7 +76,7 @@ public class SVMPredicter
 		if (svm.svm_check_probability_model(model) == 1)
 		{
 			double[] prob_estimates = new double[nr_class];
-			svm.svm_predict_probability(model, instance, prob_estimates);
+			svm.svm_predict_probability(model, instance, prob_estimates, kvalueBuffer);
 
 			int max_label = 0;
 			double max_prob = 0;

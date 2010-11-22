@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,7 +31,7 @@ public class TestKeyphraseness extends KeyphrasenessCalculator
 		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
 		
 		String testSurface = "united states 2000 census";
-		System.out.println(Collections.binarySearch(dict.getAll(), testSurface) >= 0);
+		System.out.println(dict.hasSurface(testSurface));
 		Set<String> fromTitles = getFromTitles(testSurface);
 		
 		int total = 0;

@@ -1,7 +1,6 @@
 package ecologylab.semantics.concept.detect;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import ecologylab.semantics.concept.database.DatabaseFacade;
@@ -34,46 +33,43 @@ public class Concept implements Comparable<Concept>
 			synchronized (pool)
 			{
 				if (!pool.containsKey(title))
+				{
 					pool.put(title, new Concept(title));
+
+					if (pool.size() % 100 == 0)
+					{
+						System.out.println("concept pool size: " + pool.size());
+					}
+				}
 			}
 		}
 		return pool.get(title);
 	}
 
-	public synchronized static void recycleAll()
-	{
-		pool.clear();
-	}
-
 	public final String						title;
 
-	private List<String>					inlinkConcepts	= null;
+	private int										inlinkCount			= -1;
+
+	private Object								lockInlinkCount	= new Object();
 
 	private Map<Concept, Double>	relatedness			= new HashMap<Concept, Double>();
-
-	private boolean								recycled;
 
 	private Concept(String title)
 	{
 		this.title = title;
 	}
 
-	/**
-	 * get inlink concepts as a list. result will be cached.
-	 * 
-	 * @return
-	 */
-	public List<String> getInlinkConcepts()
+	public int getInlinkCount()
 	{
-		if (inlinkConcepts == null)
+		if (inlinkCount < 0)
 		{
-			synchronized (this)
+			synchronized (lockInlinkCount)
 			{
-				if (inlinkConcepts == null)
-					inlinkConcepts = DatabaseFacade.get().queryInlinkConceptsForConcept(title);
+				if (inlinkCount < 0)
+					inlinkCount = DatabaseFacade.get().queryInlinkCount(title);
 			}
 		}
-		return inlinkConcepts;
+		return inlinkCount;
 	}
 
 	/**
@@ -95,14 +91,20 @@ public class Concept implements Comparable<Concept>
 			return other.getRelatedness(this);
 		}
 
-		if (!relatedness.containsKey(other.title))
+		if (!relatedness.containsKey(other))
 		{
-			synchronized (this)
+			synchronized (relatedness)
 			{
-				if (!relatedness.containsKey(other.title))
+				if (!relatedness.containsKey(other))
 				{
-					double relatednessValue = DatabaseFacade.get().queryRelatedness(getInlinkConcepts(),
-							other.getInlinkConcepts());
+					int s1 = getInlinkCount();
+					int s2 = other.getInlinkCount();
+					int smin = ((s1 > s2) ? s2 : s1);
+					int smax = ((s1 > s2) ? s1 : s2);
+					int s = DatabaseFacade.get().queryCommonInlinkCount(title, other.title);
+
+					int W = DatabaseFacade.get().getTotalConceptCount();
+					double relatednessValue = (Math.log(smax) - Math.log(s)) / (Math.log(W) - Math.log(smin));
 					relatedness.put(other, relatednessValue);
 				}
 			}
@@ -137,28 +139,6 @@ public class Concept implements Comparable<Concept>
 	public int compareTo(Concept other)
 	{
 		return title.compareTo(other.title);
-	}
-
-	public synchronized void recycle()
-	{
-		if (recycled)
-			return;
-
-		if (pool != null)
-		{
-			synchronized (pool)
-			{
-				if (pool.containsKey(title))
-					pool.remove(title);
-			}
-		}
-
-		if (inlinkConcepts != null)
-			inlinkConcepts.clear();
-		if (relatedness != null)
-			relatedness.clear();
-
-		recycled = true;
 	}
 
 }

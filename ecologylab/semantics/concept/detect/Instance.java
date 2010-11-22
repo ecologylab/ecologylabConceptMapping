@@ -69,10 +69,4 @@ public class Instance
 		return instance;
 	}
 
-	public void recycle()
-	{
-		surface = null;
-		disambiguatedConcept = null;
-	}
-
 }

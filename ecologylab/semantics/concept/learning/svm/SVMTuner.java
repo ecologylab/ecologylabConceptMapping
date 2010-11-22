@@ -95,6 +95,7 @@ public class SVMTuner extends Debug
 		
 		int nPosSamples = 0;
 		List<Prediction> preds = new ArrayList<Prediction>();
+		double[] kvalueBuffer = new double[model.getTotalNumOfSVs()];
 		for (int i = 0; i < size; ++i)
 		{
 			int label = testSet.getLabels().get(i);
@@ -102,7 +103,7 @@ public class SVMTuner extends Debug
 				nPosSamples++;
 			svm_node[] inst = testSet.getFeatures().get(i);
 			Map<Integer, Double> rst = new HashMap<Integer, Double>();
-			pred.predict(inst, rst);
+			pred.predict(inst, rst, kvalueBuffer);
 			Prediction p = new Prediction(label, inst, rst);
 			preds.add(p);
 		}

@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +12,7 @@ import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.utils.StopWordsUtils;
 import ecologylab.semantics.concept.utils.TextUtils;
+import ecologylab.semantics.concept.utils.Trie;
 
 public class SurfaceDictionary extends Debug
 {
@@ -40,8 +39,12 @@ public class SurfaceDictionary extends Debug
 			String surface = parts[0];
 			if (surface == null || surface.isEmpty())
 				return null;
+			/*
+			 * not necessary because the dictionary has been pre-processed
+			 * 
 			if (!StopWordsUtils.containsLetter(surface) || StopWordsUtils.isStopWord(surface))
 				return null;
+			*/
 
 			int count = Integer.parseInt(parts[1]);
 
@@ -69,11 +72,10 @@ public class SurfaceDictionary extends Debug
 		}
 	}
 
-	private int						longestInWord			= ConceptConstants.DICTIONARY_LONGEST_IN_WORD;
+	// these surface collections are fake because they have an extra trailing whitespace " ".
+	private Trie	surfaces					= new Trie();
 
-	private List<String>	surfaces					= new ArrayList<String>();
-
-	private List<String>	ambiguousSurfaces	= new ArrayList<String>();
+	private Trie	ambiguousSurfaces	= new Trie();
 
 	private SurfaceDictionary()
 	{
@@ -105,57 +107,54 @@ public class SurfaceDictionary extends Debug
 
 		return dict;
 	}
-
-	public String longestMatch(String text, int offset)
+	
+	public boolean hasSurface(String surface)
 	{
-		String candidate = TextUtils.getWords(text, offset, longestInWord);
-		while (true)
-		{
-			if (Collections.binarySearch(surfaces, candidate) >= 0)
-				return candidate;
-			int p = candidate.lastIndexOf(' ');
-			if (p < 0)
-				break;
-			else
-				candidate = candidate.substring(0, p);
-		}
-		return null;
+		return surfaces.isEntry(surface);
 	}
 
 	public boolean isAmbiguous(String surface)
 	{
-		return Collections.binarySearch(ambiguousSurfaces, surface) >= 0;
+		return ambiguousSurfaces.isEntry(surface);
 	}
 
-	public List<String> getAll()
+	public String[] getAll()
 	{
-		return surfaces;
+		return surfaces.getAll();
 	}
 
+	/**
+	 * extract all surfaces using this dictionary.
+	 * 
+	 * @param text
+	 *          NORMALIZEDA text.
+	 * @return
+	 */
 	public Set<String> extractSurfaces(String text)
 	{
-		Set<String> surfaces = new HashSet<String>();
+		Set<String> rst = new HashSet<String>();
 
 		int offset = 0;
 		while (offset < text.length())
 		{
-			String match = longestMatch(text, offset);
-			if (match != null)
+			List<String> extracted = surfaces.match(text, offset);
+			for (String s : extracted)
 			{
-				surfaces.add(match);
+				rst.add(s);
 			}
+
 			offset = TextUtils.nextWhitespaceIndex(text, offset);
 			offset = TextUtils.nextNonWhitespaceIndex(text, offset);
 		}
 
-		return surfaces;
+		return rst;
 	}
 
 	public static void main(String[] args) throws IOException
 	{
 		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
-		String testString = "united states 2000 census is famous";
-		System.out.println(dict.longestMatch(testString, 0));
+		String testString = "we know that united states 2000 census is famous";
+		System.out.println(dict.extractSurfaces(testString));
 	}
 
 }

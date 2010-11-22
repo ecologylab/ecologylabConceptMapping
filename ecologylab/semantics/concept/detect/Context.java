@@ -13,11 +13,14 @@ import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.learning.svm.NormalizerFactory;
 import ecologylab.semantics.concept.learning.svm.PredicterFactory;
 import ecologylab.semantics.concept.learning.svm.LearningUtils;
+import ecologylab.semantics.concept.learning.svm.SVMPredicter;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 
 /**
  * context is an abstraction of a set of concepts and their relations. surfaces could only be
  * disambiguated given a context.
+ * 
+ * NOT THREAD SAFE!
  * 
  * @author quyin
  * 
@@ -26,8 +29,8 @@ public class Context extends Debug
 {
 
 	private Set<Concept>					concepts						= new HashSet<Concept>();
-	
-	private Map<Concept, Surface> surfaces= new HashMap<Concept, Surface>();
+
+	private Map<Concept, Surface>	surfaces						= new HashMap<Concept, Surface>();
 
 	private Map<Concept, Double>	weights							= new HashMap<Concept, Double>();
 
@@ -117,7 +120,7 @@ public class Context extends Debug
 	{
 		return quality;
 	}
-	
+
 	/**
 	 * calculate and return the contextual relatedness of a given concept in this context.
 	 * 
@@ -128,7 +131,7 @@ public class Context extends Debug
 	{
 		double sum = 0;
 		double sumWeights = 0;
-		
+
 		for (Concept c : getConcepts())
 		{
 			double w = getWeight(c);
@@ -136,7 +139,7 @@ public class Context extends Debug
 			sum += w * rel;
 			sumWeights += w;
 		}
-		
+
 		if (sumWeights > Double.MIN_VALUE)
 			return sum /= sumWeights;
 		else
@@ -160,6 +163,7 @@ public class Context extends Debug
 	{
 		Instance bestInst = null;
 
+		double[] kvalueBuffer = null;
 		for (Concept sense : surface.getSenses())
 		{
 			Instance inst = Instance.getForDisambiguation(this, surface, sense);
@@ -170,7 +174,10 @@ public class Context extends Debug
 					);
 			NormalizerFactory.get(ConceptConstants.DISAMBI_PARAM_FILE_PATH).normalize(svmInst);
 			Map<Integer, Double> buf = new HashMap<Integer, Double>();
-			PredicterFactory.get(ConceptConstants.DISAMBI_MODEL_FILE_PATH).predict(svmInst, buf);
+			SVMPredicter pred = PredicterFactory.get(ConceptConstants.DISAMBI_MODEL_FILE_PATH);
+			if (kvalueBuffer == null)
+				kvalueBuffer = new double[pred.getNumOfSVs()];
+			pred.predict(svmInst, buf, kvalueBuffer);
 			inst.disambiguationConfidence = buf.get(ConceptConstants.POS_CLASS_INT_LABEL);
 
 			if (bestInst == null || inst.disambiguationConfidence > bestInst.disambiguationConfidence)
@@ -181,7 +188,7 @@ public class Context extends Debug
 
 		return bestInst;
 	}
-	
+
 	public void recycle()
 	{
 		concepts.clear();

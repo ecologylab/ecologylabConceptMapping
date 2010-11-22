@@ -8,14 +8,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.utils.CollectionUtils;
 
 public class DatabaseFacade extends Debug
 {
@@ -36,11 +32,13 @@ public class DatabaseFacade extends Debug
 		return the;
 	}
 
-	public static final int									NUM_ALL_CONCEPTS		= 3000000;
-
 	private Connection											conn;
 
-	private Map<String, PreparedStatement>	preparedStatements	= new HashMap<String, PreparedStatement>();
+	private int															totalConceptCount			= 3000000;
+
+	private Object													lockTotalConceptCount	= new Object();
+
+	private Map<String, PreparedStatement>	preparedStatements		= new HashMap<String, PreparedStatement>();
 
 	private DatabaseFacade()
 	{
@@ -117,6 +115,32 @@ public class DatabaseFacade extends Debug
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public int getTotalConceptCount()
+	{
+		if (totalConceptCount < 0)
+		{
+			synchronized (lockTotalConceptCount)
+			{
+				if (totalConceptCount < 0)
+				{
+					try
+					{
+						Statement st = conn.createStatement();
+						ResultSet rs = st.executeQuery("SELECT count(*) FROM freq_concept;");
+						if (rs.next())
+							totalConceptCount = (int) rs.getLong(1);
+					}
+					catch (SQLException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		return totalConceptCount;
 	}
 
 	public void executeSql(String sql) throws SQLException
@@ -200,34 +224,6 @@ public class DatabaseFacade extends Debug
 	}
 
 	/**
-	 * query for relatedness, given two inlink concept list. it accepts two inlink concept list so
-	 * that user can cache them for fast computation. note that smaller relatedness value indicates
-	 * more relation between concepts.
-	 * 
-	 * @param inlinkList1
-	 * @param inlinkList2
-	 * @return
-	 */
-	public double queryRelatedness(List<String> inlinkList1, List<String> inlinkList2)
-	{
-		if (inlinkList1.equals(inlinkList2))
-			return 0;
-
-		int s1 = inlinkList1.size();
-		int s2 = inlinkList2.size();
-		List<String> commonSublist = CollectionUtils.commonSublist(inlinkList1, inlinkList2);
-		int s = commonSublist.size();
-		if (s <= 0)
-			return 0; // or Math.log will fail
-
-		int smin = ((s1 > s2) ? s2 : s1);
-		int smax = ((s1 > s2) ? s1 : s2);
-
-		int W = NUM_ALL_CONCEPTS;
-		return (Math.log(smax) - Math.log(s)) / (Math.log(W) - Math.log(smin));
-	}
-
-	/**
 	 * query for all the senses of a given surface. note that this method queries commonness table, so
 	 * it can't be used before commonness is computed.
 	 * 
@@ -269,47 +265,54 @@ public class DatabaseFacade extends Debug
 	}
 
 	/**
-	 * return a ASCENDINGLY ORDERED list of from_concept (source of a link) given a to_concept
-	 * (destination of a link).
+	 * return how many concepts are linking to this one.
 	 * 
 	 * @param toConcept
 	 * @return
-	 * @throws SQLException
 	 */
-	public List<String> queryInlinkConceptsForConcept(String toConcept)
+	public int queryInlinkCount(String toConcept)
 	{
-		List<String> rst = new ArrayList<String>();
+		int inlinkCount = 0;
 
 		try
 		{
-			PreparedStatement pst = conn.prepareStatement("SELECT * FROM query_inlink_concepts(?);");
-			ResultSet rs = null;
-			synchronized (pst)
-			{
-				pst.setString(1, toConcept);
-				rs = pst.executeQuery();
-			}
-			if (rs != null)
-			{
-				while (rs.next())
-				{
-					rst.add(rs.getString("from_title"));
-				}
-				rs.close();
-			}
-			pst.close();
+			CallableStatement cst = conn.prepareCall("{ ? = call query_inlink_count(?) }");
+			cst.registerOutParameter(1, Types.BIGINT);
+			cst.setString(2, toConcept);
+			cst.execute();
+			inlinkCount = (int) cst.getLong(1);
+			cst.close();
 		}
 		catch (SQLException e)
 		{
-			// TODO Auto-generated catch block
 			System.err.println("toConcept=" + toConcept);
 			e.printStackTrace();
 		}
 
-		// using Java's sort() instead of SQL ORDER BY, since ORDER BY seems to treat upper / lower
-		// cases differently from sort().
-		Collections.sort(rst);
-		return rst;
+		return inlinkCount;
+	}
+
+	public int queryCommonInlinkCount(String concept1, String concept2)
+	{
+		int commonInlinkCount = 0;
+
+		try
+		{
+			CallableStatement cst = conn.prepareCall("{ ? = call query_common_inlink_count(?, ?) }");
+			cst.registerOutParameter(1, Types.BIGINT);
+			cst.setString(2, concept1);
+			cst.setString(3, concept2);
+			cst.execute();
+			commonInlinkCount = (int) cst.getLong(1);
+			cst.close();
+		}
+		catch (SQLException e)
+		{
+			System.err.println("concept1=" + concept1 + ", concept2=" + concept2);
+			e.printStackTrace();
+		}
+
+		return commonInlinkCount;
 	}
 
 }

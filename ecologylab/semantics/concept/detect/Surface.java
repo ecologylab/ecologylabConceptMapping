@@ -47,20 +47,19 @@ public class Surface
 		return pool.get(word);
 	}
 
-	public synchronized static void recycleAll()
-	{
-		pool.clear();
-	}
-
 	public final String						word;
 
-	private Set<Concept>					senses				= null;
+	private Set<Concept>					senses						= null;
 
-	private Map<Concept, Double>	commonness		= null;
+	private Object								lockSenses				= new Object();
 
-	private double								keyphraseness	= -1;
+	private Map<Concept, Double>	commonness				= null;
 
-	private boolean								recycled;
+	private Object								lockCommonness		= new Object();
+
+	private double								keyphraseness			= -1;
+
+	private Object								lockKeyphraseness	= new Object();
 
 	private Surface(String word)
 	{
@@ -76,7 +75,7 @@ public class Surface
 	{
 		if (senses == null)
 		{
-			synchronized (this)
+			synchronized (lockSenses)
 			{
 				if (senses == null)
 				{
@@ -106,7 +105,7 @@ public class Surface
 	{
 		if (commonness == null)
 		{
-			synchronized (this)
+			synchronized (lockCommonness)
 			{
 				if (commonness == null)
 					getSenses();
@@ -148,7 +147,7 @@ public class Surface
 	{
 		if (keyphraseness < 0)
 		{
-			synchronized (this)
+			synchronized (lockKeyphraseness)
 			{
 				if (keyphraseness < 0)
 					keyphraseness = DatabaseFacade.get().queryKeyphraseness(word);
@@ -178,30 +177,6 @@ public class Surface
 	public String toString()
 	{
 		return word;
-	}
-
-	public synchronized void recycle()
-	{
-		if (recycled)
-			return;
-
-		if (pool != null)
-		{
-			synchronized (pool)
-			{
-				if (pool.containsKey(word))
-				{
-					pool.remove(word);
-				}
-			}
-		}
-
-		if (senses != null)
-			senses.clear();
-		if (commonness != null)
-			commonness.clear();
-
-		recycled = true;
 	}
 
 }

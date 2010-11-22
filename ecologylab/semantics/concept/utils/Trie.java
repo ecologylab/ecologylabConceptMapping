@@ -6,7 +6,9 @@ import java.io.FileReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /*
@@ -515,6 +517,77 @@ public class Trie
 				writeNode(n, out, chars, pointer + 1, pre, post);
 			}
 			n = n.nextSibling;
+		}
+	}
+	
+	public List<String> match(String text, int offset)
+	{
+		return match(text, offset, ' ');
+	}
+	
+	public List<String> match(String text, int offset, char wordDelim)
+	{
+		List<String> buffer = new ArrayList<String>();
+		StringBuilder builder = new StringBuilder();
+		match(root, text, offset, builder, buffer, wordDelim);
+		return buffer;
+	}
+	
+	private void match(Node root, String word, int offset, StringBuilder builder, List<String> buffer, char wordDelim)
+	{
+ 		Node next = root.firstChild;
+		if (offset == word.length())
+		{
+			if (next != null && next.value == DELIMITER)
+			{
+				String found = builder.toString();
+				buffer.add(found);
+			}
+			return;
+		}
+		int c = word.charAt(offset);
+		while (next != null)
+		{
+			if (next.value == DELIMITER)
+			{
+				if (c == wordDelim)
+				{
+					String found = builder.toString();
+					buffer.add(found);
+				}
+			}
+			
+			if (next.value < c)
+				next = next.nextSibling;
+			else if (next.value == c)
+			{
+				builder.append((char) c);
+				match(next, word, offset + 1, builder, buffer, wordDelim);
+				builder.deleteCharAt(builder.length() - 1);
+				next = next.nextSibling;
+			}
+			else
+				break;
+		}
+	}
+
+	public void print(PrintStream out)
+	{
+		print(root, "", out);
+	}
+	
+	private void print(Node root, String indent, PrintStream out)
+	{
+		out.println((char) root.value);
+		Node child = root.firstChild;
+		while (child != null)
+		{
+			out.print(indent);
+			out.print("|-");
+			print(child, indent + (child.nextSibling == null ? "  " : "| "), out);
+			if (child.nextSibling == null && child.firstChild == null)
+				out.println(indent);
+			child = child.nextSibling;
 		}
 	}
 	

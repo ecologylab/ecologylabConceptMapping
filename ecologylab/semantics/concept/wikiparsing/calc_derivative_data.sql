@@ -57,3 +57,13 @@ DELETE FROM freq_surfaces WHERE surface NOT IN (SELECT DISTINCT surface FROM key
 DELETE FROM wikilinks WHERE from_title NOT IN (SELECT DISTINCT title FROM freq_concepts);
 DELETE FROM wikilinks WHERE to_title NOT IN (SELECT DISTINCT title FROM freq_concepts);
 DELETE FROM wikilinks WHERE surface NOT IN (SELECT DISTINCT surface FROM freq_surfaces);
+
+-- cache inlink count for freq_concept
+DROP TABLE IF EXISTS freq_concept_inlink_count;
+CREATE TABLE freq_concept_inlink_count (
+  title VARCHAR PRIMARY KEY,
+  inlink_count INTEGER NOT NULL
+) WITHOUT OIDS;
+INSERT INTO freq_concept_inlink_count
+  SELECT title, util_query_inlink_count(title) FROM freq_concepts;
+  

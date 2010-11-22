@@ -41,6 +41,7 @@ class Detector
 	{
 		Set<Instance> rst = new HashSet<Instance>();
 		
+		double[] kvalueBuffer = null;
 		for (Instance inst : instances)
 		{
 			inst.keyphraseness = inst.surface.getKeyphraseness();
@@ -59,7 +60,9 @@ class Detector
 			
 			Map<Integer, Double> results = new HashMap<Integer, Double>();
 			SVMPredicter pred = PredicterFactory.get(ConceptConstants.DETECT_MODEL_FILE_PATH);
-			pred.predict(svmInst, results);
+			if (kvalueBuffer == null)
+				kvalueBuffer = new double[pred.getNumOfSVs()];
+			pred.predict(svmInst, results, kvalueBuffer);
 			inst.detectionConfidence = results.get(ConceptConstants.POS_CLASS_INT_LABEL);
 			if (inst.detectionConfidence > ConceptConstants.DETECT_THRESHOLD)
 				rst.add(inst);
