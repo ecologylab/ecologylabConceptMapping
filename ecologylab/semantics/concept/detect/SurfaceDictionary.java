@@ -151,7 +151,7 @@ public class SurfaceDictionary extends Debug
 	public static void main(String[] args) throws IOException
 	{
 		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
-		String testString = "we know that united states 2000 census is famous";
+		String testString = "we know that united states 2000 census is famous in united states";
 		System.out.println(dict.extractSurfaces(testString));
 	}
 

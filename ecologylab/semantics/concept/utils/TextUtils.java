@@ -159,6 +159,19 @@ public class TextUtils
 		}
 	}
 
+	public static String loadTxtAsString(String filePath) throws IOException
+	{
+		StringBuilder sb = new StringBuilder();
+		String line = null;
+		BufferedReader br = new BufferedReader(new FileReader(filePath));
+		while ((line = br.readLine()) != null)
+		{
+			sb.append(line);
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
+
 	public static List<String> loadTxtAsList(File f, boolean sort) throws IOException
 	{
 		List<String> list = new ArrayList<String>();

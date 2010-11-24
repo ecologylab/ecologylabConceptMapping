@@ -68,6 +68,12 @@ CREATE TABLE freq_concepts (
   count_of_references INTEGER NOT NULL
 ) WITHOUT OIDS;
 
+DROP TABLE IF EXISTS freq_concept_inlink_count;
+CREATE TABLE freq_concept_inlink_count (
+  title VARCHAR PRIMARY KEY,
+  inlink_count INTEGER NOT NULL
+) WITHOUT OIDS;
+
 -- commonness of a concept to a surface.
 DROP TABLE IF EXISTS commonness;
 CREATE TABLE commonness (

@@ -48,13 +48,7 @@ class Detector
 			inst.occurrence = doc.getNumberOfOccurrences(inst.surface);
 			inst.frequency = ((double) inst.occurrence) / doc.getTotalWords();
 			
-			svm_node[] svmInst = LearningUtils.constructSVMInstance(
-					inst.keyphraseness,
-					inst.contextualRelatedness,
-					inst.disambiguationConfidence,
-					inst.occurrence,
-					inst.frequency
-					);
+			svm_node[] svmInst = LearningUtils.constructSVMInstanceForDetection(inst);
 			
 			NormalizerFactory.get(ConceptConstants.DETECT_PARAM_FILE_PATH).normalize(svmInst);
 			
@@ -70,5 +64,5 @@ class Detector
 		
 		return rst;
 	}
-
+	
 }

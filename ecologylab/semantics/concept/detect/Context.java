@@ -13,6 +13,7 @@ import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.learning.svm.NormalizerFactory;
 import ecologylab.semantics.concept.learning.svm.PredicterFactory;
 import ecologylab.semantics.concept.learning.svm.LearningUtils;
+import ecologylab.semantics.concept.learning.svm.SVMGaussianNormalization;
 import ecologylab.semantics.concept.learning.svm.SVMPredicter;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 
@@ -168,14 +169,13 @@ public class Context extends Debug
 		for (Concept sense : surface.getSenses())
 		{
 			Instance inst = Instance.getForDisambiguation(this, surface, sense);
-			svm_node[] svmInst = LearningUtils.constructSVMInstance(
-					inst.commonness,
-					inst.contextualRelatedness,
-					inst.contextQuality
-					);
+			svm_node[] svmInst = LearningUtils.constructSVMInstanceForDisambiguation(inst);
+			
 //			System.out.format("before normalization: %.4f, %.4f, %.4f\n", svmInst[0].value, svmInst[1].value, svmInst[2].value);
-			NormalizerFactory.get(ConceptConstants.DISAMBI_PARAM_FILE_PATH).normalize(svmInst);
+			SVMGaussianNormalization norm = NormalizerFactory.get(ConceptConstants.DISAMBI_PARAM_FILE_PATH);
+			norm.normalize(svmInst);
 //			System.out.format("after normalization: %.4f, %.4f, %.4f\n", svmInst[0].value, svmInst[1].value, svmInst[2].value);
+			
 			Map<Integer, Double> buf = new HashMap<Integer, Double>();
 			SVMPredicter pred = PredicterFactory.get(ConceptConstants.DISAMBI_MODEL_FILE_PATH);
 			if (kvalueBuffer == null)

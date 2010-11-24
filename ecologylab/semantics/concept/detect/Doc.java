@@ -1,8 +1,6 @@
 package ecologylab.semantics.concept.detect;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -154,7 +152,8 @@ public class Doc
 
 	public static void main(String[] args) throws IOException
 	{
-		String text = readString("usa.wiki");
+//		String text = TextUtils.readString("usa.wiki");
+		String text = "we know that united states census 2000 is famous in united states";
 		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
 		Doc doc = null;
 
@@ -176,19 +175,6 @@ public class Doc
 		{
 			System.out.println("oops! failed.");
 		}
-	}
-
-	private static String readString(String filePath) throws IOException
-	{
-		StringBuilder sb = new StringBuilder();
-		String line = null;
-		BufferedReader br = new BufferedReader(new FileReader(filePath));
-		while ((line = br.readLine()) != null)
-		{
-			sb.append(line);
-			sb.append("\n");
-		}
-		return sb.toString();
 	}
 
 }

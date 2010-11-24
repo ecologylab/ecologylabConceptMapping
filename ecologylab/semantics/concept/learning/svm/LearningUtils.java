@@ -1,10 +1,11 @@
 package ecologylab.semantics.concept.learning.svm;
 
+import ecologylab.semantics.concept.detect.Instance;
 import libsvm.svm_node;
 
 public class LearningUtils
 {
-	
+
 	public static String instanceToString(svm_node[] instance)
 	{
 		StringBuilder sb = new StringBuilder();
@@ -16,7 +17,7 @@ public class LearningUtils
 		return sb.toString();
 	}
 
-	public static svm_node[] constructSVMInstance(double... features)
+	private static svm_node[] constructSVMInstance(double... features)
 	{
 		svm_node[] instance = new svm_node[features.length];
 		for (int i = 0; i < instance.length; ++i)
@@ -26,6 +27,28 @@ public class LearningUtils
 			instance[i].value = features[i];
 		}
 		return instance;
+	}
+
+	public static svm_node[] constructSVMInstanceForDisambiguation(Instance inst)
+	{
+		svm_node[] svmInst = LearningUtils.constructSVMInstance(
+					inst.commonness,
+					inst.contextualRelatedness,
+					inst.contextQuality
+					);
+		return svmInst;
+	}
+
+	public static svm_node[] constructSVMInstanceForDetection(Instance inst)
+	{
+		svm_node[] svmInst = LearningUtils.constructSVMInstance(
+					inst.keyphraseness,
+					inst.contextualRelatedness,
+					inst.disambiguationConfidence,
+					inst.occurrence,
+					inst.frequency
+					);
+		return svmInst;
 	}
 
 }

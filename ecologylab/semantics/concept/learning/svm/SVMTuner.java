@@ -163,18 +163,18 @@ public class SVMTuner extends Debug
 
 		int numberOfThreads = Integer.parseInt(args[0]);
 
-		DataSet trainSet = DataSet.load("data/disambi-trainset.dat");
-		DataSet testSet = DataSet.load("data/disambi-testset.dat");
+		DataSet trainSet = DataSet.load("data/detect-trainset.dat");
+		DataSet testSet = DataSet.load("data/detect-testset.dat");
 
 		SVMGaussianNormalization norm = new SVMGaussianNormalization(trainSet.getDimension());
 		norm.generateParameters(trainSet);
-		norm.save("model/disambi-norm-params.dat");
+		norm.save("model/detect-norm-params.dat");
 		norm.normalize(trainSet);
 		norm.normalize(testSet);
 
 		final BufferedWriter out = new BufferedWriter(
-				new FileWriter("model/disambi-tuning-results.dat"));
-		SVMTuner tuner = new SVMTuner(trainSet, testSet, "model/disambi-tuning-models")
+				new FileWriter("model/detect-tuning-results.dat"));
+		SVMTuner tuner = new SVMTuner(trainSet, testSet, "model/detect-tuning-models")
 		{
 			public void report(double c, double gamma, double ap)
 			{

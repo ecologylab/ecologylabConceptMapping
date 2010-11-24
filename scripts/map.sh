@@ -1,8 +1,9 @@
 #!/bin/bash
 
 if (($# != 4)); then
-	echo "Usage: <input-file> <number-of-splits> <unique-prefix> <op-script>"
-	echo "    <op-script> should accept 2 arguments: <input-file> <output-file>, to carry out computation."
+	echo "split line based task into sub-tasks."
+	echo "usage: <input-file> <number-of-splits> <unique-prefix> <op-script>"
+	echo "    <op-script> should accept 2 arguments: <input-file> <output-file>."
 else
 	for currentf in $(ls $3-split-*); do
 		echo "removing $currentf..."
@@ -14,9 +15,7 @@ else
 	split -d -l $split_line_count $1 $3-split-
 
 	for splitf in $(ls $3-split-*); do
-		$4 $splitf $splitf-result >$splitf.log 2>&1 &
+		echo "$4 $splitf $splitf.result >$splitf.log 2>&1"
 	done
-
-	echo "all jobs mapped. please reduce results after they are done."
 fi
 

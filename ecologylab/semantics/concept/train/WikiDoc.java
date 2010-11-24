@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import ecologylab.semantics.concept.database.DatabaseFacade;
 import ecologylab.semantics.concept.detect.Concept;
@@ -70,8 +71,12 @@ public class WikiDoc extends Doc
 
 			for (Surface surface : getUnambiSurfaces())
 			{
-				Concept concept = (Concept) surface.getSenses().toArray()[0];
-				context.addConcept(concept, surface);
+				Set<Concept> senses = surface.getSenses();
+				if (senses.size() > 0)
+				{
+					Concept concept = (Concept) senses.toArray()[0];
+					context.addConcept(concept, surface);
+				}
 			}
 		}
 		return context;
