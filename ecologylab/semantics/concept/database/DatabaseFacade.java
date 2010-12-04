@@ -15,6 +15,7 @@ import ecologylab.appframework.types.prefs.Pref;
 import ecologylab.appframework.types.prefs.PrefSet;
 import ecologylab.appframework.types.prefs.PrefSetBaseClassProvider;
 import ecologylab.generic.Debug;
+import ecologylab.serialization.ElementState.FORMAT;
 import ecologylab.serialization.SIMPLTranslationException;
 import ecologylab.serialization.TranslationScope;
 
@@ -63,6 +64,7 @@ public class DatabaseFacade extends Debug
 					PrefSet.PREFS_TRANSLATION_SCOPE,
 					PrefSetBaseClassProvider.STATIC_INSTANCE.provideClasses());
 			PrefSet prefSet = PrefSet.load("database.prefs", translationScope);
+			prefSet.serialize(System.out, FORMAT.XML);
 			
 			String driverClass = Pref.lookupString("driver_class");
 			String url = Pref.lookupString("url");

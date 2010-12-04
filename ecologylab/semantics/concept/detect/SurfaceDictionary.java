@@ -99,6 +99,8 @@ public class SurfaceDictionary extends Debug
 
 	private static SurfaceDictionary load(File dictionary) throws IOException
 	{
+		System.err.print("loading dictionary from " + dictionary.getPath() + "...");
+		
 		SurfaceDictionary dict = new SurfaceDictionary();
 
 		BufferedReader br = new BufferedReader(new FileReader(dictionary));
@@ -120,6 +122,7 @@ public class SurfaceDictionary extends Debug
 		}
 		br.close();
 
+		System.err.println("loaded");
 		return dict;
 	}
 
