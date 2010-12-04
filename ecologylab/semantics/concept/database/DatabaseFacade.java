@@ -11,7 +11,12 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+import ecologylab.appframework.types.prefs.Pref;
+import ecologylab.appframework.types.prefs.PrefSet;
+import ecologylab.appframework.types.prefs.PrefSetBaseClassProvider;
 import ecologylab.generic.Debug;
+import ecologylab.serialization.SIMPLTranslationException;
+import ecologylab.serialization.TranslationScope;
 
 public class DatabaseFacade extends Debug
 {
@@ -25,7 +30,17 @@ public class DatabaseFacade extends Debug
 			synchronized (DatabaseFacade.class)
 			{
 				if (the == null)
-					the = new DatabaseFacade();
+				{
+					try
+					{
+						the = new DatabaseFacade();
+					}
+					catch (SIMPLTranslationException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 
@@ -40,17 +55,25 @@ public class DatabaseFacade extends Debug
 
 	private Map<String, PreparedStatement>	preparedStatements		= new HashMap<String, PreparedStatement>();
 
-	private DatabaseFacade()
+	private DatabaseFacade() throws SIMPLTranslationException
 	{
 		try
 		{
-			Class.forName("org.postgresql.Driver");
-
-			// String url = "jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing";
-			String url = "jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing2";
-			String username = "quyin";
-			String password = "quyindbpwd";
-			conn = DriverManager.getConnection(url, username, password);
+			TranslationScope translationScope = TranslationScope.get(
+					PrefSet.PREFS_TRANSLATION_SCOPE,
+					PrefSetBaseClassProvider.STATIC_INSTANCE.provideClasses());
+			PrefSet prefSet = PrefSet.load("database.prefs", translationScope);
+			
+			String driverClass = Pref.lookupString("driver_class");
+			String url = Pref.lookupString("url");
+			String user = Pref.lookupString("user");
+			String password = Pref.lookupString("password");
+			
+			if (driverClass != null)
+				Class.forName(driverClass);
+			if (url != null && user != null && password != null)
+				conn = DriverManager.getConnection(url, user, password);
+			
 			debug("database connected");
 		}
 		catch (ClassNotFoundException e)

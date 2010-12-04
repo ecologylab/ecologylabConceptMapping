@@ -1,0 +1,6 @@
+<pref_set>
+	<pref_string name="driver_class" value="org.postgresql.Driver" />
+	<pref_string name="url" value="jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing2" />
+	<pref_string name="user" value="quyin" />
+	<pref_string name="password" value="quyindbpwd" />
+</pref_set>

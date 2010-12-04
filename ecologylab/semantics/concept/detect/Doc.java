@@ -154,7 +154,7 @@ public class Doc
 	{
 //		String text = TextUtils.readString("usa.wiki");
 		String text = "we know that united states census 2000 is famous in united states";
-		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
+		SurfaceDictionary dict = SurfaceDictionary.get(ConceptConstants.DICTIONARY_PATH);
 		Doc doc = null;
 
 		int n = 100;

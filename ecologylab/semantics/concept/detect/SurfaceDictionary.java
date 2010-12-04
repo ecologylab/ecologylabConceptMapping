@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
@@ -14,6 +16,21 @@ import ecologylab.semantics.concept.utils.Trie;
 
 public class SurfaceDictionary extends Debug
 {
+
+	public static Map<String, SurfaceDictionary>	theMap	= new HashMap<String, SurfaceDictionary>();
+
+	public static SurfaceDictionary get(String path) throws IOException
+	{
+		if (theMap.containsKey(path))
+			return theMap.get(path);
+		SurfaceDictionary dict = load(new File(path));
+		synchronized (theMap)
+		{
+			if (!theMap.containsKey(path))
+				theMap.put(path, dict);
+		}
+		return dict;
+	}
 
 	public static final String	DELIM_SEQ		= "|";
 
@@ -40,9 +57,9 @@ public class SurfaceDictionary extends Debug
 			/*
 			 * not necessary because the dictionary has been pre-processed
 			 * 
-			if (!StopWordsUtils.containsLetter(surface) || StopWordsUtils.isStopWord(surface))
-				return null;
-			*/
+			 * if (!StopWordsUtils.containsLetter(surface) || StopWordsUtils.isStopWord(surface)) return
+			 * null;
+			 */
 
 			int count = Integer.parseInt(parts[1]);
 
@@ -80,7 +97,7 @@ public class SurfaceDictionary extends Debug
 
 	}
 
-	public static SurfaceDictionary load(File dictionary) throws IOException
+	private static SurfaceDictionary load(File dictionary) throws IOException
 	{
 		SurfaceDictionary dict = new SurfaceDictionary();
 
@@ -105,7 +122,7 @@ public class SurfaceDictionary extends Debug
 
 		return dict;
 	}
-	
+
 	public boolean hasSurface(String surface)
 	{
 		return surfaces.isEntry(surface);

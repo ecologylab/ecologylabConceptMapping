@@ -76,8 +76,11 @@ public class Context extends Debug
 
 		// update average relatedness and weights
 		double avgRel = 0;
-		for (Concept c : averageRelatedness.keySet())
+		for (Concept c : concepts)
 		{
+			if (c.equals(concept))
+				continue;
+			
 			double rel = c.getRelatedness(concept);
 			avgRel += rel;
 

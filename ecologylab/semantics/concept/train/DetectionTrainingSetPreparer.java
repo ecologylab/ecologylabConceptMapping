@@ -1,7 +1,6 @@
 package ecologylab.semantics.concept.train;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
@@ -20,7 +19,7 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 	/**
 	 * find all ambiguous surfaces. for each one, disambiguate it in the context consisting of
 	 * unambiguous surfaces & linked concepts. linked ones are treated as positive samples, while
-	 * unlinked ones negative. 
+	 * unlinked ones negative.
 	 * 
 	 * @param doc
 	 * @param out
@@ -29,17 +28,34 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 	public void prepare(WikiDoc doc, BufferedWriter out)
 	{
 		//
-		Set<Surface> ambiSurfaces=  doc.getAmbiSurfaces();
+		Set<Surface> ambiSurfaces = doc.getAmbiSurfaces();
 		for (Surface surface : ambiSurfaces)
 		{
 			try
 			{
+				if (surface == null)
+				{
+					System.err.println("warning: null (ambi) surface!");
+					continue;
+				}
+
 				Context context = doc.getContext();
 				Instance inst = context.disambiguate(surface);
+				if (inst == null)
+				{
+					System.err.println("warning: null instance!");
+					continue;
+				}
+				if (inst.surface == null)
+				{
+					System.err.println("weird thing happening: inst.surface == null!");
+					continue;
+				}
+
 				inst.keyphraseness = inst.surface.getKeyphraseness();
 				inst.occurrence = doc.getNumberOfOccurrences(inst.surface);
 				inst.frequency = ((double) inst.occurrence) / doc.getTotalWords();
-			
+
 				if (doc.getLinkedSurfaces().containsKey(surface))
 				{
 					// linked, positive
@@ -56,6 +72,11 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			catch (Exception e)
+			{
+				System.err.println("EXCEPTION: " + e.getMessage());
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -64,7 +85,8 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 	{
 		svm_node[] svmInst = LearningUtils.constructSVMInstanceForDetection(instance);
 		StringBuilder sb = new StringBuilder();
-		sb.append(isPositiveSample ? String.valueOf(ConceptConstants.POS_CLASS_INT_LABEL) : String.valueOf(ConceptConstants.NEG_CLASS_INT_LABEL));
+		sb.append(isPositiveSample ? String.valueOf(ConceptConstants.POS_CLASS_INT_LABEL) : String
+				.valueOf(ConceptConstants.NEG_CLASS_INT_LABEL));
 		for (int i = 0; i < svmInst.length; ++i)
 		{
 			sb.append(",").append(String.valueOf(svmInst[i].value));
@@ -87,16 +109,13 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 	{
 		if (args.length != 2)
 		{
-			System.err.println("args: <in:title-list-file-path> <out:result-train-set-file-path>");
+			System.err.println("args: <input-article-title> <output-dir>");
 			System.exit(-1);
 		}
-		
+
 		String infp = args[0];
 		String oufp = args[1];
-		
-		File inf = new File(infp);
-		File ouf = new File(oufp);
-		
+
 		DetectionTrainingSetPreparer preparer = new DetectionTrainingSetPreparer()
 		{
 			@Override
@@ -106,7 +125,7 @@ public abstract class DetectionTrainingSetPreparer extends TrainingSetPreparer
 				reportDetectionInstance(out, doc, instance, isPositiveSample);
 			}
 		};
-		prepare(inf, ouf, preparer);
+		prepare(infp, oufp, preparer);
 	}
 
 }

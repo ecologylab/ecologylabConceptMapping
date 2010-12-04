@@ -4,13 +4,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.SQLException;
-import java.util.List;
 
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.detect.Instance;
 import ecologylab.semantics.concept.detect.SurfaceDictionary;
-import ecologylab.semantics.concept.utils.TextUtils;
 
 public abstract class TrainingSetPreparer
 {
@@ -20,44 +19,61 @@ public abstract class TrainingSetPreparer
 	protected abstract void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance,
 			boolean isPositiveSample);
 
-	public static void prepare(File titleListFile, File resultTrainSet, TrainingSetPreparer preparer)
+	public static void prepare(String wikiDocTitle, String outputDir, TrainingSetPreparer preparer)
 			throws IOException, SQLException
 	{
-		BufferedWriter out = new BufferedWriter(new FileWriter(resultTrainSet));
-		
-		List<String> titleList = TextUtils.loadTxtAsList(titleListFile, false);
-		int i = 0;
+		SurfaceDictionary dict = SurfaceDictionary.get(ConceptConstants.DICTIONARY_PATH);
+
 		long t0 = System.currentTimeMillis();
-		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
-		for (String title : titleList)
+
+		long t1 = System.currentTimeMillis();
+		WikiDoc doc = WikiDoc.get(wikiDocTitle, dict);
+		long d1 = System.currentTimeMillis() - t1;
+
+		String fileName = wikiDocTitle.replaceAll("[^0-9A-Za-z_]", "_") + ".result";
+		File dir = new File(outputDir);
+		File f = new File(dir.getPath() + File.separator + fileName);
+		if (f.exists())
 		{
-			System.out.format("doc [%s]:\n", title);
-			long t1 = System.currentTimeMillis();
-			WikiDoc doc = WikiDoc.get(title, dict);
-			long d1 = System.currentTimeMillis() - t1;
-			System.out.format("\tdoc retrieval: %d ms\n", d1);
-			long t2 = System.currentTimeMillis();
-			if (doc != null)
+			System.err.println("file already exists: " + fileName);
+			return;
+		}
+		
+		StringWriter str = new StringWriter();
+		BufferedWriter out = new BufferedWriter(str);
+		out.write(String.format("# start %s...", wikiDocTitle));
+		out.newLine();
+
+		long t2 = System.currentTimeMillis();
+		if (doc != null)
+		{
+			try
 			{
 				preparer.prepare(doc, out);
 				doc.recycle();
 			}
-			else
+			catch (Exception e)
 			{
-				System.out.println("warning: wikidoc not exist for " + title);
-			}
-			long d2 = System.currentTimeMillis() - t2;
-			System.out.format("\tdoc processing: %d ms\n", d2);
-			
-			i++;
-			if (i % 10 == 0)
-			{
-				long d0 = System.currentTimeMillis() - t0;
-				System.out.println(i + " of " + titleList.size() + " wiki articles processed: " + d0 + " ms.");
+				System.err.println("EXCEPTION for wiki-doc " + wikiDocTitle + ": " + e.getMessage());
 			}
 		}
+		else
+		{
+			System.out.println("warning: wikidoc not exist for " + wikiDocTitle);
+		}
+		long d2 = System.currentTimeMillis() - t2;
 
+		long d0 = System.currentTimeMillis() - t0;
+		
+		out.write(String.format("# finished. time: %d = %d + %d", d0, d1, d2));
+		out.newLine();
 		out.close();
+		String v = str.toString();
+		
+		BufferedWriter fout = new BufferedWriter(new FileWriter(f));
+		fout.write(v);
+		fout.newLine();
+		fout.close();
 	}
 
 }

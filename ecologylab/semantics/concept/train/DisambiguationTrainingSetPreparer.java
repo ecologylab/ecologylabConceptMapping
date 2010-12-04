@@ -1,7 +1,6 @@
 package ecologylab.semantics.concept.train;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
@@ -77,15 +76,12 @@ public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPrepa
 	{
 		if (args.length != 2)
 		{
-			System.err.println("args: <in:title-list-file-path> <out:result-train-set-file-path>");
+			System.err.println("args: <input-article-title> <output-dir>");
 			System.exit(-1);
 		}
 
 		String infp = args[0];
 		String oufp = args[1];
-
-		File inf = new File(infp);
-		File ouf = new File(oufp);
 
 		DisambiguationTrainingSetPreparer preparer = new DisambiguationTrainingSetPreparer()
 		{
@@ -96,7 +92,7 @@ public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPrepa
 				reportDisambiguationInstance(out, doc, instance, isPositiveSample);
 			}
 		};
-		prepare(inf, ouf, preparer);
+		prepare(infp, oufp, preparer);
 	}
 
 }

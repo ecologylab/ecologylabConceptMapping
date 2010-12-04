@@ -82,7 +82,7 @@ public class DetectorGUI extends JPanel
 	{
 		super();
 
-		dictionary = SurfaceDictionary.load(new File("data/freq-surfaces.dict"));
+		dictionary = SurfaceDictionary.get("data/freq-surfaces.dict");
 		
 		detected = new Vector<ConceptRecord>();
 

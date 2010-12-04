@@ -144,8 +144,7 @@ public class KeyphrasenessCalculator
 		int offset = Integer.parseInt(args[0]);
 		int limit = Integer.parseInt(args[1]);
 		
-		KeyphrasenessCalculator kc = new KeyphrasenessCalculator(SurfaceDictionary.load(new File(
-				ConceptConstants.DICTIONARY_PATH)));
+		KeyphrasenessCalculator kc = new KeyphrasenessCalculator(SurfaceDictionary.get(ConceptConstants.DICTIONARY_PATH));
 		kc.compute(offset, limit);
 	}
 
