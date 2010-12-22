@@ -2,6 +2,7 @@ package ecologylab.semantics.concept.detect;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import ecologylab.semantics.concept.database.DatabaseFacade;
 
@@ -45,12 +46,16 @@ public class Concept implements Comparable<Concept>
 		}
 		return pool.get(title);
 	}
+	
+	public static void purgePool()
+	{
+		synchronized (pool)
+		{
+			pool.clear();
+		}
+	}
 
 	public final String						title;
-
-	private int										inlinkCount			= -1;
-
-	private Object								lockInlinkCount	= new Object();
 
 	private Map<Concept, Double>	relatedness			= new HashMap<Concept, Double>();
 
@@ -59,19 +64,28 @@ public class Concept implements Comparable<Concept>
 		this.title = title;
 	}
 
-	public int getInlinkCount()
+	private Set<String> inlinkConceptTitles = null;
+	private Object lockInlinkConceptTitles = new Object();
+	public Set<String> getInlinkConceptTitles()
 	{
-		if (inlinkCount < 0)
+		if (inlinkConceptTitles == null)
 		{
-			synchronized (lockInlinkCount)
+			synchronized (lockInlinkConceptTitles)
 			{
-				if (inlinkCount < 0)
-					inlinkCount = DatabaseFacade.get().queryInlinkCount(title);
+				if (inlinkConceptTitles == null)
+				{
+//					System.out.println(":( no, have to retrieve inlink concept titles from database!");
+					inlinkConceptTitles = DatabaseFacade.get().getInlinkConceptTitles(this.title);
+				}
 			}
 		}
-		return inlinkCount;
+		else
+		{
+//			System.out.println(":) already have inlink concept titles!");
+		}
+		return inlinkConceptTitles;
 	}
-
+	
 	/**
 	 * query relatedness between this and another concept. the value will be cached in the "smaller"
 	 * concept, determined by compareTo().
@@ -99,14 +113,22 @@ public class Concept implements Comparable<Concept>
 				{
 					double relatednessValue = 0;
 					int W = DatabaseFacade.get().getTotalConceptCount();
+					
+					Set<String> set1 = getInlinkConceptTitles();
+					Set<String> set2 = other.getInlinkConceptTitles();
 
-					int s1 = getInlinkCount();
-					int s2 = other.getInlinkCount();
+					int s1 = set1.size();
+					int s2 = set2.size();
 					if (s1 > 0 && s2 > 0)
 					{
 						int smin = ((s1 > s2) ? s2 : s1);
 						int smax = ((s1 > s2) ? s1 : s2);
-						int s = DatabaseFacade.get().queryCommonInlinkCount(title, other.title);
+						int s = 0;
+						for (String str : set1)
+						{
+							if (set2.contains(str))
+								s++;
+						}
 
 						if (s > 0)
 							relatednessValue = (Math.log(smax) - Math.log(s)) / (Math.log(W) - Math.log(smin));

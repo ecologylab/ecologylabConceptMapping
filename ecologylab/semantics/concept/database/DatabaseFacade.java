@@ -9,7 +9,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import ecologylab.appframework.types.prefs.Pref;
 import ecologylab.appframework.types.prefs.PrefSet;
@@ -338,6 +340,34 @@ public class DatabaseFacade extends Debug
 		}
 
 		return commonInlinkCount;
+	}
+
+	public Set<String> getInlinkConceptTitles(String title)
+	{
+		Set<String> rst = new HashSet<String>();
+		
+		PreparedStatement pst = getPreparedStatement("SELECT from_title FROM wikilinks WHERE to_title=?;");
+		synchronized (pst)
+		{
+			try
+			{
+				pst.setString(1, title);
+				ResultSet rs = pst.executeQuery();
+				while (rs.next())
+				{
+					String inlinkConceptTitle = rs.getString(1);
+					rst.add(inlinkConceptTitle);
+				}
+				rs.close();
+			}
+			catch (SQLException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return rst;
 	}
 
 }
