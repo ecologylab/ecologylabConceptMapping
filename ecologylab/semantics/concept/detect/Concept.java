@@ -1,7 +1,9 @@
 package ecologylab.semantics.concept.detect;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import ecologylab.semantics.concept.database.DatabaseFacade;
@@ -46,26 +48,48 @@ public class Concept implements Comparable<Concept>
 		}
 		return pool.get(title);
 	}
-	
-	public static void purgePool()
+
+	public static int getPoolSize()
 	{
+		return pool.size();
+	}
+
+	public static void randomlyTrimPool(double factor)
+	{
+		Random rand = new Random(System.currentTimeMillis());
 		synchronized (pool)
 		{
-			pool.clear();
+			Set<String> toRemove = new HashSet<String>();
+			for (String title : pool.keySet())
+			{
+				Concept c = pool.get(title);
+				if (rand.nextDouble() >= factor)
+				{
+					c.recycle();
+					toRemove.add(title);
+				}
+			}
+			for (String title : toRemove)
+			{
+				pool.remove(title);
+			}
+			System.gc();
 		}
 	}
 
 	public final String						title;
 
-	private Map<Concept, Double>	relatedness			= new HashMap<Concept, Double>();
+	private Map<Concept, Double>	relatedness							= new HashMap<Concept, Double>();
 
+	private Set<String>						inlinkConceptTitles			= null;
+
+	private Object								lockInlinkConceptTitles	= new Object();
+	
 	private Concept(String title)
 	{
 		this.title = title;
 	}
 
-	private Set<String> inlinkConceptTitles = null;
-	private Object lockInlinkConceptTitles = new Object();
 	public Set<String> getInlinkConceptTitles()
 	{
 		if (inlinkConceptTitles == null)
@@ -74,18 +98,18 @@ public class Concept implements Comparable<Concept>
 			{
 				if (inlinkConceptTitles == null)
 				{
-//					System.out.println(":( no, have to retrieve inlink concept titles from database!");
+					// System.out.println(":( no, have to retrieve inlink concept titles from database!");
 					inlinkConceptTitles = DatabaseFacade.get().getInlinkConceptTitles(this.title);
 				}
 			}
 		}
 		else
 		{
-//			System.out.println(":) already have inlink concept titles!");
+			// System.out.println(":) already have inlink concept titles!");
 		}
 		return inlinkConceptTitles;
 	}
-	
+
 	/**
 	 * query relatedness between this and another concept. the value will be cached in the "smaller"
 	 * concept, determined by compareTo().
@@ -113,7 +137,7 @@ public class Concept implements Comparable<Concept>
 				{
 					double relatednessValue = 0;
 					int W = DatabaseFacade.get().getTotalConceptCount();
-					
+
 					Set<String> set1 = getInlinkConceptTitles();
 					Set<String> set2 = other.getInlinkConceptTitles();
 
@@ -174,4 +198,19 @@ public class Concept implements Comparable<Concept>
 		return title.compareTo(other.title);
 	}
 
+	/**
+	 * recycle *cached* data
+	 */
+	public void recycle()
+	{
+		if (relatedness != null)
+		{
+			relatedness.clear();
+		}
+		if (inlinkConceptTitles != null)
+		{
+			inlinkConceptTitles.clear();
+			inlinkConceptTitles = null;
+		}
+	}
 }

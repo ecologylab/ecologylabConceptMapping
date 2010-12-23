@@ -50,67 +50,39 @@ public class RelatednessCalculator extends Log
 		long b = titleList2.size();
 		total = a * b;
 
-		int continuousOutOfMemory = 0;
 		for (String concept1 : titleList1)
 		{
 			for (String concept2 : titleList2)
 			{
 				String key = null;
-				boolean success = false;
-				while (!success)
+				key = concept1 + "\t" + concept2;
+
+				if (concept1.compareTo(concept2) > 0)
 				{
-					try
-					{
-						key = concept1 + "\t" + concept2;
+					log("skipping [%s]...", key);
+					progress(false);
+					continue;
+				}
 
-						if (concept1.compareTo(concept2) > 0)
-						{
-							log("skipping [%s]...", key);
-							progress(false);
-							success = true;
-							continue;
-						}
+				if (lastKey != null && key.compareTo(lastKey) <= 0)
+				{
+					log("skipping [%s], already processed by previous runs...", key);
+					progress(false);
+					continue;
+				}
 
-						if (lastKey != null && key.compareTo(lastKey) <= 0)
-						{
-							log("skipping [%s], already processed by previous runs...", key);
-							progress(false);
-							success = true;
-							continue;
-						}
-
-						double relatedness = 0;
-						Concept c1 = Concept.get(concept1);
-						Concept c2 = Concept.get(concept2);
-						relatedness = c1.getRelatedness(c2);
-						if (relatedness > epsilon)
-						{
-							progress(true);
-							out.format("%s\t%s\t%f\n", concept1, concept2, relatedness);
-						}
-						else
-						{
-							progress(false);
-						}
-
-						success = true;
-						continuousOutOfMemory = 0;
-					}
-					catch (OutOfMemoryError e)
-					{
-						log("out of memory (%d) at [%s]! purging concept pool ...", continuousOutOfMemory, key);
-						if (continuousOutOfMemory < 10)
-						{
-							continuousOutOfMemory++;
-							Concept.purgePool();
-							System.gc();
-						}
-						else
-						{
-							System.err.println("can't recover from out of memory error, terminate.");
-							System.exit(-1);
-						}
-					}
+				double relatedness = 0;
+				Concept c1 = Concept.get(concept1);
+				Concept c2 = Concept.get(concept2);
+				relatedness = c1.getRelatedness(c2);
+				if (relatedness > epsilon)
+				{
+					progress(true);
+					out.format("%s\t%s\t%f\n", concept1, concept2, relatedness);
+				}
+				else
+				{
+					progress(false);
 				}
 			}
 		}
@@ -127,6 +99,11 @@ public class RelatednessCalculator extends Log
 			log("non-zero/processed: %d/%d (%f%%)", processedNonZero, processed, processedNonZero * 100.0
 					/ processed);
 			out.flush();
+
+			if (Concept.getPoolSize() > 50000)
+			{
+				Concept.randomlyTrimPool(0.5);
+			}
 		}
 	}
 
