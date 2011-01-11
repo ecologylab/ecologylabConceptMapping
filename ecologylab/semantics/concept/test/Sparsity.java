@@ -28,8 +28,8 @@ public class Sparsity
 		{
 			for (int j = i + 1; j < n; ++j)
 			{
-				Concept c1 = Concept.get(concepts.get(i));
-				Concept c2 = Concept.get(concepts.get(j));
+				Concept c1 = new Concept(concepts.get(i));
+				Concept c2 = new Concept(concepts.get(j));
 				double relatedness = c1.getRelatedness(c2);
 				if (relatedness > epsilon)
 				{

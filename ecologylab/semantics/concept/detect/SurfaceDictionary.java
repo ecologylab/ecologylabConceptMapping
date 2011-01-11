@@ -5,32 +5,24 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.utils.TextUtils;
 import ecologylab.semantics.concept.utils.Trie;
 
+/**
+ * data object model for client-side cached surface dictionary. retrieve and index surfaces with
+ * number of senses. extract surfaces from free text.
+ * 
+ * @author quyin
+ *
+ */
+// TODO 1. change data structure to sorted list to save memory;
+//      2. refer to Milne paper to filter extracted surfaces.
 public class SurfaceDictionary extends Debug
 {
-
-	public static Map<String, SurfaceDictionary>	theMap	= new HashMap<String, SurfaceDictionary>();
-
-	public static SurfaceDictionary get(String path) throws IOException
-	{
-		if (theMap.containsKey(path))
-			return theMap.get(path);
-		SurfaceDictionary dict = load(new File(path));
-		synchronized (theMap)
-		{
-			if (!theMap.containsKey(path))
-				theMap.put(path, dict);
-		}
-		return dict;
-	}
 
 	public static final String	DELIM_SEQ		= "|";
 
@@ -97,7 +89,7 @@ public class SurfaceDictionary extends Debug
 
 	}
 
-	private static SurfaceDictionary load(File dictionary) throws IOException
+	public static SurfaceDictionary load(File dictionary) throws IOException
 	{
 		System.err.print("loading dictionary from " + dictionary.getPath() + "...");
 		
@@ -124,6 +116,11 @@ public class SurfaceDictionary extends Debug
 
 		System.err.println("loaded");
 		return dict;
+	}
+
+	public static SurfaceDictionary load(String dictionaryPath) throws IOException
+	{
+		return load(new File(dictionaryPath));
 	}
 
 	public boolean hasSurface(String surface)

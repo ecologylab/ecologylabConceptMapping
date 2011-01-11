@@ -34,8 +34,8 @@ public class PrimaryConceptsIdentifier extends Debug
 						"  (SELECT name FROM dbp_titles" +
 						"  EXCEPT" +
 						"  SELECT name FROM dbp_redirects);";
-		DatabaseFacade.get().executeSql(sql1);
-		DatabaseFacade.get().executeSql(sql2);
+		DatabaseFacade.get().getStatement().execute(sql1);
+		DatabaseFacade.get().getStatement().execute(sql2);
 	}
 
 	public void identify() throws SQLException, IOException

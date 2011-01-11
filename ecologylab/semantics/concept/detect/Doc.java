@@ -47,7 +47,7 @@ public class Doc
 		// extract surfaces
 		for (String surfaceWord : dictionary.extractSurfaces(text))
 		{
-			Surface surface = Surface.get(surfaceWord);
+			Surface surface = new Surface(surfaceWord);
 
 			if (dictionary.isAmbiguous(surfaceWord))
 				ambiSurfaces.add(surface);
@@ -154,7 +154,7 @@ public class Doc
 	{
 //		String text = TextUtils.readString("usa.wiki");
 		String text = "we know that united states census 2000 is famous in united states";
-		SurfaceDictionary dict = SurfaceDictionary.get(ConceptConstants.DICTIONARY_PATH);
+		SurfaceDictionary dict = SurfaceDictionary.load(ConceptConstants.DICTIONARY_PATH);
 		Doc doc = null;
 
 		int n = 100;

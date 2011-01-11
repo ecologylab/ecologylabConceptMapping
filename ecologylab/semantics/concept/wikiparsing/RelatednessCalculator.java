@@ -72,8 +72,8 @@ public class RelatednessCalculator extends Log
 				}
 
 				double relatedness = 0;
-				Concept c1 = Concept.get(concept1);
-				Concept c2 = Concept.get(concept2);
+				Concept c1 = new Concept(concept1);
+				Concept c2 = new Concept(concept2);
 				relatedness = c1.getRelatedness(c2);
 				if (relatedness > epsilon)
 				{
@@ -99,11 +99,6 @@ public class RelatednessCalculator extends Log
 			log("non-zero/processed: %d/%d (%f%%)", processedNonZero, processed, processedNonZero * 100.0
 					/ processed);
 			out.flush();
-
-			if (Concept.getPoolSize() > 50000)
-			{
-				Concept.randomlyTrimPool(0.5);
-			}
 		}
 	}
 

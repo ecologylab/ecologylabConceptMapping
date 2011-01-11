@@ -30,7 +30,7 @@ public class CommonnessCalculator
 	public CommonnessCalculator() throws SQLException, IOException
 	{
 		primaryConcepts = TextUtils.loadTxtAsList(new File(ConceptTrainingConstants.PRIMARY_CONCEPTS_FILE_PATH), true);
-		DatabaseFacade.get().executeSql("TRUNCATE commonness;");
+		DatabaseFacade.get().getStatement().execute("TRUNCATE commonness;");
 	}
 
 	public void computeAll() throws IOException, SQLException

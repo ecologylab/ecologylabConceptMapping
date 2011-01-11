@@ -131,8 +131,8 @@ public class WikiDoc extends Doc
 			{
 				String toTitle = rs.getString("to_title");
 				String surface = rs.getString("surface");
-				Concept c = Concept.get(toTitle);
-				Surface s = Surface.get(surface);
+				Concept c = new Concept(toTitle);
+				Surface s = new Surface(surface);
 
 				linkedConcepts.put(c, s);
 				linkedSurfaces.put(s, c);

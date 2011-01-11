@@ -28,7 +28,7 @@ public class TestKeyphraseness extends KeyphrasenessCalculator
 	 */
 	public static void main(String[] args) throws SQLException, IOException
 	{
-		SurfaceDictionary dict = SurfaceDictionary.get(ConceptConstants.DICTIONARY_PATH);
+		SurfaceDictionary dict = SurfaceDictionary.load(ConceptConstants.DICTIONARY_PATH);
 		
 		String testSurface = "united states 2000 census";
 		System.out.println(dict.hasSurface(testSurface));

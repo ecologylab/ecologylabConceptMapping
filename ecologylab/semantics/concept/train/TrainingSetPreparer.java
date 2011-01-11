@@ -22,7 +22,7 @@ public abstract class TrainingSetPreparer
 	public static void prepare(String wikiDocTitle, String outputDir, TrainingSetPreparer preparer)
 			throws IOException, SQLException
 	{
-		SurfaceDictionary dict = SurfaceDictionary.get(ConceptConstants.DICTIONARY_PATH);
+		SurfaceDictionary dict = SurfaceDictionary.load(ConceptConstants.DICTIONARY_PATH);
 
 		long t0 = System.currentTimeMillis();
 

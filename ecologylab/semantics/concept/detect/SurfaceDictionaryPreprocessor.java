@@ -14,6 +14,12 @@ import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.detect.SurfaceDictionary.SurfaceRecord;
 import ecologylab.semantics.concept.utils.StopWordsUtils;
 
+/**
+ * filter out stop words and sort surfaces in alphabetic order.
+ * 
+ * @author quyin
+ *
+ */
 public class SurfaceDictionaryPreprocessor
 {
 

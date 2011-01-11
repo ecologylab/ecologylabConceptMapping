@@ -1,17 +1,13 @@
 package ecologylab.semantics.concept.database;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import ecologylab.appframework.types.prefs.Pref;
 import ecologylab.appframework.types.prefs.PrefSet;
@@ -21,11 +17,22 @@ import ecologylab.serialization.ElementState.FORMAT;
 import ecologylab.serialization.SIMPLTranslationException;
 import ecologylab.serialization.TranslationScope;
 
+/**
+ * a facade class for database
+ * 
+ * @author quyin
+ *
+ */
 public class DatabaseFacade extends Debug
 {
 
 	private static DatabaseFacade	the	= null;
 
+	/**
+	 * get the global singleton instance
+	 * 
+	 * @return
+	 */
 	public static DatabaseFacade get()
 	{
 		if (the == null)
@@ -58,6 +65,11 @@ public class DatabaseFacade extends Debug
 
 	private Map<String, PreparedStatement>	preparedStatements		= new HashMap<String, PreparedStatement>();
 
+	/**
+	 * create database connection using prefs, and set up a clean-up hook
+	 * 
+	 * @throws SIMPLTranslationException
+	 */
 	private DatabaseFacade() throws SIMPLTranslationException
 	{
 		try
@@ -103,6 +115,10 @@ public class DatabaseFacade extends Debug
 		Runtime.getRuntime().addShutdownHook(t);
 	}
 
+	/**
+	 *  clean-up hook. close all open prepared statements. close the connection.
+	 *  
+	 */
 	private void cleanUp()
 	{
 		// clean up prepared statements & connection
@@ -144,49 +160,8 @@ public class DatabaseFacade extends Debug
 		}
 	}
 
-	public int getTotalConceptCount()
-	{
-		if (totalConceptCount < 0)
-		{
-			synchronized (lockTotalConceptCount)
-			{
-				if (totalConceptCount < 0)
-				{
-					try
-					{
-						Statement st = conn.createStatement();
-						ResultSet rs = st.executeQuery("SELECT count(*) FROM freq_concept;");
-						if (rs.next())
-							totalConceptCount = (int) rs.getLong(1);
-					}
-					catch (SQLException e)
-					{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		return totalConceptCount;
-	}
-
-	public void executeSql(String sql) throws SQLException
-	{
-		Statement st = conn.createStatement();
-		st.execute(sql);
-		st.close();
-	}
-
-	public int executeUpdateSql(String sql) throws SQLException
-	{
-		Statement st = conn.createStatement();
-		int rst = st.executeUpdate(sql);
-		st.close();
-		return rst;
-	}
-
 	/**
-	 * BE CAREFUL! you need to close the statement and its result set (if any) manually after use.
+	 * create a statement. remember to close it after use.
 	 * 
 	 * @return
 	 * @throws SQLException
@@ -196,6 +171,13 @@ public class DatabaseFacade extends Debug
 		return conn.createStatement();
 	}
 
+	/**
+	 * get a prepared statement from prepared statement pool, or create a new one if it is not there.
+	 * each prepared statement will be synchronized (at each time at most one operation is using it).
+	 * 
+	 * @param sql
+	 * @return
+	 */
 	public PreparedStatement getPreparedStatement(String sql)
 	{
 		if (!preparedStatements.containsKey(sql))
@@ -222,152 +204,34 @@ public class DatabaseFacade extends Debug
 	}
 	
 	/**
-	 * query for keyphraseness from the database.
+	 * get total number of concepts. used to calculate relatedness.
 	 * 
-	 * @param surface
-	 * @return the keyphraseness value, or 0 if surface not found
-	 * @throws SQLException
-	 */
-	public double queryKeyphraseness(String surface)
-	{
-		double kp = 0;
-
-		try
-		{
-			CallableStatement cst = conn.prepareCall("{ ? = call query_keyphraseness(?) }");
-			cst.registerOutParameter(1, Types.DOUBLE);
-
-			cst.setString(2, surface);
-			cst.execute();
-			kp = cst.getDouble(1);
-			cst.close();
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return kp;
-	}
-
-	/**
-	 * query for all the senses of a given surface. note that this method queries commonness table, so
-	 * it can't be used before commonness is computed.
-	 * 
-	 * @param surface
-	 * @return a map from sense (concept) to commonness.
-	 * @throws SQLException
-	 */
-	public Map<String, Double> querySenses(String surface)
-	{
-		Map<String, Double> rst = new HashMap<String, Double>();
-
-		try
-		{
-			PreparedStatement pst = conn.prepareStatement("SELECT * FROM query_senses(?);");
-			ResultSet rs = null;
-			synchronized (pst)
-			{
-				pst.setString(1, surface);
-				rs = pst.executeQuery();
-			}
-			if (rs != null)
-			{
-				while (rs.next())
-				{
-					rst.put(rs.getString("concept"), rs.getDouble("commonness"));
-				}
-				rs.close();
-			}
-			pst.close();
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			System.err.println("surface=" + surface);
-			e.printStackTrace();
-		}
-
-		return rst;
-	}
-
-	/**
-	 * return how many concepts are linking to this one.
-	 * 
-	 * @param toConcept
 	 * @return
 	 */
-	public int queryInlinkCount(String toConcept)
+	public int getTotalConceptCount()
 	{
-		int inlinkCount = 0;
-
-		try
+		if (totalConceptCount < 0)
 		{
-			CallableStatement cst = conn.prepareCall("{ ? = call query_inlink_count(?) }");
-			cst.registerOutParameter(1, Types.INTEGER);
-			cst.setString(2, toConcept);
-			cst.execute();
-			inlinkCount = cst.getInt(1);
-			cst.close();
-		}
-		catch (SQLException e)
-		{
-			System.err.println("toConcept=" + toConcept);
-			e.printStackTrace();
-		}
-
-		return inlinkCount;
-	}
-
-	public int queryCommonInlinkCount(String concept1, String concept2)
-	{
-		int commonInlinkCount = 0;
-
-		try
-		{
-			CallableStatement cst = conn.prepareCall("{ ? = call query_common_inlink_count(?, ?) }");
-			cst.registerOutParameter(1, Types.BIGINT);
-			cst.setString(2, concept1);
-			cst.setString(3, concept2);
-			cst.execute();
-			commonInlinkCount = (int) cst.getLong(1);
-			cst.close();
-		}
-		catch (SQLException e)
-		{
-			System.err.println("concept1=" + concept1 + ", concept2=" + concept2);
-			e.printStackTrace();
-		}
-
-		return commonInlinkCount;
-	}
-
-	public Set<String> getInlinkConceptTitles(String title)
-	{
-		Set<String> rst = new HashSet<String>();
-		
-		PreparedStatement pst = getPreparedStatement("SELECT from_title FROM wikilinks WHERE to_title=?;");
-		synchronized (pst)
-		{
-			try
+			synchronized (lockTotalConceptCount)
 			{
-				pst.setString(1, title);
-				ResultSet rs = pst.executeQuery();
-				while (rs.next())
+				if (totalConceptCount < 0)
 				{
-					String inlinkConceptTitle = rs.getString(1);
-					rst.add(inlinkConceptTitle);
+					try
+					{
+						Statement st = conn.createStatement();
+						ResultSet rs = st.executeQuery("SELECT count(*) FROM freq_concept;");
+						if (rs.next())
+							totalConceptCount = rs.getInt(1);
+					}
+					catch (SQLException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
-				rs.close();
-			}
-			catch (SQLException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
-		
-		return rst;
+		return totalConceptCount;
 	}
 
 }
