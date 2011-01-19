@@ -5,12 +5,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 
+import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.exception.UnsupportedError;
 
-class RelatednessTable implements SimpleTable<String, Double>
+/**
+ * relatedness is actually semantic distance.
+ * 
+ * @author quyin
+ *
+ */
+class RelatednessTable extends Debug implements SimpleTable<String, Double>
 {
 
 	public static final String NAME = "relatedness";
+	
+	/**
+	 * in most cases semantic distance will not be larger than 1 (given a sufficiently large
+	 * collection of concepts)
+	 */
+	public static final double INF_DISTANCE = 1;
 	
 	public String getName()
 	{
@@ -23,6 +36,7 @@ class RelatednessTable implements SimpleTable<String, Double>
 		String[] titles = key.split("\t");
 		String title1 = titles[0];
 		String title2 = titles[1];
+		debug(String.format("storing relatedness to database: (%s, %s): %f\n", title1, title2, value));
 		PreparedStatement pst = DatabaseFacade.get().getPreparedStatement(
 				"INSERT INTO relatedness VALUES (?, ?, ?);");
 		synchronized (pst)
@@ -49,7 +63,7 @@ class RelatednessTable implements SimpleTable<String, Double>
 		String title1 = titles[0];
 		String title2 = titles[1];
 
-		double rst = 0;
+		double rst = INF_DISTANCE;
 
 		PreparedStatement pst = DatabaseFacade.get().getPreparedStatement(
 				"SELECT relatedness FROM relatedness WHERE title1=? AND title2=?;");
@@ -62,13 +76,14 @@ class RelatednessTable implements SimpleTable<String, Double>
 				ResultSet rs = pst.executeQuery();
 				if (rs.next())
 				{
-					rst = rs.getDouble(1);
+					rst = rs.getDouble("relatedness");
 				}
 				else
 				{
 					// calc and store relatedness
 					rst = calcRelatedness(title1, title2);
-					create(key, rst);
+					if (rst < INF_DISTANCE)
+						create(key, rst);
 				}
 				rs.close();
 			}
@@ -120,7 +135,7 @@ class RelatednessTable implements SimpleTable<String, Double>
 			System.err.println("zero length inlink count: " + (s1 == 0 ? title1 : "") + "    " + (s2 == 0 ? title2 : ""));
 		}
 		
-		return 0;
+		return INF_DISTANCE;
 	}
 
 }

@@ -29,7 +29,7 @@ public class CachedTables
 
 	private static Configuration						cacheConfigs							= null;
 
-	private static CacheManager							cacheManager							= new CacheManager();
+	private static CacheManager							cacheManager							= null;
 
 	static
 	{
@@ -37,6 +37,7 @@ public class CachedTables
 		{
 			cacheConfigs = ConfigurationFactory.parseConfiguration(new FileInputStream(
 					"cache_configs.xml"));
+			cacheManager = new CacheManager(cacheConfigs);
 		}
 		catch (CacheException e)
 		{

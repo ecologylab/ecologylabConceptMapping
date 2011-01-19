@@ -2,7 +2,6 @@ package ecologylab.semantics.concept.train;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Set;
 
 import libsvm.svm_node;
@@ -14,7 +13,7 @@ import ecologylab.semantics.concept.detect.Instance;
 import ecologylab.semantics.concept.detect.Surface;
 import ecologylab.semantics.concept.learning.svm.LearningUtils;
 
-public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
+public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 {
 
 	/**
@@ -46,8 +45,8 @@ public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPrepa
 		}
 	}
 
-	public static void reportDisambiguationInstance(BufferedWriter out, WikiDoc doc,
-			Instance instance, boolean isPositiveSample)
+	@Override
+	protected void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance, boolean isPositiveSample)
 	{
 		svm_node[] svmInst = LearningUtils.constructSVMInstanceForDisambiguation(instance);
 		StringBuilder sb = new StringBuilder();
@@ -70,29 +69,6 @@ public abstract class DisambiguationTrainingSetPreparer extends TrainingSetPrepa
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	public static void main(String[] args) throws IOException, SQLException
-	{
-		if (args.length != 2)
-		{
-			System.err.println("args: <input-article-title> <output-dir>");
-			System.exit(-1);
-		}
-
-		String infp = args[0];
-		String oufp = args[1];
-
-		DisambiguationTrainingSetPreparer preparer = new DisambiguationTrainingSetPreparer()
-		{
-			@Override
-			protected void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance,
-					boolean isPositiveSample)
-			{
-				reportDisambiguationInstance(out, doc, instance, isPositiveSample);
-			}
-		};
-		prepare(infp, oufp, preparer);
 	}
 
 }

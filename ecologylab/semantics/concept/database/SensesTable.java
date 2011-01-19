@@ -52,7 +52,7 @@ class SensesTable implements SimpleTable<String, Map<Concept, Double>>
 		Map<Concept, Double> rst = new HashMap<Concept, Double>();
 		
 		PreparedStatement pst = DatabaseFacade.get().getPreparedStatement(
-				"SELECT concept, commonness FROM commonnness WHERE surface=?;");
+				"SELECT concept, commonness FROM commonness WHERE surface=?;");
 		synchronized(pst)
 		{
 			try
