@@ -7,6 +7,7 @@ import java.util.Set;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.exception.UnsupportedError;
+import ecologylab.semantics.concept.service.Configs;
 
 /**
  * relatedness is actually semantic distance.
@@ -128,7 +129,10 @@ class RelatednessTable extends Debug implements SimpleTable<String, Double>
 			}
 	
 			if (s > 0)
-				return (Math.log(smax) - Math.log(s)) / (Math.log(DatabaseFacade.get().getTotalConceptCount()) - Math.log(smin));
+			{
+				int totalConceptCount = Configs.getInt("db.total_concept_count");
+				return (Math.log(smax) - Math.log(s)) / (Math.log(totalConceptCount) - Math.log(smin));
+			}
 		}
 		else
 		{

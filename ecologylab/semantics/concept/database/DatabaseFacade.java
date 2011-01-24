@@ -3,25 +3,20 @@ package ecologylab.semantics.concept.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import ecologylab.appframework.types.prefs.Pref;
-import ecologylab.appframework.types.prefs.PrefSet;
-import ecologylab.appframework.types.prefs.PrefSetBaseClassProvider;
 import ecologylab.generic.Debug;
-import ecologylab.serialization.ElementState.FORMAT;
+import ecologylab.semantics.concept.service.Configs;
 import ecologylab.serialization.SIMPLTranslationException;
-import ecologylab.serialization.TranslationScope;
 
 /**
- * a facade class for database
+ * provide facade methods for upper layers to access data.
  * 
  * @author quyin
- *
+ * 
  */
 public class DatabaseFacade extends Debug
 {
@@ -59,11 +54,7 @@ public class DatabaseFacade extends Debug
 
 	private Connection											conn;
 
-	private int															totalConceptCount			= 3000000;
-
-	private Object													lockTotalConceptCount	= new Object();
-
-	private Map<String, PreparedStatement>	preparedStatements		= new HashMap<String, PreparedStatement>();
+	private Map<String, PreparedStatement>	preparedStatements	= new HashMap<String, PreparedStatement>();
 
 	/**
 	 * create database connection using prefs, and set up a clean-up hook
@@ -74,22 +65,16 @@ public class DatabaseFacade extends Debug
 	{
 		try
 		{
-			TranslationScope translationScope = TranslationScope.get(
-					PrefSet.PREFS_TRANSLATION_SCOPE,
-					PrefSetBaseClassProvider.STATIC_INSTANCE.provideClasses());
-			PrefSet prefSet = PrefSet.load("database.prefs", translationScope);
-			prefSet.serialize(System.out, FORMAT.XML);
-			
-			String driverClass = Pref.lookupString("driver_class");
-			String url = Pref.lookupString("url");
-			String user = Pref.lookupString("user");
-			String password = Pref.lookupString("password");
-			
+			String driverClass = Configs.getString("db.driver_class");
+			String url = Configs.getString("db.url");
+			String user = Configs.getString("db.user");
+			String password = Configs.getString("db.password");
+
 			if (driverClass != null)
 				Class.forName(driverClass);
 			if (url != null && user != null && password != null)
 				conn = DriverManager.getConnection(url, user, password);
-			
+
 			debug("database connected");
 		}
 		catch (ClassNotFoundException e)
@@ -116,8 +101,8 @@ public class DatabaseFacade extends Debug
 	}
 
 	/**
-	 *  clean-up hook. close all open prepared statements. close the connection.
-	 *  
+	 * clean-up hook. close all open prepared statements. close the connection.
+	 * 
 	 */
 	private void cleanUp()
 	{
@@ -201,37 +186,6 @@ public class DatabaseFacade extends Debug
 			}
 		}
 		return preparedStatements.get(sql);
-	}
-	
-	/**
-	 * get total number of concepts. used to calculate relatedness.
-	 * 
-	 * @return
-	 */
-	public int getTotalConceptCount()
-	{
-		if (totalConceptCount < 0)
-		{
-			synchronized (lockTotalConceptCount)
-			{
-				if (totalConceptCount < 0)
-				{
-					try
-					{
-						Statement st = conn.createStatement();
-						ResultSet rs = st.executeQuery("SELECT count(*) FROM freq_concept;");
-						if (rs.next())
-							totalConceptCount = rs.getInt(1);
-					}
-					catch (SQLException e)
-					{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		return totalConceptCount;
 	}
 
 }

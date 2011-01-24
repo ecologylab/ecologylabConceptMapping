@@ -11,6 +11,7 @@ import java.util.List;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.detect.Instance;
 import ecologylab.semantics.concept.detect.SurfaceDictionary;
+import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.TextUtils;
 
 public abstract class TrainingSetPreparer
@@ -92,15 +93,15 @@ public abstract class TrainingSetPreparer
 	
 	public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
-		if (args.length != 3)
+		if (args.length != 2)
 		{
-			System.err.println("args: <wiki-article-title-list> <output-dir-path> <preparer-class-name>");
+			System.err.println("args: <wiki-article-title-list> <output-dir-path>");
 			System.exit(-1);
 		}
 		
 		String titleListFile = args[0];
 		String outputDir = args[1];
-		String preparerClassName = args[2];
+		String preparerClassName = Configs.getString("train.trainset_preparer");
 		
 		Class<?> preparerClass = Class.forName(preparerClassName);
 		TrainingSetPreparer preparer = (TrainingSetPreparer) preparerClass.newInstance();
