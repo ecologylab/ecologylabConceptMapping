@@ -1,5 +1,9 @@
 package ecologylab.semantics.concept.database.orm;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Commonness
 {
 
@@ -10,6 +14,7 @@ public class Commonness
 		return id;
 	}
 
+	@Id
 	private void setId(int id)
 	{
 		this.id = id;
