@@ -53,11 +53,13 @@ public class Configs extends Debug
 		return Pref.lookupFile(name);
 	}
 
-	public static Object getObject(String name) throws ClassNotFoundException,
+	public static Object getObject(String name, Class defaultClass) throws ClassNotFoundException,
 			InstantiationException, IllegalAccessException
 	{
+		Class clazz = defaultClass;
 		String className = getString(name);
-		Class clazz = Class.forName(className);
+		if (className != null)
+			clazz = Class.forName(className);
 		return clazz.newInstance();
 	}
 

@@ -52,26 +52,19 @@ public class LabelImporter extends AbstractImporter
 
 	private void addTitle(String dbpName, String wikiTitle) throws SQLException
 	{
-		DbpRecord dr = (DbpRecord) SessionManager.getSession().get(DbpRecord.class, dbpName);
-		if (dr == null)
-		{
-			dr = new DbpRecord();
-			dr.setDbpTitle(dbpName);
-			dr.setWikiTitle(wikiTitle);
-			SessionManager.getSession().save(dr);
-		}
-	}
-
-	@Override
-	protected void preParse()
-	{
 		SessionManager.getSession().beginTransaction();
+		
+		DbpRecord dr = new DbpRecord();
+		dr.setDbpTitle(dbpName);
+		dr.setWikiTitle(wikiTitle);
+		SessionManager.getSession().save(dr);
+		
+		SessionManager.getSession().getTransaction().commit();
 	}
 
 	@Override
 	protected void postParse()
 	{
-		SessionManager.getSession().getTransaction().commit();
 		SessionManager.getSession().flush();
 	}
 

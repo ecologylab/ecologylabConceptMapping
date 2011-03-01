@@ -52,6 +52,7 @@ public class RedirectImporter extends AbstractImporter
 	private void addRedirect(String from, String to) throws SQLException
 	{
 		Session sess = SessionManager.getSession();
+		sess.beginTransaction();
 		
 		DbpRecord drFrom = (DbpRecord) sess.get(DbpRecord.class, from);
 		DbpRecord drTo = (DbpRecord) sess.get(DbpRecord.class, to);
@@ -62,16 +63,12 @@ public class RedirectImporter extends AbstractImporter
 			wr.setToTitle(drTo.getWikiTitle());
 			sess.save(wr);
 		}
-	}
-	
-	protected void preParse()
-	{
-		SessionManager.getSession().beginTransaction();
+		
+		sess.getTransaction().commit();
 	}
 	
 	protected void postParse()
 	{
-		SessionManager.getSession().getTransaction().commit();
 		SessionManager.getSession().flush();
 	}
 

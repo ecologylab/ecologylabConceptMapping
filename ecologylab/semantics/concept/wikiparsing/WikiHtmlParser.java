@@ -10,7 +10,7 @@ import ecologylab.semantics.concept.database.orm.WikiLink;
  * @author quyin
  * 
  */
-public interface WikiHtmlParser
+public class WikiHtmlParser
 {
 
 	/**
@@ -18,14 +18,21 @@ public interface WikiHtmlParser
 	 * 
 	 * @param wikiHtml
 	 */
-	void parse(String wikiHtml);
+	public void parse(String wikiHtml)
+	{
+		// TODO
+	}
 
 	/**
 	 * Get parsed wiki-links. Should be called after calling parse(), or null will be returned.
 	 * 
 	 * @return
 	 */
-	List<WikiLink> getLinks();
+	public List<WikiLink> getLinks()
+	{
+		// TODO
+		return null;
+	}
 
 	/**
 	 * Get parsed wiki text (pure text not HTML). Should be called after calling parse(), or null will
@@ -33,6 +40,10 @@ public interface WikiHtmlParser
 	 * 
 	 * @return
 	 */
-	String getText();
+	public String getText()
+	{
+		// TODO
+		return null;
+	}
 
 }

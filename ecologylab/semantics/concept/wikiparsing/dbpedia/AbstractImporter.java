@@ -49,7 +49,6 @@ public abstract class AbstractImporter extends Debug
 	 */
 	public void parse(InputStream stream) throws IOException
 	{
-		preParse();
 		BufferedReader br = new BufferedReader(new InputStreamReader(stream));
 		String line = null;
 		while ((line = br.readLine()) != null)
@@ -96,14 +95,6 @@ public abstract class AbstractImporter extends Debug
 	 * @param line
 	 */
 	abstract public void parseLine(String line);
-
-	/**
-	 * Hook that is invoked before any line gets parsed.
-	 */
-	protected void preParse()
-	{
-		
-	}
 
 	/**
 	 * Hook that is invoked after all the lines have been parsed.
