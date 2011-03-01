@@ -12,9 +12,9 @@ import ecologylab.serialization.TranslationScope;
 
 public class Configs extends Debug
 {
-	
-	private static PrefSet configs;
-	
+
+	private static PrefSet	configs;
+
 	static
 	{
 		TranslationScope translationScope = TranslationScope.get(
@@ -32,25 +32,33 @@ public class Configs extends Debug
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static String getString(String name)
 	{
 		return Pref.lookupString(name);
 	}
-	
+
 	public static int getInt(String name)
 	{
 		return Pref.lookupInt(name);
 	}
-	
+
 	public static double getDouble(String name)
 	{
 		return Pref.lookupDouble(name);
 	}
-	
+
 	public static File getFile(String name)
 	{
 		return Pref.lookupFile(name);
 	}
-	
+
+	public static Object getObject(String name) throws ClassNotFoundException,
+			InstantiationException, IllegalAccessException
+	{
+		String className = getString(name);
+		Class clazz = Class.forName(className);
+		return clazz.newInstance();
+	}
+
 }

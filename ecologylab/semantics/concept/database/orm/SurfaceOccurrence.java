@@ -1,24 +1,25 @@
 package ecologylab.semantics.concept.database.orm;
 
-public class SurfaceOccurrence
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "surface_occurrences")
+public class SurfaceOccurrence implements Serializable
 {
 
-	private int	id;
-
-	public int getId()
-	{
-		return id;
-	}
-
-	private void setId(int id)
-	{
-		this.id = id;
-	}
-
+	@Id
+	@Column(name = "surface", nullable = false)
 	private String	surface;
 
+	@Column(name = "total", nullable = false)
 	private int			total;
 
+	@Column(name = "linked", nullable = false)
 	private int			linked;
 
 	public String getSurface()

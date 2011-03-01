@@ -1,22 +1,22 @@
 package ecologylab.semantics.concept.database.orm;
 
-public class Keyphraseness
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "keyphraseness")
+public class Keyphraseness implements Serializable
 {
 
-	private int	id;
-
-	public int getId()
-	{
-		return id;
-	}
-
-	private void setId(int id)
-	{
-		this.id = id;
-	}
-
+	@Id
+	@Column(name = "surface", nullable = false)
 	private String	surface;
 
+	@Column(name = "keyphraseness", nullable = false)
 	private double	keyphraseness;
 
 	public String getSurface()
@@ -44,7 +44,7 @@ public class Keyphraseness
 	{
 		if (obj != null && obj instanceof Keyphraseness)
 		{
-			if (surface.equals(((Keyphraseness)obj).surface))
+			if (surface.equals(((Keyphraseness) obj).surface))
 				return true;
 		}
 		return false;

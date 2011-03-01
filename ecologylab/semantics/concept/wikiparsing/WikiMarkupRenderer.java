@@ -1,5 +1,11 @@
-package ecologylab.semantics.concept.wikiparser;
+package ecologylab.semantics.concept.wikiparsing;
 
+/**
+ * Render MediaWiki markups into HTML.
+ * 
+ * @author quyin
+ * 
+ */
 public interface WikiMarkupRenderer
 {
 
@@ -10,5 +16,5 @@ public interface WikiMarkupRenderer
 	 * @return
 	 */
 	String render(String wikiMarkups);
-	
+
 }

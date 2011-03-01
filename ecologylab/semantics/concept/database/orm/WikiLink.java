@@ -1,25 +1,39 @@
 package ecologylab.semantics.concept.database.orm;
 
-public class WikiLink
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "wiki_links")
+public class WikiLink implements Serializable
 {
 
-	private int	id;
+	@Id
+	@Column(name = "seq_id", nullable = false)
+	private int	seqId;
 
-	public int getId()
-	{
-		return id;
-	}
-
-	private void setId(int id)
-	{
-		this.id = id;
-	}
-
+	@Column(name = "from_id", nullable = false)
 	private int	fromId;
 
+	@Column(name = "to_id", nullable = false)
 	private int	toId;
 
+	@Column(name = "surface", nullable = false)
 	String			surface;
+
+	public int getSeqId()
+	{
+		return seqId;
+	}
+
+	public void setSeqId(int seqId)
+	{
+		this.seqId = seqId;
+	}
 
 	public String getSurface()
 	{
@@ -67,7 +81,7 @@ public class WikiLink
 	public int hashCode()
 	{
 		// Cantor pairing function
-		long pairing = (long)(fromId + toId) * (fromId + toId + 1) / 2 + toId;
+		long pairing = (long) (fromId + toId) * (fromId + toId + 1) / 2 + toId;
 		return (int) (pairing % 2147483647);
 	}
 

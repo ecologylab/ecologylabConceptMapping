@@ -1,29 +1,26 @@
 package ecologylab.semantics.concept.database.orm;
 
+import java.io.Serializable;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
-public class Commonness
+@Table(name = "commonness")
+public class Commonness implements Serializable
 {
 
-	private int	id;
-
-	public int getId()
-	{
-		return id;
-	}
-
 	@Id
-	private void setId(int id)
-	{
-		this.id = id;
-	}
-
+	@Column(name = "surface", nullable = false)
 	private String	surface;
 
+	@Id
+	@Column(name = "concept_id", nullable = false)
 	private int			conceptId;
 
+	@Column(name = "commonness", nullable = false)
 	private double	commonness;
 
 	public String getSurface()
@@ -72,8 +69,8 @@ public class Commonness
 	public int hashCode()
 	{
 		int a = surface.hashCode();
-		long pairing = (long)(a + conceptId) * (a + conceptId + 1) / 2 + conceptId;
-		return (int)(pairing % 2147483647);
+		long pairing = (long) (a + conceptId) * (a + conceptId + 1) / 2 + conceptId;
+		return (int) (pairing % 2147483647);
 	}
 
 }

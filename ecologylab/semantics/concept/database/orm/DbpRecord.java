@@ -1,23 +1,22 @@
 package ecologylab.semantics.concept.database.orm;
 
-//@Entity
-public class DbpRecord
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "dbp_records")
+public class DbpRecord implements Serializable
 {
 
-	private int	id;
-
-	public int getId()
-	{
-		return id;
-	}
-
-	private void setId(int id)
-	{
-		this.id = id;
-	}
-
+	@Id
+	@Column(name = "dbp_title", nullable = false)
 	private String	dbpTitle;
 
+	@Column(name = "wiki_title", nullable = false)
 	private String	wikiTitle;
 
 	public String getDbpTitle()
@@ -56,5 +55,5 @@ public class DbpRecord
 	{
 		return dbpTitle.hashCode();
 	}
-	
+
 }

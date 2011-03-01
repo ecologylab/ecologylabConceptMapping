@@ -1,24 +1,26 @@
 package ecologylab.semantics.concept.database.orm;
 
-public class Relatedness
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "relatedness")
+public class Relatedness implements Serializable
 {
 
-	private int	id;
-
-	public int getId()
-	{
-		return id;
-	}
-
-	private void setId(int id)
-	{
-		this.id = id;
-	}
-
+	@Id
+	@Column(name = "concept_id1", nullable = false)
 	private int			conceptId1;
 
+	@Id
+	@Column(name = "concept_id2", nullable = false)
 	private int			conceptId2;
 
+	@Column(name = "relatedness", nullable = false)
 	private double	relatedness;
 
 	public int getConceptId1()
@@ -66,7 +68,8 @@ public class Relatedness
 	@Override
 	public int hashCode()
 	{
-		long pairing = (long) (conceptId1 + conceptId2) * (conceptId1 + conceptId2 + 1) / 2 + conceptId2;
+		long pairing = (long) (conceptId1 + conceptId2) * (conceptId1 + conceptId2 + 1) / 2
+				+ conceptId2;
 		return (int) (pairing % 2147483647);
 	}
 

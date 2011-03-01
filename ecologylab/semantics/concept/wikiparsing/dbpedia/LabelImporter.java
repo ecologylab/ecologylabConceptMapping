@@ -1,7 +1,6 @@
 package ecologylab.semantics.concept.wikiparsing.dbpedia;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -10,19 +9,20 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.junit.Test;
 
-import ecologylab.semantics.concept.database.DatabaseFacade;
+import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.orm.DbpRecord;
 
+/**
+ * Import Dbpedia labels into the database. One record corresponds a Dbpedia label with a Wikipedia
+ * article title.
+ * 
+ * @author quyin
+ *
+ */
 public class LabelImporter extends AbstractImporter
 {
 
 	public final static Pattern	labelPattern	= Pattern.compile("<([^>]+)> <[^>]+> \"(.*?)\"@en .");
-
-	private PreparedStatement		st;
-
-	public LabelImporter() throws SQLException
-	{
-		st = DatabaseFacade.get().getPreparedStatement("INSERT INTO dbp_titles VALUES (?, ?);");
-	}
 
 	@Override
 	public void parseLine(String line)
@@ -52,22 +52,27 @@ public class LabelImporter extends AbstractImporter
 
 	private void addTitle(String dbpName, String wikiTitle) throws SQLException
 	{
-		st.setString(1, dbpName);
-		st.setString(2, wikiTitle);
-		st.executeUpdate();
+		DbpRecord dr = (DbpRecord) SessionManager.getSession().get(DbpRecord.class, dbpName);
+		if (dr == null)
+		{
+			dr = new DbpRecord();
+			dr.setDbpTitle(dbpName);
+			dr.setWikiTitle(wikiTitle);
+			SessionManager.getSession().save(dr);
+		}
 	}
 
-	public void postParse()
+	@Override
+	protected void preParse()
 	{
-		try
-		{
-			st.close();
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		SessionManager.getSession().beginTransaction();
+	}
+
+	@Override
+	protected void postParse()
+	{
+		SessionManager.getSession().getTransaction().commit();
+		SessionManager.getSession().flush();
 	}
 
 	@Test
@@ -88,7 +93,7 @@ public class LabelImporter extends AbstractImporter
 	public static void main(String[] args) throws IOException, SQLException
 	{
 		LabelImporter li = new LabelImporter();
-		li.parse("C:/wikidata/labels_en.nt");
+		li.parse("D:/wikidata/dbpedia/labels_en.nt");
 	}
 
 }

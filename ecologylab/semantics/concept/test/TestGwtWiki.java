@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparser;
+package ecologylab.semantics.concept.test;
 
 import java.io.File;
 import java.io.FileWriter;

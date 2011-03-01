@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing;
+package ecologylab.semantics.concept.prepare;
 
 import java.io.File;
 import java.io.IOException;

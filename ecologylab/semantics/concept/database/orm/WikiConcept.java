@@ -1,25 +1,39 @@
 package ecologylab.semantics.concept.database.orm;
 
-public class WikiConcept
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="wiki_concepts")
+public class WikiConcept implements Serializable
 {
 
+	@Id
+	@Column(name="id", nullable=false)
 	private int	id;
+
+	@Column(name="title", nullable=false)
+	private String	title;
+
+	/**
+	 * here text are pure text (after rendering to HTML), not wiki markups.
+	 */
+	@Column(name="text", nullable=false)
+	private String	text;
 
 	public int getId()
 	{
 		return id;
 	}
 
-	private void setId(int id)
+	public void setId(int id)
 	{
 		this.id = id;
 	}
-
-	private int			wikiId;
-
-	private String	title;
-
-	private String	text;
 
 	public void setTitle(String title)
 	{
@@ -41,22 +55,12 @@ public class WikiConcept
 		return text;
 	}
 
-	public void setWikiId(int wikiId)
-	{
-		this.wikiId = wikiId;
-	}
-
-	public int getWikiId()
-	{
-		return wikiId;
-	}
-
 	@Override
 	public boolean equals(Object obj)
 	{
 		if (obj != null && obj instanceof WikiConcept)
 		{
-			if (wikiId == ((WikiConcept) obj).wikiId)
+			if (id == ((WikiConcept) obj).id)
 				return true;
 		}
 		return false;
@@ -65,7 +69,7 @@ public class WikiConcept
 	@Override
 	public int hashCode()
 	{
-		return wikiId;
+		return id;
 	}
 
 }

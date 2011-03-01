@@ -1,23 +1,27 @@
 package ecologylab.semantics.concept.wikiparsing.dbpedia;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ecologylab.semantics.concept.database.DatabaseFacade;
+import org.hibernate.Session;
 
+import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.orm.DbpRecord;
+import ecologylab.semantics.concept.database.orm.WikiRedirect;
+
+/**
+ * Import Dbpedia redirect records. It will use Dbpedia title records to store redirects with
+ * Wikipedia article titles, i.e. each redirect record stored into the database describes a redirect
+ * from Wikipedia Article 1 to Wikipedia Article 2.
+ * 
+ * @author quyin
+ *
+ */
 public class RedirectImporter extends AbstractImporter
 {
 	public final static Pattern	redirectPattern	= Pattern.compile("<([^>]+)> <[^>]+> <([^>]+)> .");
-
-	private PreparedStatement		st;
-
-	public RedirectImporter() throws SQLException
-	{
-		st = DatabaseFacade.get().getPreparedStatement("INSERT INTO dbp_redirects VALUES (?, ?);");
-	}
 
 	@Override
 	public void parseLine(String line)
@@ -47,28 +51,34 @@ public class RedirectImporter extends AbstractImporter
 
 	private void addRedirect(String from, String to) throws SQLException
 	{
-		st.setString(1, from);
-		st.setString(2, to);
-		st.execute();
+		Session sess = SessionManager.getSession();
+		
+		DbpRecord drFrom = (DbpRecord) sess.get(DbpRecord.class, from);
+		DbpRecord drTo = (DbpRecord) sess.get(DbpRecord.class, to);
+		if (drFrom != null && drTo != null)
+		{
+			WikiRedirect wr = new WikiRedirect();
+			wr.setFromTitle(drFrom.getWikiTitle());
+			wr.setToTitle(drTo.getWikiTitle());
+			sess.save(wr);
+		}
 	}
 	
-	public void postParse()
+	protected void preParse()
 	{
-		try
-		{
-			st.close();
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		SessionManager.getSession().beginTransaction();
+	}
+	
+	protected void postParse()
+	{
+		SessionManager.getSession().getTransaction().commit();
+		SessionManager.getSession().flush();
 	}
 
 	public static void main(String[] args) throws IOException, SQLException
 	{
 		RedirectImporter ri = new RedirectImporter();
-		ri.parse("C:/wikidata/redirects_en.nt");
+		ri.parse("C:/wikidata/dbpedia/redirects_en.nt");
 	}
 
 }

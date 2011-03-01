@@ -1,22 +1,23 @@
 package ecologylab.semantics.concept.database.orm;
 
-public class WikiRedirect
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "wiki_redirects")
+public class WikiRedirect implements Serializable
 {
 
-	private int	id;
-
-	public int getId()
-	{
-		return id;
-	}
-
-	private void setId(int id)
-	{
-		this.id = id;
-	}
-
+	@Id
+	@Column(name = "from_title", nullable = false)
 	private String	fromTitle;
 
+	@Id
+	@Column(name = "to_title", nullable = false)
 	private String	toTitle;
 
 	public String getFromTitle()

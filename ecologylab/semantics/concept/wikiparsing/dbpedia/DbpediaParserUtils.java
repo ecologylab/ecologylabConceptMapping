@@ -1,5 +1,11 @@
 package ecologylab.semantics.concept.wikiparsing.dbpedia;
 
+/**
+ * Holding useful information for Dbpedia parsers.
+ * 
+ * @author quyin
+ *
+ */
 public class DbpediaParserUtils
 {
 
