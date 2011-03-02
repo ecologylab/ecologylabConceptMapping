@@ -13,7 +13,7 @@ import ecologylab.semantics.concept.utils.TextNormalizer;
  * readable texts), and store into the database.
  * 
  * @author quyin
- *
+ * 
  */
 public class WikiConceptHandler
 {
@@ -24,19 +24,15 @@ public class WikiConceptHandler
 
 	private WikiHtmlPreprocessor	htmlPreprocessor;
 
-	private TextNormalizer	textPostprocessor;
+	private TextNormalizer				textNormalizer;
 
 	public WikiConceptHandler() throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException
 	{
-		this.renderer = (WikiMarkupRenderer) Configs.getObject("prep.wiki_markup_renderer",
-				WikiMarkupRenderer.class);
-		this.htmlPreprocessor = (WikiHtmlPreprocessor) Configs.getObject("prep.wiki_html_preprocessor",
-				WikiHtmlPreprocessor.class);
-		this.htmlParser = (WikiHtmlParser) Configs.getObject("prep.wiki_html_parser",
-				WikiHtmlParser.class);
-		this.textPostprocessor = (TextNormalizer) Configs.getObject(
-				"prep.wiki_text_postprocessor", TextNormalizer.class);
+		this.renderer = (WikiMarkupRenderer) Configs.getObject("prep.wiki_markup_renderer", WikiMarkupRenderer.class);
+		this.htmlPreprocessor = (WikiHtmlPreprocessor) Configs.getObject("prep.wiki_html_preprocessor", WikiHtmlPreprocessor.class);
+		this.htmlParser = (WikiHtmlParser) Configs.getObject("prep.wiki_html_parser", WikiHtmlParser.class);
+		this.textNormalizer = (TextNormalizer) Configs.getObject("prep.wiki_text_postprocessor", TextNormalizer.class);
 	}
 
 	/**
@@ -57,9 +53,9 @@ public class WikiConceptHandler
 		String html1 = htmlPreprocessor.preprocess(html);
 		htmlParser.parse(html1);
 		String text = htmlParser.getText();
-		String text1 = textPostprocessor.normalize(text);
+		String text1 = textNormalizer.normalize(text);
 		List<WikiLink> links = htmlParser.getLinks();
-		
+
 		SessionManager.getSession().beginTransaction();
 
 		WikiConcept concept = new WikiConcept();
@@ -71,10 +67,16 @@ public class WikiConceptHandler
 		for (WikiLink link : links)
 		{
 			String surface = link.getSurface();
-			link.setSurface(textPostprocessor.normalize(surface));
+			link.setSurface(textNormalizer.normalize(surface));
 			SessionManager.getSession().save(link);
 		}
 
 		SessionManager.getSession().getTransaction().commit();
+		
+		SessionManager.getSession().evict(concept);
+		for (WikiLink link : links)
+		{
+			SessionManager.getSession().evict(link);
+		}
 	}
 }

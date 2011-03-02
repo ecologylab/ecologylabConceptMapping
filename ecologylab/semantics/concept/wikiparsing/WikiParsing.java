@@ -9,6 +9,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import ecologylab.semantics.concept.database.SessionManager;
+
 /**
  * The entry class to parsing Wikipedia dump.
  * 
@@ -64,6 +66,8 @@ public class WikiParsing
 		xr.setContentHandler(wpsh);
 
 		xr.parse(new InputSource(new FileInputStream(pargsArticleFilePath)));
+		
+		SessionManager.getSession().flush();
 	}
 
 }
