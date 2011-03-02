@@ -80,7 +80,7 @@ public class RedirectImporter extends AbstractImporter
 	public static void main(String[] args) throws IOException, SQLException
 	{
 		RedirectImporter ri = new RedirectImporter();
-		ri.parse("C:/wikidata/dbpedia/redirects_en.nt");
+		ri.parse("D:/wikidata/dbpedia/redirects_en.nt");
 	}
 
 }
