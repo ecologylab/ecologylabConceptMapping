@@ -56,15 +56,20 @@ public class RedirectImporter extends AbstractImporter
 		
 		DbpRecord drFrom = (DbpRecord) sess.get(DbpRecord.class, from);
 		DbpRecord drTo = (DbpRecord) sess.get(DbpRecord.class, to);
+		WikiRedirect wr = null;
 		if (drFrom != null && drTo != null)
 		{
-			WikiRedirect wr = new WikiRedirect();
+			wr = new WikiRedirect();
 			wr.setFromTitle(drFrom.getWikiTitle());
 			wr.setToTitle(drTo.getWikiTitle());
 			sess.save(wr);
 		}
 		
 		sess.getTransaction().commit();
+		sess.evict(drFrom);
+		sess.evict(drTo);
+		if (wr != null)
+			sess.evict(wr);
 	}
 	
 	protected void postParse()

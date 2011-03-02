@@ -54,12 +54,17 @@ public class LabelImporter extends AbstractImporter
 	{
 		SessionManager.getSession().beginTransaction();
 		
-		DbpRecord dr = new DbpRecord();
-		dr.setDbpTitle(dbpName);
-		dr.setWikiTitle(wikiTitle);
-		SessionManager.getSession().save(dr);
+		DbpRecord dr = (DbpRecord) SessionManager.getSession().get(DbpRecord.class, dbpName);
+		if (dr == null)
+		{
+			dr = new DbpRecord();
+			dr.setDbpTitle(dbpName);
+			dr.setWikiTitle(wikiTitle);
+			SessionManager.getSession().save(dr);
+		}
 		
 		SessionManager.getSession().getTransaction().commit();
+		SessionManager.getSession().evict(dr);
 	}
 
 	@Override
