@@ -1,10 +1,6 @@
 package ecologylab.semantics.concept.test;
 
-import java.io.File;
-
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.classic.Session;
+import org.hibernate.Session;
 
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.Commonness;
@@ -15,9 +11,7 @@ public class TestORM
 
 	static void test1()
 	{
-		Configuration config = new Configuration();
-		SessionFactory sessFact = config.configure(new File("hibernate.cfg.xml")).buildSessionFactory();
-		Session sess = sessFact.openSession();
+		Session sess = SessionManager.getSession();
 		sess.beginTransaction();
 
 		Commonness comm = new Commonness();
@@ -66,7 +60,7 @@ public class TestORM
 
 	public static void main(String[] args)
 	{
-		test2();
+		test1();
 	}
 
 }

@@ -13,6 +13,8 @@ import ecologylab.semantics.concept.database.orm.WikiLink;
 public class WikiHtmlParser
 {
 
+	private boolean parsed = false;
+	
 	/**
 	 * Parse given rendered wiki HTML codes.
 	 * 
@@ -21,6 +23,7 @@ public class WikiHtmlParser
 	public void parse(String wikiHtml)
 	{
 		// TODO
+		parsed = true;
 	}
 
 	/**
@@ -30,6 +33,9 @@ public class WikiHtmlParser
 	 */
 	public List<WikiLink> getLinks()
 	{
+		if (!parsed)
+			return null;
+		
 		// TODO
 		return null;
 	}
@@ -42,6 +48,9 @@ public class WikiHtmlParser
 	 */
 	public String getText()
 	{
+		if (!parsed)
+			return null;
+		
 		// TODO
 		return null;
 	}

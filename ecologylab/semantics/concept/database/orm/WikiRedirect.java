@@ -16,7 +16,6 @@ public class WikiRedirect implements Serializable
 	@Column(name = "from_title", nullable = false)
 	private String	fromTitle;
 
-	@Id
 	@Column(name = "to_title", nullable = false)
 	private String	toTitle;
 

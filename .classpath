@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="data/|lib/|model/|scripts/|target/|scripts/" kind="src" path=""/>
+	<classpathentry excluding="data/|lib/|model/|scripts/|target/|scripts/|bliki-core/java/|bliki-core/java/|bliki-core/resources/|bliki-core/resources/|resources/" kind="src" path=""/>
 	<classpathentry kind="src" path="scripts"/>
+	<classpathentry kind="src" path="bliki-core/java"/>
+	<classpathentry kind="src" path="bliki-core/resources"/>
+	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/bliki-core-3.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.0-beta.jar"/>
 	<classpathentry kind="lib" path="lib/ehcache-core-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/postgresql-9.0-801.jdbc4.jar"/>

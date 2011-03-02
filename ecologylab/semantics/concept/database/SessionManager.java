@@ -24,7 +24,7 @@ public class SessionManager extends Debug
 		System.err.println("\nSetting up ...\n\n");
 		
 		Configuration config = new Configuration();
-		SessionFactory sessionFactory = config.configure(new File("hibernate.cfg.xml")).buildSessionFactory();
+		SessionFactory sessionFactory = config.configure("hibernate.cfg.xml").buildSessionFactory();
 		session = sessionFactory.openSession();
 		
 		// register a clean up hook
