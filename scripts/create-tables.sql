@@ -10,7 +10,7 @@ CREATE TABLE dbp_records (
 
 DROP TABLE IF EXISTS wiki_redirects;
 CREATE TABLE wiki_redirects (
-	from_title VARCHAR NOT NULL,
+	from_title VARCHAR PRIMARY KEY,
 	to_title VARCHAR NOT NULL
 ) WITHOUT OIDS;
 
@@ -21,9 +21,11 @@ CREATE TABLE wiki_concepts (
 	text TEXT NOT NULL
 ) WITHOUT OIDS;
 
+DROP SEQUENCE IF EXISTS wiki_link_seq;
+CREATE SEQUENCE wiki_link_seq;
 DROP TABLE IF EXISTS wiki_links;
 CREATE TABLE wiki_links (
-	seq_id INTEGER PRIMARY KEY,
+	seq_id INTEGER PRIMARY KEY DEFAULT nextval('wiki_link_seq'),
 	from_id INTEGER NOT NULL,
 	to_id INTEGER NOT NULL,
 	surface VARCHAR NOT NULL

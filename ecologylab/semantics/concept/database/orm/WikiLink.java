@@ -4,16 +4,23 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 
 @Entity
 @Table(name = "wiki_links")
 public class WikiLink implements Serializable
 {
 
+	// @Generated(value = GenerationTime.INSERT)
 	@Id
-	@Column(name = "seq_id", nullable = false)
+	@Column(name = "seq_id", nullable = false, insertable = false, updatable = false)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int	seqId;
 
 	@Column(name = "from_id", nullable = false)
@@ -28,11 +35,6 @@ public class WikiLink implements Serializable
 	public int getSeqId()
 	{
 		return seqId;
-	}
-
-	public void setSeqId(int seqId)
-	{
-		this.seqId = seqId;
 	}
 
 	public String getSurface()
