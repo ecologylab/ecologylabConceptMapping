@@ -21,7 +21,7 @@ public class WikiHtmlPreprocessor
 	private static final Pattern pWikiFunction = Pattern.compile("\\{\\{[^}]*}}");
 	
 	private static final Pattern pWikiLanguageLinks = Pattern.compile("<p>\\s*(<a href=\"http://[a-z-]+\\.wikipedia\\.org/wiki/[^\"]+\">[a-z-]+:[^<]+</a>\\s*)+</p>");
-
+	
 	/**
 	 * Preprocess HTML codes. Removing wiki functions and language links.
 	 * 
@@ -32,6 +32,8 @@ public class WikiHtmlPreprocessor
 	{
 		StringBuffer sb = new StringBuffer();
 		
+		html = html.replaceAll("\\s+", " ");
+		
 		Matcher m = pWikiFunction.matcher(html);
 		while (m.find())
 		{
@@ -39,6 +41,7 @@ public class WikiHtmlPreprocessor
 		}
 		m.appendTail(sb);
 		html = sb.toString();
+		sb.setLength(0);
 		
 		m = pWikiLanguageLinks.matcher(html);
 		while (m.find())
@@ -47,6 +50,9 @@ public class WikiHtmlPreprocessor
 		}
 		m.appendTail(sb);
 		html = sb.toString();
+		sb.setLength(0);
+		
+		html = html.replace("<div", "<span").replace("</div>", "</span>");
 		
 		return html;
 	}
@@ -55,7 +61,8 @@ public class WikiHtmlPreprocessor
 	public void test() throws IOException
 	{
 		String html = TextUtils.loadTxtAsString("usa.html");
-		TextUtils.saveStringToTxt(preprocess(html), "usa1.html");
+		String pp = preprocess(html);
+		TextUtils.saveStringToTxt(pp, "usa1.html");
 	}
 
 }
