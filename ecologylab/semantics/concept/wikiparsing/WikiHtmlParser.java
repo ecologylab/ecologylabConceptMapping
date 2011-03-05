@@ -1,8 +1,6 @@
 package ecologylab.semantics.concept.wikiparsing;
 
-import java.util.List;
-
-import ecologylab.semantics.concept.database.orm.WikiLink;
+import ecologylab.semantics.generated.library.WikipediaPageType;
 
 /**
  * Parse rendered Wiki HTML codes into pure text and wiki-links.
@@ -10,49 +8,16 @@ import ecologylab.semantics.concept.database.orm.WikiLink;
  * @author quyin
  * 
  */
-public class WikiHtmlParser
+public interface WikiHtmlParser
 {
 
-	private boolean parsed = false;
-	
 	/**
-	 * Parse given rendered wiki HTML codes.
+	 * Parse rendered wiki HTML codes.
 	 * 
 	 * @param wikiHtml
+	 * @return a WikipediaPageForParsing object that can be used by the application. null if the
+	 *         parsing failed.
 	 */
-	public void parse(String wikiHtml)
-	{
-		// TODO
-		parsed = true;
-	}
-
-	/**
-	 * Get parsed wiki-links. Should be called after calling parse(), or null will be returned.
-	 * 
-	 * @return
-	 */
-	public List<WikiLink> getLinks()
-	{
-		if (!parsed)
-			return null;
-		
-		// TODO
-		return null;
-	}
-
-	/**
-	 * Get parsed wiki text (pure text not HTML). Should be called after calling parse(), or null will
-	 * be returned.
-	 * 
-	 * @return
-	 */
-	public String getText()
-	{
-		if (!parsed)
-			return null;
-		
-		// TODO
-		return null;
-	}
+	public WikipediaPageType parse(String wikiHtml);
 
 }

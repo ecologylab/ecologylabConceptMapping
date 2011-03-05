@@ -1,12 +1,18 @@
 package ecologylab.semantics.concept.wikiparsing;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.Session;
 
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiLink;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.TextNormalizer;
+import ecologylab.semantics.generated.library.Anchor;
+import ecologylab.semantics.generated.library.Paragraph;
+import ecologylab.semantics.generated.library.WikipediaPageType;
 
 /**
  * Handle wiki concepts parsed from wiki dump file. Convert them to final form (wiki markups to
@@ -29,10 +35,14 @@ public class WikiConceptHandler
 	public WikiConceptHandler() throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException
 	{
-		this.renderer = (WikiMarkupRenderer) Configs.getObject("prep.wiki_markup_renderer", WikiMarkupRenderer.class);
-		this.htmlPreprocessor = (WikiHtmlPreprocessor) Configs.getObject("prep.wiki_html_preprocessor", WikiHtmlPreprocessor.class);
-		this.htmlParser = (WikiHtmlParser) Configs.getObject("prep.wiki_html_parser", WikiHtmlParser.class);
-		this.textNormalizer = (TextNormalizer) Configs.getObject("prep.wiki_text_postprocessor", TextNormalizer.class);
+		this.renderer = (WikiMarkupRenderer) Configs.getObject("prep.wiki_markup_renderer",
+				WikiMarkupRenderer.class);
+		this.htmlPreprocessor = (WikiHtmlPreprocessor) Configs.getObject("prep.wiki_html_preprocessor",
+				WikiHtmlPreprocessor.class);
+		this.htmlParser = (WikiHtmlParser) Configs.getObject("prep.wiki_html_parser",
+				WikiHtmlParser.class);
+		this.textNormalizer = (TextNormalizer) Configs.getObject("prep.wiki_text_postprocessor",
+				TextNormalizer.class);
 	}
 
 	/**
@@ -51,32 +61,52 @@ public class WikiConceptHandler
 
 		String html = renderer.render(markups);
 		String html1 = htmlPreprocessor.preprocess(html);
-		htmlParser.parse(html1);
-		String text = htmlParser.getText();
-		String text1 = textNormalizer.normalize(text);
-		List<WikiLink> links = htmlParser.getLinks();
+		WikipediaPageType page = htmlParser.parse(html1);
 
-		SessionManager.getSession().beginTransaction();
+		Session session = SessionManager.getSession();
+		session.beginTransaction();
+
+		StringBuilder sb = new StringBuilder();
+		List<WikiLink> links = new ArrayList<WikiLink>();
+
+		for (Paragraph para : page.getParagraphs())
+		{
+			sb.append(para.getParagraphText()).append(" ");
+
+			for (Anchor anchor : para.getAnchors())
+			{
+				String surface = anchor.getAnchorText();
+				String target = anchor.getTargetTitle();
+				int toId = getIdForTitle(target, session);
+
+				WikiLink link = new WikiLink();
+				link.setFromId(id);
+				link.setToId(toId);
+				link.setSurface(textNormalizer.normalize(surface));
+				session.save(link);
+				links.add(link);
+			}
+		}
 
 		WikiConcept concept = new WikiConcept();
 		concept.setId(id);
 		concept.setTitle(title);
-		concept.setText(text1);
-		SessionManager.getSession().save(concept);
+		concept.setText(textNormalizer.normalize(sb.toString()));
+		session.save(concept);
 
+		session.getTransaction().commit();
+
+		session.evict(concept);
 		for (WikiLink link : links)
 		{
-			String surface = link.getSurface();
-			link.setSurface(textNormalizer.normalize(surface));
-			SessionManager.getSession().save(link);
-		}
-
-		SessionManager.getSession().getTransaction().commit();
-		
-		SessionManager.getSession().evict(concept);
-		for (WikiLink link : links)
-		{
-			SessionManager.getSession().evict(link);
+			session.evict(link);
 		}
 	}
+
+	private int getIdForTitle(String target, Session session)
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }
