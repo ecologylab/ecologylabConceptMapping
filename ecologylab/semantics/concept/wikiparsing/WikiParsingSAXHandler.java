@@ -23,7 +23,7 @@ public class WikiParsingSAXHandler extends DefaultHandler
 			IllegalAccessException
 	{
 		this.conceptHandler = (WikiConceptHandler) Configs.getObject("prep.wiki_concept_handler",
-				WikiConceptHandler.class);
+				WikiConceptHandlerInitial.class);
 	}
 
 	private Stack<String>	parentTags	= new Stack<String>();

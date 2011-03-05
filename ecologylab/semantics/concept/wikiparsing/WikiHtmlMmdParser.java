@@ -1,11 +1,16 @@
 package ecologylab.semantics.concept.wikiparsing;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
+import org.junit.Test;
 import org.w3c.tidy.Tidy;
 
 import ecologylab.semantics.actions.SemanticActionHandler;
+import ecologylab.semantics.concept.service.Configs;
+import ecologylab.semantics.concept.utils.TextUtils;
 import ecologylab.semantics.connectors.InfoCollector;
 import ecologylab.semantics.documentparsers.ParserBase;
 import ecologylab.semantics.generated.library.GeneratedMetadataTranslationScope;
@@ -13,6 +18,8 @@ import ecologylab.semantics.generated.library.WikipediaPageType;
 import ecologylab.semantics.metadata.builtins.Document;
 import ecologylab.semantics.metametadata.MetaMetadata;
 import ecologylab.semantics.metametadata.MetaMetadataRepository;
+import ecologylab.semantics.metametadata.example.MyInfoCollector;
+import ecologylab.serialization.SIMPLTranslationException;
 import ecologylab.serialization.TranslationScope;
 
 /**
@@ -70,8 +77,12 @@ public class WikiHtmlMmdParser implements WikiHtmlParser
 
 	private MmdParser	mmdParser;
 
-	public WikiHtmlMmdParser(InfoCollector infoCollector)
+	public WikiHtmlMmdParser()
 	{
+		File repo = Configs.getFile("prep.mmd_repository");
+		MetaMetadataRepository repository = MetaMetadataRepository.load(repo);
+		TranslationScope mdTScope = GeneratedMetadataTranslationScope.get();
+		InfoCollector infoCollector = new MyInfoCollector(repository, mdTScope);
 		mmdParser = new MmdParser(infoCollector);
 	}
 
@@ -79,6 +90,14 @@ public class WikiHtmlMmdParser implements WikiHtmlParser
 	public WikipediaPageType parse(String wikiHtml)
 	{
 		return mmdParser.parse(wikiHtml);
+	}
+
+	@Test
+	public void test() throws IOException, SIMPLTranslationException
+	{
+		String wikiHtml = TextUtils.loadTxtAsString("usa1.html");
+		WikipediaPageType md = parse(wikiHtml);
+		md.serialize(System.out);
 	}
 
 }

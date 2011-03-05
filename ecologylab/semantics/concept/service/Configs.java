@@ -23,7 +23,7 @@ public class Configs extends Debug
 				);
 		try
 		{
-			configs = PrefSet.load("resources/concept_mapping.conf", translationScope);
+			configs = PrefSet.load("concept_mapping.conf", translationScope);
 			configs.serialize(System.out, ElementState.FORMAT.XML);
 		}
 		catch (SIMPLTranslationException e)
