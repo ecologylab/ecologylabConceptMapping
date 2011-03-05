@@ -5,18 +5,13 @@ import info.bliki.wiki.model.WikiModel;
 /**
  * Render MediaWiki markups into HTML, using bliki engine.
  * 
+ * Thread safe.
+ * 
  * @author quyin
  * 
  */
 public class WikiMarkupRenderer
 {
-
-	private WikiModel	wikiModel;
-
-	public WikiMarkupRenderer()
-	{
-		wikiModel = new WikiModel("http://en.wikipedia.org/wiki/${image}", "http://en.wikipedia.org/wiki/${title}");
-	}
 
 	/**
 	 * Render MediaWiki markups into HTML.
@@ -26,6 +21,7 @@ public class WikiMarkupRenderer
 	 */
 	public String render(String wikiMarkups)
 	{
+		WikiModel wikiModel = new WikiModel("http://en.wikipedia.org/wiki/${image}", "http://en.wikipedia.org/wiki/${title}");
 		String wikiHtml = wikiModel.render(wikiMarkups);
 		StringBuilder sb = new StringBuilder();
 		sb.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n");

@@ -18,4 +18,9 @@ public interface WikiConceptHandler
 	 */
 	void handle(int id, String title, String markups);
 	
+	/**
+	 * Tell the handler that the parsing has been done -- no more new tasks.
+	 */
+	void finish();
+	
 }

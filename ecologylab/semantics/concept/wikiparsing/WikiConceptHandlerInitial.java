@@ -36,4 +36,11 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 		session.close();
 	}
 
+	@Override
+	public void finish()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
 }

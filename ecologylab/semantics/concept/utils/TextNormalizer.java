@@ -8,6 +8,8 @@ import org.junit.Test;
 /**
  * Normalize texts.
  * 
+ * Thread safe.
+ * 
  * @author quyin
  * 
  */

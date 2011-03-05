@@ -25,28 +25,40 @@ import ecologylab.serialization.TranslationScope;
 /**
  * Parsing wiki html with meta-metadata.
  * 
+ * Thread safe.
+ * 
  * @author quyin
  * 
  */
 public class WikiHtmlMmdParser implements WikiHtmlParser
 {
 
+	private static MetaMetadata		wikiMmd;
+
+	private static InfoCollector	theInfoCollector;
+
+	static
+	{
+		File repo = Configs.getFile("prep.mmd_repository");
+		MetaMetadataRepository repository = MetaMetadataRepository.load(repo);
+		wikiMmd = repository.getByTagName("wikipedia_page_for_parsing");
+		theInfoCollector = new MyInfoCollector(repository, GeneratedMetadataTranslationScope.get());
+	}
+
+	/**
+	 * The actual class that parses HTML codes.
+	 * 
+	 * @author quyin
+	 * 
+	 */
 	private static class MmdParser extends ParserBase
 	{
 
-		private MetaMetadataRepository	repository;
+		private Tidy	tidy	= new Tidy();
 
-		private MetaMetadata						wikiMmd;
-
-		private Tidy										tidy	= new Tidy();
-
-		public MmdParser(InfoCollector infoCollector)
+		public MmdParser()
 		{
-			super(infoCollector);
-			// TODO Auto-generated constructor stub
-
-			repository = infoCollector.metaMetaDataRepository();
-			wikiMmd = repository.getByTagName("wikipedia_page_for_parsing");
+			super(theInfoCollector);
 		}
 
 		@Override
@@ -56,6 +68,12 @@ public class WikiHtmlMmdParser implements WikiHtmlParser
 			return null;
 		}
 
+		/**
+		 * The entry method for parsing.
+		 * 
+		 * @param wikiHtml
+		 * @return
+		 */
 		public WikipediaPageType parse(String wikiHtml)
 		{
 			WikipediaPageType page = new WikipediaPageType(wikiMmd);
@@ -67,6 +85,10 @@ public class WikiHtmlMmdParser implements WikiHtmlParser
 			return null;
 		}
 
+		/**
+		 * This method is overridden in order to provide the generated metadata translation scope
+		 * without presence of a container.
+		 */
 		@Override
 		public TranslationScope getMetadataTranslationScope()
 		{
@@ -75,20 +97,10 @@ public class WikiHtmlMmdParser implements WikiHtmlParser
 
 	}
 
-	private MmdParser	mmdParser;
-
-	public WikiHtmlMmdParser()
-	{
-		File repo = Configs.getFile("prep.mmd_repository");
-		MetaMetadataRepository repository = MetaMetadataRepository.load(repo);
-		TranslationScope mdTScope = GeneratedMetadataTranslationScope.get();
-		InfoCollector infoCollector = new MyInfoCollector(repository, mdTScope);
-		mmdParser = new MmdParser(infoCollector);
-	}
-
 	@Override
 	public WikipediaPageType parse(String wikiHtml)
 	{
+		MmdParser mmdParser = new MmdParser();
 		return mmdParser.parse(wikiHtml);
 	}
 

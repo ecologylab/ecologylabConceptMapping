@@ -53,26 +53,29 @@ public class WikiParsingSAXHandler extends DefaultHandler
 	{
 		parentTags.pop();
 
-		String parentTag = parentTags.peek();
-		if (parentTag.equals("page") && qName.equals("title"))
+		if (parentTags.size() > 0)
 		{
-			wikiTitle = currentText.toString();
-		}
-		else if (parentTag.equals("page") && qName.equals("id"))
-		{
-			wikiId = Integer.parseInt(currentText.toString());
-		}
-		else if (parentTag.equals("revision") && qName.equals("text"))
-		{
-			conceptHandler.handle(wikiId, wikiTitle, currentText.toString());
-			tick(wikiTitle);
+			String parentTag = parentTags.peek();
+			if (parentTag.equals("page") && qName.equals("title"))
+			{
+				wikiTitle = currentText.toString();
+			}
+			else if (parentTag.equals("page") && qName.equals("id"))
+			{
+				wikiId = Integer.parseInt(currentText.toString());
+			}
+			else if (parentTag.equals("revision") && qName.equals("text"))
+			{
+				conceptHandler.handle(wikiId, wikiTitle, currentText.toString());
+				tick(wikiTitle);
+			}
 		}
 	}
 
 	@Override
 	public void endDocument()
 	{
-		
+		conceptHandler.finish();
 	}
 
 	/**

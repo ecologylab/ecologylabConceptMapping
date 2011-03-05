@@ -12,6 +12,8 @@ import ecologylab.semantics.concept.utils.TextUtils;
  * Preprocess HTML codes before sending it to the HTML parser. Mainly removing wiki functions in
  * {{ }} and language links in the end.
  * 
+ * Thread safe.
+ * 
  * @author quyin
  *
  */
