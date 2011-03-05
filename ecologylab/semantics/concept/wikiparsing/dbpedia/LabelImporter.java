@@ -72,7 +72,6 @@ public class LabelImporter extends AbstractImporter
 		}
 		
 		session.getTransaction().commit();
-		session.evict(dr);
 	}
 
 	@Override

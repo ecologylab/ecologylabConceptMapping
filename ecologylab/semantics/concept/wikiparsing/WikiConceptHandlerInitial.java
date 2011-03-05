@@ -38,8 +38,6 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 		}
 
 		session.getTransaction().commit();
-		if (concept != null)
-			session.evict(concept);
 	}
 
 	@Override

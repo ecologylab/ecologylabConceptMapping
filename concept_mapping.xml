@@ -1,8 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <pref_set>
   <pref_string name="prep.wiki_concept_handler" value="ecologylab.semantics.concept.wikiparsing.WikiConceptHandlerInitial" />
   <pref_file name="prep.mmd_repository" value="../ecologylabSemantics/repository" />
-  
-	<pref_int name="db.total_concept_count" value="3000000" />
 
-	<pref_string name="train.trainset_preparer" value="ecologylab.semantics.concept.train.DetectionTrainingSetPreparer" />
+  <pref_int name="db.total_concept_count" value="3000000" />
+
+  <pref_string name="train.trainset_preparer" value="ecologylab.semantics.concept.train.DetectionTrainingSetPreparer" />
 </pref_set>

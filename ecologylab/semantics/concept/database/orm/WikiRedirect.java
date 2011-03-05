@@ -2,15 +2,20 @@ package ecologylab.semantics.concept.database.orm;
 
 import java.io.Serializable;
 
+import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.hibernate.Session;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 @Entity
 @Table(name = "wiki_redirects")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class WikiRedirect implements Serializable
 {
 
@@ -61,9 +66,7 @@ public class WikiRedirect implements Serializable
 	public static String getRedirected(String fromTitle, Session openSession)
 	{
 		WikiRedirect redirect = (WikiRedirect) openSession.get(WikiRedirect.class, fromTitle);
-		String redirected = redirect != null ? redirect.getToTitle() : null;
-		openSession.evict(redirect);
-		return redirected;
+		return redirect != null ? redirect.getToTitle() : null;
 	}
 
 }

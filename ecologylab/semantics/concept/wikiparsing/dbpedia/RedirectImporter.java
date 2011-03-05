@@ -72,10 +72,6 @@ public class RedirectImporter extends AbstractImporter
 		}
 		
 		session.getTransaction().commit();
-		session.evict(drFrom);
-		session.evict(drTo);
-		if (wr != null)
-			session.evict(wr);
 	}
 	
 	protected void postParse()

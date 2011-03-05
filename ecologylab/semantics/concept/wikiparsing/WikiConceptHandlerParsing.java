@@ -1,8 +1,5 @@
 package ecologylab.semantics.concept.wikiparsing;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
 
@@ -71,7 +68,6 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 			return;
 
 		StringBuilder sb = new StringBuilder();
-		List<WikiLink> links = new ArrayList<WikiLink>();
 
 		for (Paragraph para : page.getParagraphs())
 		{
@@ -89,7 +85,6 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 					link.setToId(toId);
 					link.setSurface(textNormalizer.normalize(surface));
 					session.save(link);
-					links.add(link);
 				}
 			}
 		}
@@ -99,12 +94,6 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 		session.update(concept);
 
 		session.getTransaction().commit();
-
-		session.evict(concept);
-		for (WikiLink link : links)
-		{
-			session.evict(link);
-		}
 	}
 
 	private int getIdForTitle(String target)
