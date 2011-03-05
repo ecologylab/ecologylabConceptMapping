@@ -23,6 +23,13 @@ public class RedirectImporter extends AbstractImporter
 {
 	public final static Pattern	redirectPattern	= Pattern.compile("<([^>]+)> <[^>]+> <([^>]+)> .");
 
+	private Session session;
+	
+	public RedirectImporter()
+	{
+		session = SessionManager.getSession();
+	}
+	
 	@Override
 	public void parseLine(String line)
 	{
@@ -51,30 +58,30 @@ public class RedirectImporter extends AbstractImporter
 
 	private void addRedirect(String from, String to) throws SQLException
 	{
-		Session sess = SessionManager.getSession();
-		sess.beginTransaction();
+		session.beginTransaction();
 		
-		DbpRecord drFrom = (DbpRecord) sess.get(DbpRecord.class, from);
-		DbpRecord drTo = (DbpRecord) sess.get(DbpRecord.class, to);
-		WikiRedirect wr = (WikiRedirect) sess.get(WikiRedirect.class, drFrom.getWikiTitle());
+		DbpRecord drFrom = (DbpRecord) session.get(DbpRecord.class, from);
+		DbpRecord drTo = (DbpRecord) session.get(DbpRecord.class, to);
+		WikiRedirect wr = (WikiRedirect) session.get(WikiRedirect.class, drFrom.getWikiTitle());
 		if (drFrom != null && drTo != null && wr == null)
 		{
 			wr = new WikiRedirect();
 			wr.setFromTitle(drFrom.getWikiTitle());
 			wr.setToTitle(drTo.getWikiTitle());
-			sess.save(wr);
+			session.save(wr);
 		}
 		
-		sess.getTransaction().commit();
-		sess.evict(drFrom);
-		sess.evict(drTo);
+		session.getTransaction().commit();
+		session.evict(drFrom);
+		session.evict(drTo);
 		if (wr != null)
-			sess.evict(wr);
+			session.evict(wr);
 	}
 	
 	protected void postParse()
 	{
-		SessionManager.getSession().flush();
+		session.flush();
+		session.close();
 	}
 
 	public static void main(String[] args) throws IOException, SQLException

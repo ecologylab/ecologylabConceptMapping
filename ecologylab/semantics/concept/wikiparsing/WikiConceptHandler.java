@@ -1,5 +1,11 @@
 package ecologylab.semantics.concept.wikiparsing;
 
+/**
+ * Handling a wiki concept in the data preparation phase.
+ * 
+ * @author quyin
+ *
+ */
 public interface WikiConceptHandler
 {
 
@@ -11,5 +17,11 @@ public interface WikiConceptHandler
 	 * @param markups
 	 */
 	void handle(int id, String title, String markups);
+	
+	/**
+	 * Tell the hanlder that all the work has been finished (so that it can close the database
+	 * session).
+	 */
+	void finish();
 
 }

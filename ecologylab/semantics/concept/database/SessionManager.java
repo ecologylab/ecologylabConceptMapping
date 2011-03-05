@@ -15,26 +15,14 @@ import ecologylab.generic.Debug;
 public class SessionManager extends Debug
 {
 
-	private static Session session;
+	private static SessionFactory factory;
 	
 	static
 	{
-		System.err.println("\nSetting up ...\n\n");
+		System.err.println("\nSetting up Hibernate SessionFactory ...\n\n");
 		
 		Configuration config = new Configuration();
-		SessionFactory sessionFactory = config.configure("hibernate.cfg.xml").buildSessionFactory();
-		session = sessionFactory.openSession();
-		
-		// register a clean up hook
-		Thread t = new Thread(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				cleanUp();
-			}
-		});
-		Runtime.getRuntime().addShutdownHook(t);
+		factory = config.configure("hibernate.cfg.xml").buildSessionFactory();
 	}
 	
 	/**
@@ -44,21 +32,8 @@ public class SessionManager extends Debug
 	 */
 	public static Session getSession()
 	{
+		Session session = factory.openSession();
 		return session;
-	}
-
-	/**
-	 * Close the session for clean-up.
-	 * 
-	 */
-	private static void cleanUp()
-	{
-		if (session != null)
-		{
-			System.err.println("\nCleaning up ...\n\n");
-			session.flush();
-			session.close();
-		}
 	}
 
 }

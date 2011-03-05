@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.Session;
+
 @Entity
 @Table(name = "wiki_redirects")
 public class WikiRedirect implements Serializable
@@ -54,6 +56,14 @@ public class WikiRedirect implements Serializable
 	public int hashCode()
 	{
 		return fromTitle.hashCode();
+	}
+
+	public static String getRedirected(String fromTitle, Session openSession)
+	{
+		WikiRedirect redirect = (WikiRedirect) openSession.get(WikiRedirect.class, fromTitle);
+		String redirected = redirect != null ? redirect.getToTitle() : null;
+		openSession.evict(redirect);
+		return redirected;
 	}
 
 }

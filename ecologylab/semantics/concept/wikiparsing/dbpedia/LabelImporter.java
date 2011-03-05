@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.hibernate.Session;
 import org.junit.Test;
 
 import ecologylab.semantics.concept.database.SessionManager;
@@ -24,6 +25,13 @@ public class LabelImporter extends AbstractImporter
 
 	public final static Pattern	labelPattern	= Pattern.compile("<([^>]+)> <[^>]+> \"(.*?)\"@en .");
 
+	private Session session;
+	
+	public LabelImporter()
+	{
+		session = SessionManager.getSession();
+	}
+	
 	@Override
 	public void parseLine(String line)
 	{
@@ -52,25 +60,26 @@ public class LabelImporter extends AbstractImporter
 
 	private void addTitle(String dbpName, String wikiTitle) throws SQLException
 	{
-		SessionManager.getSession().beginTransaction();
+		session.beginTransaction();
 		
-		DbpRecord dr = (DbpRecord) SessionManager.getSession().get(DbpRecord.class, dbpName);
+		DbpRecord dr = (DbpRecord) session.get(DbpRecord.class, dbpName);
 		if (dr == null)
 		{
 			dr = new DbpRecord();
 			dr.setDbpTitle(dbpName);
 			dr.setWikiTitle(wikiTitle);
-			SessionManager.getSession().save(dr);
+			session.save(dr);
 		}
 		
-		SessionManager.getSession().getTransaction().commit();
-		SessionManager.getSession().evict(dr);
+		session.getTransaction().commit();
+		session.evict(dr);
 	}
 
 	@Override
 	protected void postParse()
 	{
-		SessionManager.getSession().flush();
+		session.flush();
+		session.close();
 	}
 
 	@Test

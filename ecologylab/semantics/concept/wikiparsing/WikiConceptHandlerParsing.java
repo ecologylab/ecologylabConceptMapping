@@ -26,6 +26,10 @@ import ecologylab.semantics.generated.library.WikipediaPageType;
 public class WikiConceptHandlerParsing implements WikiConceptHandler
 {
 
+	private Session								session;
+
+	private Query									query;
+
 	private WikiMarkupRenderer		renderer;
 
 	private WikiHtmlParser				htmlParser;
@@ -37,6 +41,8 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 	public WikiConceptHandlerParsing() throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException
 	{
+		session = SessionManager.getSession();
+		query = session.createQuery("SELECT c FROM wiki_concepts c WHERE c.title = ?");
 		this.renderer = (WikiMarkupRenderer) Configs.getObject("prep.wiki_markup_renderer",
 				WikiMarkupRenderer.class);
 		this.htmlPreprocessor = (WikiHtmlPreprocessor) Configs.getObject("prep.wiki_html_preprocessor",
@@ -47,9 +53,6 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 				TextNormalizer.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see ecologylab.semantics.concept.wikiparsing.WikiConceptHandlerI#handle(int, java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void handle(int id, String title, String markups)
 	{
@@ -62,9 +65,10 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 		String html1 = htmlPreprocessor.preprocess(html);
 		WikipediaPageType page = htmlParser.parse(html1);
 
-		Session session = SessionManager.getSession();
-		Query query = session.createQuery("SELECT c FROM wiki_concepts c WHERE c.title = ?");
 		session.beginTransaction();
+
+		if (WikiRedirect.getRedirected(title, session) != null)
+			return;
 
 		StringBuilder sb = new StringBuilder();
 		List<WikiLink> links = new ArrayList<WikiLink>();
@@ -77,7 +81,7 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 			{
 				String surface = anchor.getAnchorText();
 				String target = anchor.getTargetTitle();
-				int toId = getIdForTitle(target, session, query);
+				int toId = getIdForTitle(target);
 				if (toId >= 0)
 				{
 					WikiLink link = new WikiLink();
@@ -103,16 +107,21 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 		}
 	}
 
-	private int getIdForTitle(String target, Session session, Query query)
+	private int getIdForTitle(String target)
 	{
-		String trueTarget = target;
-		WikiRedirect redirect = (WikiRedirect) session.get(WikiRedirect.class, target);
-		if (redirect != null)
-			trueTarget = redirect.getToTitle();
+		String redirect = WikiRedirect.getRedirected(target, session);
+		String trueTarget = redirect == null ? target : redirect;
 
 		query.setString(1, trueTarget);
 		WikiConcept c = (WikiConcept) query.uniqueResult();
 		return c == null ? -1 : c.getId();
+	}
+
+	@Override
+	public void finish()
+	{
+		session.flush();
+		session.close();
 	}
 
 }

@@ -72,7 +72,7 @@ public class WikiParsingSAXHandler extends DefaultHandler
 	@Override
 	public void endDocument()
 	{
-
+		conceptHandler.finish();
 	}
 
 	/**

@@ -6,19 +6,29 @@ import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiRedirect;
 
+/**
+ * Store only IDs and titles to the database, as the initial building-up of the database.
+ * 
+ * @author quyin
+ *
+ */
 public class WikiConceptHandlerInitial implements WikiConceptHandler
 {
+
+	private Session session;
+	
+	public WikiConceptHandlerInitial()
+	{
+		session = SessionManager.getSession();
+	}
 
 	@Override
 	public void handle(int id, String title, String markups)
 	{
-		Session session = SessionManager.getSession();
-
 		session.beginTransaction();
 
 		WikiConcept concept = null;
-		WikiRedirect redirect = (WikiRedirect) session.get(WikiRedirect.class, title);
-		if (redirect == null)
+		if (WikiRedirect.getRedirected(title, session) == null)
 		{
 			concept = new WikiConcept();
 			concept.setId(id);
@@ -28,11 +38,15 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 		}
 
 		session.getTransaction().commit();
-		
 		if (concept != null)
 			session.evict(concept);
-		if (redirect != null)
-			session.evict(redirect);
+	}
+
+	@Override
+	public void finish()
+	{
+		session.flush();
+		session.close();
 	}
 
 }
