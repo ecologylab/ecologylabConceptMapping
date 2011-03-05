@@ -63,7 +63,6 @@ public abstract class AbstractImporter extends Debug
 			}
 		}
 		br.close();
-		postParse();
 	}
 
 	/**
@@ -84,8 +83,6 @@ public abstract class AbstractImporter extends Debug
 				error(e.getMessage() + " when parsing line: " + line);
 			}
 		}
-
-		postParse();
 	}
 
 	/**
@@ -95,13 +92,5 @@ public abstract class AbstractImporter extends Debug
 	 * @param line
 	 */
 	abstract public void parseLine(String line);
-
-	/**
-	 * Hook that is invoked after all the lines have been parsed.
-	 */
-	protected void postParse()
-	{
-		
-	}
 
 }

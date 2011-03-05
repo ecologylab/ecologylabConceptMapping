@@ -23,13 +23,6 @@ public class RedirectImporter extends AbstractImporter
 {
 	public final static Pattern	redirectPattern	= Pattern.compile("<([^>]+)> <[^>]+> <([^>]+)> .");
 
-	private Session session;
-	
-	public RedirectImporter()
-	{
-		session = SessionManager.getSession();
-	}
-	
 	@Override
 	public void parseLine(String line)
 	{
@@ -58,6 +51,7 @@ public class RedirectImporter extends AbstractImporter
 
 	private void addRedirect(String from, String to) throws SQLException
 	{
+		Session session = SessionManager.getSession();
 		session.beginTransaction();
 		
 		DbpRecord drFrom = (DbpRecord) session.get(DbpRecord.class, from);
@@ -74,12 +68,6 @@ public class RedirectImporter extends AbstractImporter
 		session.getTransaction().commit();
 	}
 	
-	protected void postParse()
-	{
-		session.flush();
-		session.close();
-	}
-
 	public static void main(String[] args) throws IOException, SQLException
 	{
 		RedirectImporter ri = new RedirectImporter();

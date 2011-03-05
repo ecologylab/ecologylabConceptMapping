@@ -25,13 +25,6 @@ public class LabelImporter extends AbstractImporter
 
 	public final static Pattern	labelPattern	= Pattern.compile("<([^>]+)> <[^>]+> \"(.*?)\"@en .");
 
-	private Session session;
-	
-	public LabelImporter()
-	{
-		session = SessionManager.getSession();
-	}
-	
 	@Override
 	public void parseLine(String line)
 	{
@@ -60,6 +53,7 @@ public class LabelImporter extends AbstractImporter
 
 	private void addTitle(String dbpName, String wikiTitle) throws SQLException
 	{
+		Session session = SessionManager.getSession();
 		session.beginTransaction();
 		
 		DbpRecord dr = (DbpRecord) session.get(DbpRecord.class, dbpName);
@@ -72,13 +66,6 @@ public class LabelImporter extends AbstractImporter
 		}
 		
 		session.getTransaction().commit();
-	}
-
-	@Override
-	protected void postParse()
-	{
-		session.flush();
-		session.close();
 	}
 
 	@Test

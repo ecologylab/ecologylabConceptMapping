@@ -18,10 +18,4 @@ public interface WikiConceptHandler
 	 */
 	void handle(int id, String title, String markups);
 	
-	/**
-	 * Tell the hanlder that all the work has been finished (so that it can close the database
-	 * session).
-	 */
-	void finish();
-
 }

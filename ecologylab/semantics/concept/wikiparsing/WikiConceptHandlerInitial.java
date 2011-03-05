@@ -15,16 +15,11 @@ import ecologylab.semantics.concept.database.orm.WikiRedirect;
 public class WikiConceptHandlerInitial implements WikiConceptHandler
 {
 
-	private Session session;
-	
-	public WikiConceptHandlerInitial()
-	{
-		session = SessionManager.getSession();
-	}
-
 	@Override
 	public void handle(int id, String title, String markups)
 	{
+		Session session = SessionManager.getSession();
+		
 		session.beginTransaction();
 
 		WikiConcept concept = null;
@@ -38,12 +33,6 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 		}
 
 		session.getTransaction().commit();
-	}
-
-	@Override
-	public void finish()
-	{
-		session.flush();
 		session.close();
 	}
 
