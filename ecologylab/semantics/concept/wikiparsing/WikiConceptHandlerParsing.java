@@ -61,55 +61,70 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 
 		if (WikiRedirect.getRedirected(title, session) == null)
 		{
+			// render html
 			String html = renderer.render(markups);
 			String html1 = htmlPreprocessor.preprocess(html);
-			WikipediaPageType page = htmlParser.parse(html1);
 
-			session.beginTransaction();
-
+			// process texts and links
 			StringBuilder sb = new StringBuilder();
-
-			for (Paragraph para : page.getParagraphs())
+			WikipediaPageType page = htmlParser.parse(html1);
+			if (page != null)
 			{
-				if (para == null)
-					continue;
-				sb.append(para.getParagraphText()).append(" ");
+				session.beginTransaction();
 
-				ArrayList<Anchor> anchors = para.getAnchors();
-				if (anchors == null)
-					continue;
-				for (Anchor anchor : para.getAnchors())
+				ArrayList<Paragraph> paragraphs = page.getParagraphs();
+				if (paragraphs != null)
 				{
-					String surface = anchor.getAnchorText();
-					String target = anchor.getTargetTitle();
-					int toId = getIdForTitle(target, session, query);
-					if (toId >= 0)
+					for (Paragraph para : paragraphs)
 					{
-						WikiLink link = new WikiLink();
-						link.setFromId(id);
-						link.setToId(toId);
-						String normSurface = textNormalizer.normalize(surface);
-						if (normSurface != null && !normSurface.isEmpty())
+						if (para != null)
 						{
-							link.setSurface(normSurface);
-							session.save(link);
+							String paraText = para.getParagraphText();
+							if (paraText != null)
+								sb.append(para.getParagraphText()).append(" ");
+
+							ArrayList<Anchor> anchors = para.getAnchors();
+							if (anchors != null)
+							{
+								for (Anchor anchor : anchors)
+								{
+									if (anchor != null)
+									{
+										String surface = anchor.getAnchorText();
+										String target = anchor.getTargetTitle();
+										int toId = getIdForTitle(target, session, query);
+										if (toId >= 0)
+										{
+											WikiLink link = new WikiLink();
+											link.setFromId(id);
+											link.setToId(toId);
+											String normSurface = textNormalizer.normalize(surface);
+											if (normSurface != null && !normSurface.isEmpty())
+											{
+												link.setSurface(normSurface);
+												session.save(link);
+											}
+										}
+									}
+								}
+							}
 						}
 					}
 				}
-			}
 
-			WikiConcept concept = (WikiConcept) session.get(WikiConcept.class, id);
-			if (concept != null)
-			{
-				String normText = textNormalizer.normalize(sb.toString());
-				if (normText != null && !normText.isEmpty())
+				WikiConcept concept = (WikiConcept) session.get(WikiConcept.class, id);
+				if (concept != null)
 				{
-					concept.setText(normText);
-					session.update(concept);
+					String normText = textNormalizer.normalize(sb.toString());
+					if (normText != null && !normText.isEmpty())
+					{
+						concept.setText(normText);
+						session.update(concept);
+					}
 				}
-			}
 
-			session.getTransaction().commit();
+				session.getTransaction().commit();
+			}
 		}
 
 		session.close();

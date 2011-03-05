@@ -1,8 +1,7 @@
 package ecologylab.semantics.concept.wikiparsing;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.HashSet;
+import java.util.Set;
 
 import ecologylab.semantics.concept.service.Configs;
 
@@ -17,60 +16,101 @@ import ecologylab.semantics.concept.service.Configs;
 public class WikiConceptHandlerBunchParsing implements WikiConceptHandler
 {
 
-	private ExecutorService						pool;
+	private static class ParsingClosure implements Runnable
+	{
+
+		private WikiConceptHandlerParsing				worker;
+
+		private WikiConceptHandlerBunchParsing	listener;
+
+		private int															id;
+
+		private String													title;
+
+		private String													markups;
+
+		public ParsingClosure(WikiConceptHandlerParsing worker,
+				WikiConceptHandlerBunchParsing listener, int id, String title, String markups)
+		{
+			this.worker = worker;
+			this.id = id;
+			this.title = title;
+			this.markups = markups;
+			this.listener = listener;
+		}
+
+		@Override
+		public void run()
+		{
+			worker.handle(id, title, markups);
+			listener.notifyFinish(this);
+		}
+
+		public void start()
+		{
+			Thread t = new Thread(this);
+			t.start();
+		}
+
+	}
 
 	/**
 	 * parser must be thread safe!!!
 	 */
 	private WikiConceptHandlerParsing	parser;
 
-	private int												waitMs;
+	private Set<ParsingClosure>				pool								= new HashSet<ParsingClosure>();
+
+	private Object										lockPool						= new Object();
+
+	private int												nThreads						= 1;
 
 	public WikiConceptHandlerBunchParsing() throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException
 	{
-		int nThreads = Configs.getInt("prep.wiki_concept_handler.number_of_threads");
-		pool = Executors.newFixedThreadPool(nThreads);
 		parser = new WikiConceptHandlerParsing();
-		waitMs = Configs.getInt("prep.wiki_concept_handler.min_interval_between_concepts");
+		nThreads = Configs.getInt("prep.wiki_concept_handler.number_of_threads");
 	}
 
 	@Override
-	public void handle(final int id, final String title, final String markups)
+	public void handle(int id, String title, String markups)
 	{
-		pool.submit(new Runnable()
+		synchronized (lockPool)
 		{
-			@Override
-			public void run()
+			int size = pool.size();
+			if (size >= nThreads)
 			{
-				parser.handle(id, title, markups);
+				try
+				{
+					lockPool.wait();
+				}
+				catch (InterruptedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-		});
-		
-		try
-		{
-			Thread.sleep(waitMs);
+
+			ParsingClosure closure = new ParsingClosure(parser, this, id, title, markups);
+			pool.add(closure);
+			closure.start();
 		}
-		catch (InterruptedException e)
+	}
+
+	public void notifyFinish(ParsingClosure closure)
+	{
+		synchronized (lockPool)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			pool.remove(closure);
+			lockPool.notify();
 		}
 	}
 
 	@Override
 	public void finish()
 	{
-		try
-		{
-			pool.shutdown();
-			pool.awaitTermination(3, TimeUnit.DAYS);
-		}
-		catch (InterruptedException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		// TODO Auto-generated method stub
+		
 	}
 
 }

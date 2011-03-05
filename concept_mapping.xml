@@ -3,7 +3,6 @@
 <pref_set>
   <pref_string name="prep.wiki_concept_handler" value="ecologylab.semantics.concept.wikiparsing.WikiConceptHandlerBunchParsing" />
   <pref_int name="prep.wiki_concept_handler.number_of_threads" value="10" />
-  <pref_int name="prep.wiki_concept_handler.min_interval_between_concepts" value="500" />
   
   <pref_file name="prep.mmd_repository" value="../ecologylabSemantics/repository" />
 
