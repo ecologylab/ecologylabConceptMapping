@@ -11,7 +11,7 @@ public class TestORM
 
 	static void test1()
 	{
-		Session sess = SessionManager.getSession();
+		Session sess = SessionManager.newSession();
 		sess.beginTransaction();
 
 		Commonness comm = new Commonness();
@@ -31,11 +31,12 @@ public class TestORM
 		System.out.println(query.getCommonness());
 
 		sess.getTransaction().commit();
+		sess.close();
 	}
 
 	static void test2()
 	{
-		org.hibernate.Session sess = SessionManager.getSession();
+		org.hibernate.Session sess = SessionManager.newSession();
 		
 		sess.beginTransaction();
 		WikiLink wl1 = new WikiLink();
@@ -55,7 +56,7 @@ public class TestORM
 		sess.getTransaction().commit();
 		System.out.println("wiki_link2.seq_id: " + wl2.getSeqId());
 
-		sess.flush();
+		sess.close();
 	}
 
 	public static void main(String[] args)

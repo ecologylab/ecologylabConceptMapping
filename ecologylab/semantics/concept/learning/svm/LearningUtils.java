@@ -3,6 +3,12 @@ package ecologylab.semantics.concept.learning.svm;
 import ecologylab.semantics.concept.detect.Instance;
 import libsvm.svm_node;
 
+/**
+ * Utility functions for this package.
+ * 
+ * @author quyin
+ *
+ */
 public class LearningUtils
 {
 

@@ -53,7 +53,7 @@ public class LabelImporter extends AbstractImporter
 
 	private void addTitle(String dbpName, String wikiTitle) throws SQLException
 	{
-		Session session = SessionManager.getSession();
+		Session session = SessionManager.newSession();
 		session.beginTransaction();
 		
 		DbpRecord dr = (DbpRecord) session.get(DbpRecord.class, dbpName);

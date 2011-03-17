@@ -66,8 +66,6 @@ public class WikiParsing
 		xr.setContentHandler(wpsh);
 
 		xr.parse(new InputSource(new FileInputStream(pargsArticleFilePath)));
-		
-		SessionManager.getSession().flush();
 	}
 
 }

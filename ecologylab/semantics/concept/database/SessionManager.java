@@ -26,11 +26,11 @@ public class SessionManager extends Debug
 	}
 	
 	/**
-	 * Get the global session for use.
+	 * Create a new session for use.
 	 * 
 	 * @return
 	 */
-	public static Session getSession()
+	public static Session newSession()
 	{
 		Session session = factory.openSession();
 		return session;

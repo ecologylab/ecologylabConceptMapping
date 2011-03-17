@@ -1,6 +1,7 @@
 package ecologylab.semantics.concept.database.orm;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
@@ -10,8 +11,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Property;
 
 @Entity
 @Table(name = "wiki_links")
@@ -88,6 +93,13 @@ public class WikiLink implements Serializable
 		// Cantor pairing function
 		long pairing = (long) (fromId + toId) * (fromId + toId + 1) / 2 + toId;
 		return (int) (pairing % 2147483647);
+	}
+
+	public static List<WikiLink> getByDestination(int toId, Session session)
+	{
+		Criteria q = session.createCriteria(WikiLink.class);
+		q.add(Property.forName("toId").eq(toId)).addOrder(Order.asc("fromId"));
+		return q.list();
 	}
 
 }

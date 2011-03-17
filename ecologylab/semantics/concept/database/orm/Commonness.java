@@ -1,6 +1,7 @@
 package ecologylab.semantics.concept.database.orm;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
@@ -8,8 +9,11 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.criterion.Property;
 
 @Entity
 @Table(name = "commonness")
@@ -77,6 +81,12 @@ public class Commonness implements Serializable
 		int a = surface.hashCode();
 		long pairing = (long) (a + conceptId) * (a + conceptId + 1) / 2 + conceptId;
 		return (int) (pairing % 2147483647);
+	}
+	
+	public static List<Commonness> get(String surface, Session session)
+	{
+		Criteria q = session.createCriteria(Commonness.class).add(Property.forName("surface").eq(surface));
+		return q.list();
 	}
 
 }

@@ -18,7 +18,7 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 	@Override
 	public void handle(int id, String title, String markups)
 	{
-		Session session = SessionManager.getSession();
+		Session session = SessionManager.newSession();
 		
 		session.beginTransaction();
 

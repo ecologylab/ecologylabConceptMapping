@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.detect;
+package ecologylab.semantics.concept.prepare;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

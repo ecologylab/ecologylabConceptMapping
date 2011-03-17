@@ -10,53 +10,36 @@ import libsvm.svm_node;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.database.orm.Relatedness;
+import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.learning.svm.NormalizerFactory;
 import ecologylab.semantics.concept.learning.svm.PredicterFactory;
 import ecologylab.semantics.concept.learning.svm.LearningUtils;
-import ecologylab.semantics.concept.learning.svm.SVMGaussianNormalization;
+import ecologylab.semantics.concept.learning.svm.GaussianNormalizer;
 import ecologylab.semantics.concept.learning.svm.SVMPredicter;
+import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 
-/**
- * context is an abstraction of a set of concepts and their relations. surfaces could only be
- * disambiguated given a context.
- * 
- * NOT THREAD SAFE!
- * 
- * @author quyin
- * 
- */
-public class Context extends Debug
+class Context extends Debug
 {
 
-	private Set<Concept>					concepts						= new HashSet<Concept>();
+	private Doc												doc;
 
-	private Map<Concept, Surface>	surfaces						= new HashMap<Concept, Surface>();
+	private Set<WikiConcept>					concepts						= new HashSet<WikiConcept>();
 
-	private Map<Concept, Double>	weights							= new HashMap<Concept, Double>();
+	private Map<WikiConcept, Surface>	surfaces						= new HashMap<WikiConcept, Surface>();
 
-	private double								quality							= 0;
+	private Map<WikiConcept, Double>	weights							= new HashMap<WikiConcept, Double>();
 
-	/**
-	 * cached average relatedness can be reused during updating weights.
-	 */
-	private Map<Concept, Double>	averageRelatedness	= new HashMap<Concept, Double>();
+	private double										quality							= 0;
 
-	/**
-	 * return all concepts in this context. DO NOT modify the returned set.
-	 * 
-	 * @return
-	 */
-	public Set<Concept> getConcepts()
+	private Map<WikiConcept, Double>	averageRelatedness	= new HashMap<WikiConcept, Double>();
+
+	public Context(Doc doc)
 	{
-		return concepts;
+		this.doc = doc;
 	}
 
-	/**
-	 * the size of the context, i.e. how many concepts are in the context.
-	 * 
-	 * @return
-	 */
 	public int size()
 	{
 		return concepts.size();
@@ -66,22 +49,23 @@ public class Context extends Debug
 	 * add a concept to the context. it will cause weights and quality in this context to be
 	 * re-calculated.
 	 * 
+	 * @param surface
 	 * @param concept
 	 */
-	public void addConcept(Concept concept, Surface surface)
+	public void add(Surface surface, WikiConcept concept)
 	{
-		int n = concepts.size();
+		int n = weights.size();
 		concepts.add(concept);
 		surfaces.put(concept, surface);
 
 		// update average relatedness and weights
 		double avgRel = 0;
-		for (Concept c : concepts)
+		for (WikiConcept c : concepts)
 		{
 			if (c.equals(concept))
 				continue;
-			
-			double rel = c.getRelatedness(concept);
+
+			double rel = Relatedness.get(concept.getId(), c.getId(), doc.getSession());
 			avgRel += rel;
 
 			double newAvgRelForC = (n * averageRelatedness.get(c) + rel) / (n + 1);
@@ -94,13 +78,14 @@ public class Context extends Debug
 		weights.put(concept, getWeight(concept, avgRel));
 
 		quality = CollectionUtils.sum(weights.values());
-//		System.out.println(this + ": quality = " + quality);
+		// System.out.println(this + ": quality = " + quality);
 	}
 
-	private double getWeight(Concept concept, double averageRelatedness)
+	private double getWeight(WikiConcept concept, double averageRelatedness)
 	{
-		return surfaces.get(concept).getKeyphraseness() * ConceptConstants.WEIGHT_KEYPHRASENESS
-				+ averageRelatedness * ConceptConstants.WEIGHT_MUTUAL_RELATEDNESS;
+		double wk = Configs.getDouble("feature_extraction.weight_keyphraseness");
+		double wm = Configs.getDouble("feature_extraction.weight_mutual_relatedness");
+		return surfaces.get(concept).getKeyphraseness() * wk + averageRelatedness * wm;
 	}
 
 	/**
@@ -109,7 +94,7 @@ public class Context extends Debug
 	 * @param concept
 	 * @return
 	 */
-	public double getWeight(Concept concept)
+	public double getWeight(WikiConcept concept)
 	{
 		if (weights.containsKey(concept))
 			return weights.get(concept);
@@ -132,15 +117,15 @@ public class Context extends Debug
 	 * @param concept
 	 * @return the contextual relatedness if possible, or 0 if not possible (e.g. empty context).
 	 */
-	public double getContextualRelatedness(Concept concept)
+	public double getContextualRelatedness(WikiConcept concept)
 	{
 		double sum = 0;
 		double sumWeights = 0;
 
-		for (Concept c : getConcepts())
+		for (WikiConcept c : concepts)
 		{
 			double w = getWeight(c);
-			double rel = concept.getRelatedness(c);
+			double rel = Relatedness.get(concept.getId(), c.getId(), doc.getSession());
 			sum += w * rel;
 			sumWeights += w;
 		}
@@ -169,16 +154,19 @@ public class Context extends Debug
 		Instance bestInst = null;
 
 		double[] kvalueBuffer = null;
-		for (Concept sense : surface.getSenses())
+		for (WikiConcept sense : surface.getSenses())
 		{
 			Instance inst = Instance.getForDisambiguation(this, surface, sense);
 			svm_node[] svmInst = LearningUtils.constructSVMInstanceForDisambiguation(inst);
-			
-//			System.out.format("before normalization: %.4f, %.4f, %.4f\n", svmInst[0].value, svmInst[1].value, svmInst[2].value);
-			SVMGaussianNormalization norm = NormalizerFactory.get(ConceptConstants.DISAMBI_PARAM_FILE_PATH);
+
+			// System.out.format("before normalization: %.4f, %.4f, %.4f\n", svmInst[0].value,
+			// svmInst[1].value, svmInst[2].value);
+			GaussianNormalizer norm = NormalizerFactory
+					.get(ConceptConstants.DISAMBI_PARAM_FILE_PATH);
 			norm.normalize(svmInst);
-//			System.out.format("after normalization: %.4f, %.4f, %.4f\n", svmInst[0].value, svmInst[1].value, svmInst[2].value);
-			
+			// System.out.format("after normalization: %.4f, %.4f, %.4f\n", svmInst[0].value,
+			// svmInst[1].value, svmInst[2].value);
+
 			Map<Integer, Double> buf = new HashMap<Integer, Double>();
 			SVMPredicter pred = PredicterFactory.get(ConceptConstants.DISAMBI_MODEL_FILE_PATH);
 			if (kvalueBuffer == null)
@@ -193,14 +181,6 @@ public class Context extends Debug
 		}
 
 		return bestInst;
-	}
-
-	public void recycle()
-	{
-		concepts.clear();
-		surfaces.clear();
-		weights.clear();
-		averageRelatedness.clear();
 	}
 
 }

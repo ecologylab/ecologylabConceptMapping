@@ -1,69 +1,91 @@
 package ecologylab.semantics.concept.detect;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import ecologylab.semantics.concept.database.CachedTable;
-import ecologylab.semantics.concept.database.CachedTables;
+import ecologylab.semantics.concept.database.orm.Commonness;
+import ecologylab.semantics.concept.database.orm.Keyphraseness;
+import ecologylab.semantics.concept.database.orm.WikiConcept;
 
 /**
- * proxy class for a surface, i.e. anchor text for a concept. one surface may relate to more than
- * one concepts.
- * <p />
- * senses + commonness and keyphraseness is cached.
+ * Represents a surface (local to a Doc).
  * 
  * @author quyin
+ * 
  */
 public class Surface
 {
 
-	public final String						word;
-	
-	public Surface(String word)
+	private final Doc										doc;
+
+	private final String								word;
+
+	private double											keyphraseness	= -1;
+
+	private Map<WikiConcept, Instance>	senses				= new HashMap<WikiConcept, Instance>();
+
+	private WikiConcept									disambiguatedConcept;
+
+	/**
+	 * Construct a Surface.
+	 * 
+	 * @param doc
+	 *          The contextual Doc of this surface.
+	 * @param word
+	 *          The free text word of this surface.
+	 */
+	public Surface(Doc doc, String word)
 	{
-		assert word != null && !word.isEmpty() : "invalid word for surface."; 
+		this.doc = doc;
+		assert word != null && !word.isEmpty() : "invalid word for surface: " + word;
 		this.word = word;
+
+		Keyphraseness kp = (Keyphraseness) this.doc.getSession().get(Keyphraseness.class, word);
+		keyphraseness = kp.getKeyphraseness();
+
+		List<Commonness> commonness = Commonness.get(word, this.doc.getSession());
+		for (Commonness com : commonness)
+		{
+			int conceptId = com.getConceptId();
+			WikiConcept concept = (WikiConcept) this.doc.getSession().get(WikiConcept.class, conceptId);
+			assert concept != null : "weird: concept not found: " + conceptId;
+			Instance inst = new Instance(this, concept);
+			inst.commonness = com.getCommonness();
+			senses.put(concept, inst);
+		}
+
+		if (senses.size() == 1)
+		{
+			Iterator<WikiConcept> it = senses.keySet().iterator();
+			disambiguatedConcept = it.next();
+		}
 	}
 
-	public Set<Concept> getSenses()
+	public String getWord()
 	{
-		CachedTable sensesTable = CachedTables.getCachedTable(CachedTables.SENSES_TABLE_NAME);
-		Map<Concept, Double> senses = (Map<Concept, Double>) sensesTable.get(word);
-		return senses.keySet();
+		return word;
 	}
 
-	public double getCommonness(Concept concept)
+	public Map<WikiConcept, Instance> getSenses()
 	{
-		CachedTable sensesTable = CachedTables.getCachedTable(CachedTables.SENSES_TABLE_NAME);
-		Map<Concept, Double> senses = (Map<Concept, Double>) sensesTable.get(word);
-		return senses.containsKey(concept) ? senses.get(concept) : 0;
-	}
-
-	/**
-	 * determine if this surface is ambiguous by looking up its senses.
-	 * 
-	 * @return
-	 */
-	public boolean isAmbiguous()
-	{
-		return getSenses().size() > 1;
-	}
-
-	/**
-	 * determine if this surface is ambiguous by looking up a given dictionary.
-	 * 
-	 * @param dict
-	 * @return
-	 */
-	public boolean isAmbiguous(SurfaceDictionary dict)
-	{
-		return dict.isAmbiguous(word);
+		return senses;
 	}
 
 	public double getKeyphraseness()
 	{
-		CachedTable keyphrasenessTable = CachedTables.getCachedTable(CachedTables.KEYPHRASENESS_TABLE_NAME);
-		return (Double) keyphrasenessTable.get(word);
+		return keyphraseness;
+	}
+
+	public WikiConcept getDisambiguatedConcept()
+	{
+		return disambiguatedConcept;
+	}
+
+	public Instance getDisambiguatedInstance()
+	{
+		return senses.get(disambiguatedConcept);
 	}
 
 	@Override
@@ -86,7 +108,7 @@ public class Surface
 	@Override
 	public String toString()
 	{
-		return word;
+		return String.format("surface[%s]", word);
 	}
 
 }

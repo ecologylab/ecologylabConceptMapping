@@ -7,14 +7,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.Session;
+
 import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.utils.TextNormalizer;
 import ecologylab.semantics.concept.utils.TextUtils;
 
 /**
- * textual context for given text. surfaces are recognized and sorted by ambiguity. occurrences are
- * recorded, based on which frequencies can be computed.
- * 
- * NOT THREAD SAFE!
+ * The central class for concept mapping. Not thread-safe (an instance of this class is supposed to
+ * be used in a single thread).
  * 
  * @author quyin
  * 
@@ -28,32 +29,23 @@ public class Doc
 
 	private final int							totalWords;
 
-	private Set<Surface>					unambiSurfaces				= new HashSet<Surface>();
+	private Set<Surface>					surfaces;
 
-	private Set<Surface>					ambiSurfaces					= new HashSet<Surface>();
+	private Map<Surface, Integer>	surfaceOccurrences	= new HashMap<Surface, Integer>();
 
-	private Map<Surface, Integer>	surfaceOccurrences		= new HashMap<Surface, Integer>();
+	private Session								session;
 
-	private Set<Instance>					disambiguationResults	= null;
-
-	private Set<Instance>					detectionResults			= null;
-
-	public Doc(String title, String text, SurfaceDictionary dictionary)
+	public Doc(String title, String text)
 	{
 		this.title = title;
-		this.text = TextUtils.normalize(text);
+		this.text = TextNormalizer.normalize(text);
 		this.totalWords = TextUtils.count(text, " ") + 1;
 
 		// extract surfaces
-		for (String surfaceWord : dictionary.extractSurfaces(text))
+		for (String surfaceWord : SurfaceDictionary.get().extractSurfaces(text))
 		{
-			Surface surface = new Surface(surfaceWord);
-
-			if (dictionary.isAmbiguous(surfaceWord))
-				ambiSurfaces.add(surface);
-			else
-				unambiSurfaces.add(surface);
-
+			Surface surface = new Surface(this, surfaceWord);
+			surfaces.add(surface);
 			if (!surfaceOccurrences.containsKey(surface))
 				surfaceOccurrences.put(surface, 1);
 			else
@@ -76,14 +68,9 @@ public class Doc
 		return totalWords;
 	}
 
-	public Set<Surface> getUnambiSurfaces()
+	public Set<Surface> getSurfaces()
 	{
-		return unambiSurfaces;
-	}
-
-	public Set<Surface> getAmbiSurfaces()
-	{
-		return ambiSurfaces;
+		return surfaces;
 	}
 
 	public Map<Surface, Integer> getSurfaceOccurrences()
@@ -100,22 +87,9 @@ public class Doc
 		return 0;
 	}
 
-	public Set<Instance> disambiguate()
+	Session getSession()
 	{
-		if (disambiguationResults == null)
-		{
-			Disambiguator disambiguator = new Disambiguator(this);
-			try
-			{
-				disambiguationResults = disambiguator.disambiguate();
-			}
-			catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return disambiguationResults;
+		return session;
 	}
 
 	public Set<Instance> detect()
@@ -136,39 +110,24 @@ public class Doc
 		}
 		return detectionResults;
 	}
-	
-	public void recycle()
-	{
-		unambiSurfaces.clear();
-		ambiSurfaces.clear();
-		surfaceOccurrences.clear();
-		if (disambiguationResults != null)
-			disambiguationResults.clear();
-		if (detectionResults != null)
-			detectionResults.clear();
-	}
-
-	/* ==================== test ==================== */
 
 	public static void main(String[] args) throws IOException
 	{
-//		String text = TextUtils.readString("usa.wiki");
+		// String text = TextUtils.readString("usa.wiki");
 		String text = "we know that united states census 2000 is famous in united states";
-		SurfaceDictionary dict = SurfaceDictionary.load(ConceptConstants.DICTIONARY_PATH);
 		Doc doc = null;
 
 		int n = 100;
 		long t0 = System.currentTimeMillis();
 		for (int i = 0; i < n; ++i)
 		{
-			doc = new Doc("USA", text, dict);
+			doc = new Doc("USA", text);
 		}
 		long t1 = System.currentTimeMillis();
 
 		if (doc != null)
 		{
-			System.out.println(doc.getUnambiSurfaces().size() + " unambiguous surfaces found.");
-			System.out.println(doc.getAmbiSurfaces().size() + " ambiguous surfaces found.");
+			System.out.println(doc.getSurfaces().size() + " surfaces found.");
 			System.out.println("average time in ms: " + (t1 - t0) * 1.0 / n);
 		}
 		else

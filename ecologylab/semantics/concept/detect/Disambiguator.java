@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.database.orm.WikiConcept;
+import ecologylab.semantics.concept.service.Configs;
 
 /**
  * internal class used for disambiguation.
@@ -15,51 +16,57 @@ import ecologylab.semantics.concept.ConceptConstants;
 class Disambiguator
 {
 
-	private Doc	doc;
+	private Doc			doc;
+
+	private Context	context;
 
 	public Disambiguator(Doc doc)
 	{
 		this.doc = doc;
+		this.context = new Context(doc);
 	}
 
-	public Set<Instance> disambiguate() throws IOException
+	/**
+	 * Disambiguate a Doc.
+	 * 
+	 * @throws IOException
+	 */
+	public void disambiguate() throws IOException
 	{
-		HashSet<Instance> rst = new HashSet<Instance>();
-
-		// init
-		Context context = new Context();
-		for (Surface surface : doc.getUnambiSurfaces())
+		Set<Surface> unresolvedSurfaces = new HashSet<Surface>();
+		for (Surface surface : doc.getSurfaces())
 		{
-			context.addConcept((Concept) surface.getSenses().toArray()[0], surface);
-		}
-		Set<Surface> candidateSurfaces = new HashSet<Surface>();
-		for (Surface surface : doc.getAmbiSurfaces())
-		{
-			candidateSurfaces.add(surface);
+			if (surface.getSenses().size() == 1)
+			{
+				context.add(surface, surface.getDisambiguatedConcept());
+			}
+			else
+			{
+				unresolvedSurfaces.add(surface);
+			}
 		}
 
 		if (context.size() == 0)
 		{
 			// no unambiguous surfaces? do a best guess ...
-			Surface s = findSurfaceWithLargestCommonness(doc);
-			candidateSurfaces.add(s);
+			Surface s = findSurfaceWithLargestCommonnessAndDisambiguate(unresolvedSurfaces);
+			context.add(s, s.getDisambiguatedConcept());
 		}
 
-		while (candidateSurfaces.size() > 0)
+		while (unresolvedSurfaces.size() > 0)
 		{
 			// find related surfaces
 			Set<Surface> relatedSurfaces = new HashSet<Surface>();
 			Surface bestRelatedOne = null;
 			double bestRelatedOneRelatedness = 0;
-			for (Surface surface : candidateSurfaces)
+			for (Surface surface : unresolvedSurfaces)
 			{
-				double relatedness = getRelatedness(surface, context);
-				if (relatedness > ConceptConstants.threshold1)
+				double relatedness = getRelatedness(surface);
+				if (relatedness > Configs.getDouble("feature_extraction.related_surface_threshold"))
 				{
 					relatedSurfaces.add(surface);
 				}
-				if (bestRelatedOne == null ||
-						bestRelatedOneRelatedness < relatedness)
+				if (bestRelatedOne == null || bestRelatedOneRelatedness < relatedness)
 				{
 					bestRelatedOne = surface;
 					bestRelatedOneRelatedness = relatedness;
@@ -71,83 +78,68 @@ class Disambiguator
 				// no related surfaces? find the most related one ...
 				relatedSurfaces.add(bestRelatedOne);
 			}
-			if (relatedSurfaces.size() == 0)
-			{
-				// still no related surfaces, move on
-				continue;
-			}
 
-			Set<Instance> disambiguated = new HashSet<Instance>();
-			Instance bestConfidentOne = null;
+			Set<Surface> resolved = new HashSet<Surface>();
+			Surface bestConfidentOne = null;
 			for (Surface surface : relatedSurfaces)
 			{
-				Instance instance = context.disambiguate(surface);
-				if (instance.disambiguationConfidence > ConceptConstants.threshold2)
+				context.disambiguate(surface);
+				double disambiguationConfidence = surface.getDisambiguatedInstance().disambiguationConfidence;
+				if (disambiguationConfidence > Configs
+						.getDouble("feature_extraction.disambiguation_confidence_threshold"))
 				{
-					disambiguated.add(instance);
+					resolved.add(surface);
 				}
-				if (bestConfidentOne == null ||
-							bestConfidentOne.disambiguationConfidence < instance.disambiguationConfidence)
-					bestConfidentOne = instance;
+				if (bestConfidentOne == null
+						|| bestConfidentOne.getDisambiguatedInstance().disambiguationConfidence < disambiguationConfidence)
+					bestConfidentOne = surface;
 			}
 
-			if (disambiguated.size() == 0)
+			if (resolved.size() == 0)
 			{
 				// no surfaces are disambiguated confidently enough? find the most confident one ...
-				disambiguated.add(bestConfidentOne);
-			}
-			if (disambiguated.size() == 0)
-			{
-				// still no disambiguated surfaces, move on
-				continue;
+				resolved.add(bestConfidentOne);
 			}
 
-			for (Instance instance : disambiguated)
+			for (Surface surface : resolved)
 			{
-				Concept concept = instance.disambiguatedConcept;
-				context.addConcept(concept, instance.surface);
-				candidateSurfaces.remove(instance.surface);
+				context.add(surface, surface.getDisambiguatedConcept());
+				unresolvedSurfaces.remove(surface);
 			}
 		}
-
-		return rst;
 	}
 
-	private double getRelatedness(Surface surface, Context context)
+	private double getRelatedness(Surface surface)
 	{
 		double rst = 0;
-		Set<Concept> senses = surface.getSenses();
-		for (Concept concept : senses)
+		Set<WikiConcept> senses = surface.getSenses().keySet();
+		for (WikiConcept concept : senses)
 		{
-			for (Concept c : context.getConcepts())
-			{
-				double rel = c.getRelatedness(concept);
-				if (rel > rst)
-					rst = rel;
-			}
+			double rel = context.getContextualRelatedness(concept);
+			if (rel > rst)
+				rst = rel;
 		}
 		return rst;
 	}
 
-	private Surface findSurfaceWithLargestCommonness(Doc theDoc)
+	private Surface findSurfaceWithLargestCommonnessAndDisambiguate(Set<Surface> unresolvedSurfaces)
 	{
 		Surface best = null;
 		double bestCommonness = 0;
-		
-		for (Surface s : theDoc.getAmbiSurfaces())
+
+		for (Surface s : unresolvedSurfaces)
 		{
-			for (Concept c : s.getSenses())
+			for (WikiConcept c : s.getSenses().keySet())
 			{
-				double commonness = s.getCommonness(c);
-				if (best == null ||
-						bestCommonness < commonness)
+				double commonness = s.getSenses().get(c).commonness;
+				if (best == null || bestCommonness < commonness)
 				{
 					best = s;
 					bestCommonness = commonness;
 				}
 			}
 		}
-		
+
 		return best;
 	}
 

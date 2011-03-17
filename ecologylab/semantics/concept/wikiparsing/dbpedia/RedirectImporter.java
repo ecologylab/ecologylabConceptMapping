@@ -51,7 +51,7 @@ public class RedirectImporter extends AbstractImporter
 
 	private void addRedirect(String from, String to) throws SQLException
 	{
-		Session session = SessionManager.getSession();
+		Session session = SessionManager.newSession();
 		session.beginTransaction();
 		
 		DbpRecord drFrom = (DbpRecord) session.get(DbpRecord.class, from);

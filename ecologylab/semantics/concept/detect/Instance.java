@@ -1,5 +1,7 @@
 package ecologylab.semantics.concept.detect;
 
+import ecologylab.semantics.concept.database.orm.WikiConcept;
+
 /**
  * Instance augments Surface with extracted features & prediction results.
  * 
@@ -9,64 +11,42 @@ package ecologylab.semantics.concept.detect;
 public class Instance
 {
 
-	public Surface	surface;
+	public Surface			surface;
 
-	public Instance(Surface surface)
+	public WikiConcept	concept;
+
+	public Instance(Surface surface, WikiConcept concept)
 	{
 		this.surface = surface;
+		this.concept = concept;
 	}
 
 	// for disambiguation
 
-	public double		commonness;
+	public double	commonness;
 
-	public double		contextualRelatedness;
+	public double	contextualRelatedness;
 
-	public double		contextQuality;
+	public double	contextQuality;
 
-	public Concept	disambiguatedConcept;
-
-	public double		disambiguationConfidence;
+	public double	disambiguationConfidence;
 
 	// for detection
 
-	public double		keyphraseness;
+	public double	keyphraseness;
 
-	public double		occurrence;							// number of occurrence
+	public double	occurrence;							// number of occurrence
 
-	public double		frequency;
+	public double	frequency;
 
-	public double		detectionConfidence;
+	public double	detectionConfidence;
 
 	@Override
 	public String toString()
 	{
-		String s = String.format("{surface:%s, concept:%s, confidences:%f,%f}", surface,
-				disambiguatedConcept, disambiguationConfidence, detectionConfidence);
+		String s = String.format("instance[surface:%s, concept:%s, confidences:%f,%f]", surface,
+				concept.getTitle(), disambiguationConfidence, detectionConfidence);
 		return s;
-	}
-
-	/**
-	 * extract features for disambiguation (including commonness, contextual relatedness and quality.
-	 * 
-	 * @param context
-	 * @param surface
-	 * @param sense
-	 * @return
-	 */
-	public static Instance getForDisambiguation(Context context, Surface surface, Concept sense)
-	{
-		Instance instance = new Instance(surface);
-
-		instance.commonness = surface.getCommonness(sense);
-
-		instance.contextQuality = context.getQuality();
-
-		instance.contextualRelatedness = context.getContextualRelatedness(sense);
-
-		instance.disambiguatedConcept = sense;
-
-		return instance;
 	}
 
 }

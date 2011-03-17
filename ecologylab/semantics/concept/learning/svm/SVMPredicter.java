@@ -12,7 +12,6 @@ public class SVMPredicter
 
 	public static class Prediction
 	{
-
 		public int									trueLabel;
 
 		public svm_node[]						instance;
@@ -25,26 +24,24 @@ public class SVMPredicter
 			this.instance = instance;
 			this.result = result;
 		}
-
 	}
 
-	private svm_model	model;
+	private svm_model		model;
+
+	private Normalizer	normalizer;
 
 	/**
-	 * construct a predicter using a saved model.
 	 * 
-	 * @param modelFilePath
+	 * @param modelPath
+	 *          Path to the model file.
+	 * @param normParamsPath
+	 *          Path to the normalization parameters file.
+	 * @throws IOException
 	 */
-	public SVMPredicter(String modelFilePath)
+	public SVMPredicter(svm_model model, Normalizer normalizer) throws IOException
 	{
-		try
-		{
-			model = svm.svm_load_model(modelFilePath);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		this.model = model;
+		this.normalizer = normalizer;
 	}
 
 	public int getNumOfSVs()
@@ -69,6 +66,8 @@ public class SVMPredicter
 	 */
 	public int predict(svm_node[] instance, Map<Integer, Double> results, double[] kvalueBuffer)
 	{
+		normalizer.normalize(instance);
+
 		int nr_class = svm.svm_get_nr_class(model);
 		int[] labels = new int[nr_class];
 		svm.svm_get_labels(model, labels);

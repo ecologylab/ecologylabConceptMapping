@@ -5,169 +5,171 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.ConceptConstants;
-import ecologylab.semantics.concept.utils.TextUtils;
-import ecologylab.semantics.concept.utils.Trie;
+import ecologylab.semantics.concept.service.Configs;
+import ecologylab.semantics.concept.utils.PrefixTree;
 
 /**
- * data object model for client-side cached surface dictionary. retrieve and index surfaces with
- * number of senses. extract surfaces from free text.
+ * 1. Cache frequent surfaces for use. 2. Extract surfaces from free text using prefix matching.
  * 
  * @author quyin
- *
+ * 
  */
-// TODO 1. change data structure to sorted list to save memory;
-//      2. refer to Milne paper to filter extracted surfaces.
 public class SurfaceDictionary extends Debug
 {
 
-	public static final String	DELIM_SEQ		= "|";
+	/**
+	 * The deliminator between surface and sense count.
+	 */
+	public static final String				DELIM				= "|";
 
-	public static final String	DELIM_REGEX	= "\\|";
+	/**
+	 * The regex representation of DELIM.
+	 */
+	public static final String				DELIM_REGEX	= "\\|";
 
-	static class SurfaceRecord implements Comparable<SurfaceRecord>
+	private static SurfaceDictionary	the;
+
+	/**
+	 * Get the singleton of global SurfaceDictionary.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public static SurfaceDictionary get()
 	{
-		public String	surface;
-
-		public int		senseCount;
-
-		public static SurfaceRecord get(String line)
+		if (the == null)
 		{
-			if (line == null)
-				return null;
+			synchronized (SurfaceDictionary.class)
+			{
+				if (the == null)
+				{
+					SurfaceDictionary dict = new SurfaceDictionary();
+					File dictPath = Configs.getFile("surface_dictionary.path");
+					dict.debug("loading surface dictionary from " + dictPath + " ...");
+					try
+					{
+						BufferedReader br = new BufferedReader(new FileReader(dictPath));
+						String line = null;
+						while ((line = br.readLine()) != null)
+						{
+							String[] parts = line.trim().split(SurfaceDictionary.DELIM_REGEX);
+							if (parts.length == 2)
+							{
+								String surface = parts[0];
+								if (surface != null && !surface.isEmpty())
+								{
+									int count = Integer.parseInt(parts[1]);
+									dict.surfaces.put(surface + " ", count); // add a whitespace to denote word
+																														// boundary
+									continue;
+								}
+							}
+							dict.warning("ignoring dictionary line: " + line);
+						}
+						br.close();
+					}
+					catch (IOException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					dict.debug("surface dictionary loaded.");
 
-			String[] parts = line.trim().split(SurfaceDictionary.DELIM_REGEX);
-			if (parts.length != 2)
-				return null;
-
-			String surface = parts[0];
-			if (surface == null || surface.isEmpty())
-				return null;
-			/*
-			 * not necessary because the dictionary has been pre-processed
-			 * 
-			 * if (!StopWordsUtils.containsLetter(surface) || StopWordsUtils.isStopWord(surface)) return
-			 * null;
-			 */
-
-			int count = Integer.parseInt(parts[1]);
-
-			SurfaceRecord sr = new SurfaceRecord();
-			sr.surface = surface;
-			sr.senseCount = count;
-			return sr;
+					the = dict;
+				}
+			}
 		}
-
-		private SurfaceRecord()
-		{
-
-		}
-
-		@Override
-		public int compareTo(SurfaceRecord other)
-		{
-			return surface.compareTo(other.surface);
-		}
-
-		@Override
-		public String toString()
-		{
-			return String.format("%s%s%d", surface, SurfaceDictionary.DELIM_SEQ, senseCount);
-		}
+		return the;
 	}
 
-	// these surface collections are fake because they have an extra trailing whitespace " ".
-	private Trie	surfaces					= new Trie();
-
-	private Trie	ambiguousSurfaces	= new Trie();
+	// surfaces in it have an extra trailing whitespace " " to denote word boundary
+	// but this difference should be transparent to outside this class
+	private PrefixTree<Integer>	surfaces	= new PrefixTree<Integer>();
 
 	private SurfaceDictionary()
 	{
 
 	}
 
-	public static SurfaceDictionary load(File dictionary) throws IOException
+	/**
+	 * How many senses does this surface have?
+	 * 
+	 * @param surface
+	 * @return 0 if not contained in this dictionary, or a positive value.
+	 */
+	public int getSenseCount(String surface)
 	{
-		System.err.print("loading dictionary from " + dictionary.getPath() + "...");
-		
-		SurfaceDictionary dict = new SurfaceDictionary();
-
-		BufferedReader br = new BufferedReader(new FileReader(dictionary));
-		String line = null;
-		while ((line = br.readLine()) != null)
-		{
-			SurfaceRecord sr = SurfaceRecord.get(line);
-			if (sr == null)
-			{
-				System.err.println("ignoring dictionary line: " + line);
-				continue;
-			}
-
-			dict.surfaces.add(sr.surface);
-			if (sr.senseCount > 1)
-			{
-				dict.ambiguousSurfaces.add(sr.surface);
-			}
-		}
-		br.close();
-
-		System.err.println("loaded");
-		return dict;
-	}
-
-	public static SurfaceDictionary load(String dictionaryPath) throws IOException
-	{
-		return load(new File(dictionaryPath));
-	}
-
-	public boolean hasSurface(String surface)
-	{
-		return surfaces.isEntry(surface);
-	}
-
-	public boolean isAmbiguous(String surface)
-	{
-		return ambiguousSurfaces.isEntry(surface);
-	}
-
-	public String[] getAll()
-	{
-		return surfaces.getAll();
+		Integer c = surfaces.get(surface);
+		assert c >= 0 : "negative value for surface sense count: " + surface;
+		return c == null ? 0 : c;
 	}
 
 	/**
-	 * extract all surfaces using this dictionary.
+	 * Extract surfaces using this dictionary.
 	 * 
 	 * @param text
-	 *          NORMALIZEDA text.
+	 *          Normalized text.
 	 * @return
 	 */
 	public List<String> extractSurfaces(String text)
 	{
 		List<String> rst = new ArrayList<String>();
 
-		int offset = 0;
-		while (offset < text.length())
-		{
-			List<String> extracted = surfaces.match(text, offset);
-			for (String s : extracted)
-			{
-				rst.add(s);
-			}
+		List<Integer> currentResult = new ArrayList<Integer>();
+		List<Integer> bestResult = new ArrayList<Integer>();
 
-			offset = TextUtils.nextWhitespaceIndex(text, offset);
-			offset = TextUtils.nextNonWhitespaceIndex(text, offset);
+		extractSurfacesHelper(text, 0, currentResult, bestResult);
+
+		if (bestResult.size() > 0)
+		{
+			int p = 0;
+			for (int i = 0; i < bestResult.size(); ++i)
+			{
+				int q = bestResult.get(i);
+				String result = text.substring(p, q);
+				rst.add(result.trim());
+			}
 		}
 
 		return rst;
 	}
 
+	public void extractSurfacesHelper(String text, int offset, List<Integer> currentResult,
+			List<Integer> bestResult)
+	{
+		Map<String, Integer> matches = new HashMap<String, Integer>();
+		surfaces.prefixMatch(text, offset, matches);
+		if (matches.size() == 0)
+		{
+			if (bestResult.size() > 0)
+			{
+				int bestResultMaxOffset = bestResult.get(bestResult.size() - 1);
+				if (bestResultMaxOffset > offset)
+					return;
+				if (bestResultMaxOffset == offset && bestResult.size() <= currentResult.size())
+					return;
+			}
+			bestResult.clear();
+			bestResult.addAll(currentResult);
+		}
+		for (String match : matches.keySet())
+		{
+			offset += match.length();
+			currentResult.add(offset);
+			extractSurfacesHelper(text, offset, currentResult, bestResult);
+			currentResult.remove(currentResult.size() - 1);
+			offset -= match.length();
+		}
+	}
+
 	public static void main(String[] args) throws IOException
 	{
-		SurfaceDictionary dict = SurfaceDictionary.load(new File(ConceptConstants.DICTIONARY_PATH));
+		SurfaceDictionary dict = SurfaceDictionary.get();
 		String testString = "we know that united states 2000 census is famous in united states";
 		System.out.println(dict.extractSurfaces(testString));
 	}

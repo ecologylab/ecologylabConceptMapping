@@ -1,8 +1,8 @@
 package ecologylab.semantics.concept.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,9 +26,10 @@ public class CollectionUtils
 	 * @param <T>
 	 * @param list1
 	 * @param list2
+	 * @param comparator
 	 * @return
 	 */
-	public static <T extends Comparable<T>> List<T> commonSublist(List<T> list1, List<T> list2)
+	public static <T> List<T> commonSublist(List<T> list1, List<T> list2, Comparator<T> comparator)
 	{
 		int p = 0;
 		int q = 0;
@@ -40,17 +41,18 @@ public class CollectionUtils
 			T o1 = list1.get(p);
 			T o2 = list2.get(q);
 
-			if (o1.compareTo(o2) == 0)
+			int comp = comparator.compare(o1, o2); 
+			if (comp == 0)
 			{
 				rst.add(o1);
 				p++;
 				q++;
 			}
-			else if (o1.compareTo(o2) < 0)
+			else if (comp < 0)
 			{
 				p++;
 			}
-			else if (o1.compareTo(o2) > 0)
+			else if (comp > 0)
 			{
 				q++;
 			}
@@ -131,17 +133,6 @@ public class CollectionUtils
 				element = e;
 			}
 		}
-	}
-	
-	@Test
-	public void testCommonSublist()
-	{
-		String[] a1 = new String[] {"aaa", "aab", "aad"};
-		String[] a2 = new String[] {"aaa", "aac", "aad", "aae"};
-		List<String> l1 = Arrays.asList(a1);
-		List<String> l2 = Arrays.asList(a2);
-		
-		System.out.println(commonSublist(l1, l2));
 	}
 	
 	@Test

@@ -2,6 +2,7 @@ package ecologylab.semantics.concept.learning.svm;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,18 +18,18 @@ import ecologylab.semantics.concept.utils.CollectionUtils;
 public class DataSet extends Debug
 {
 
-	private int								dim	= 0;
+	private int								dim				= 0;
 
-	private List<Integer>			labels				= new ArrayList<Integer>();
+	private List<Integer>			labels		= new ArrayList<Integer>();
 
-	private List<svm_node[]>	features			= new ArrayList<svm_node[]>();
+	private List<svm_node[]>	features	= new ArrayList<svm_node[]>();
 
-	private List<String>			comments			= new ArrayList<String>();
+	private List<String>			comments	= new ArrayList<String>();
 
-	private int								nPos					= 0;
+	private int								nPos			= 0;
 
-	private int								nNeg					= 0;
-	
+	private int								nNeg			= 0;
+
 	public int getDimension()
 	{
 		return dim;
@@ -62,16 +63,16 @@ public class DataSet extends Debug
 	/**
 	 * load a DataSet from a file. must be in "label:feature1,feature2,... #comments" format.
 	 * 
-	 * @param filepath
+	 * @param dataSetFile
 	 * @return
 	 * @throws IOException
 	 */
-	public static DataSet load(String filepath) throws IOException
+	public static DataSet load(File dataSetFile) throws IOException
 	{
 		DataSet ds = new DataSet();
-		ds.debug("reading data from " + filepath + " ...");
+		ds.debug("reading data from " + dataSetFile.getAbsolutePath() + " ...");
 
-		BufferedReader in = new BufferedReader(new FileReader(filepath));
+		BufferedReader in = new BufferedReader(new FileReader(dataSetFile));
 		String line = null;
 		while ((line = in.readLine()) != null)
 		{
@@ -92,7 +93,7 @@ public class DataSet extends Debug
 				ds.nPos++;
 			else if (label == ConceptConstants.NEG_CLASS_INT_LABEL)
 				ds.nNeg++;
-			
+
 			if (ds.dim == 0)
 			{
 				ds.dim = parts.length - 1;
@@ -189,9 +190,10 @@ public class DataSet extends Debug
 		out.close();
 	}
 
+	// for test only
 	public static void main(String[] args) throws IOException
 	{
-		DataSet ds = DataSet.load("data/detect-training-balanced.dat");
+		DataSet ds = DataSet.load(new File("data/detect-training-balanced.dat"));
 		DataSet[] dss = ds.randomSplit(0.5, 0.5);
 		dss[0].save("data/detect-trainset.dat");
 		dss[1].save("data/detect-testset.dat");

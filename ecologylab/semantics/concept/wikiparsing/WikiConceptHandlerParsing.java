@@ -9,7 +9,6 @@ import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiLink;
 import ecologylab.semantics.concept.database.orm.WikiRedirect;
-import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.TextNormalizer;
 import ecologylab.semantics.generated.library.Anchor;
 import ecologylab.semantics.generated.library.Paragraph;
@@ -33,19 +32,12 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 
 	private WikiHtmlPreprocessor	htmlPreprocessor;
 
-	private TextNormalizer				textNormalizer;
-
 	public WikiConceptHandlerParsing() throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException
 	{
-		this.renderer = (WikiMarkupRenderer) Configs.getObject("prep.wiki_markup_renderer",
-				WikiMarkupRenderer.class);
-		this.htmlPreprocessor = (WikiHtmlPreprocessor) Configs.getObject("prep.wiki_html_preprocessor",
-				WikiHtmlPreprocessor.class);
-		this.htmlParser = (WikiHtmlParser) Configs.getObject("prep.wiki_html_parser",
-				WikiHtmlMmdParser.class);
-		this.textNormalizer = (TextNormalizer) Configs.getObject("prep.wiki_text_postprocessor",
-				TextNormalizer.class);
+		this.renderer = new WikiMarkupRenderer();
+		this.htmlPreprocessor = new WikiHtmlPreprocessor();
+		this.htmlParser = new WikiHtmlMmdParser();
 	}
 
 	@Override
@@ -56,7 +48,7 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 		if (markups == null || markups.isEmpty())
 			return;
 
-		Session session = SessionManager.getSession();
+		Session session = SessionManager.newSession();
 		Query query = session.createQuery("SELECT c FROM WikiConcept c WHERE c.title = ?");
 
 		if (WikiRedirect.getRedirected(title, session) == null)
@@ -98,7 +90,7 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 											WikiLink link = new WikiLink();
 											link.setFromId(id);
 											link.setToId(toId);
-											String normSurface = textNormalizer.normalize(surface);
+											String normSurface = TextNormalizer.normalize(surface);
 											if (normSurface != null && !normSurface.isEmpty())
 											{
 												link.setSurface(normSurface);
@@ -115,7 +107,7 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 				WikiConcept concept = (WikiConcept) session.get(WikiConcept.class, id);
 				if (concept != null)
 				{
-					String normText = textNormalizer.normalize(sb.toString());
+					String normText = TextNormalizer.normalize(sb.toString());
 					if (normText != null && !normText.isEmpty())
 					{
 						concept.setText(normText);

@@ -1,5 +1,6 @@
 package ecologylab.semantics.concept.learning.svm;
 
+import java.io.File;
 import java.io.IOException;
 
 import ecologylab.generic.Debug;
@@ -11,21 +12,34 @@ import libsvm.svm_node;
 import libsvm.svm_parameter;
 import libsvm.svm_problem;
 
+/**
+ * The trainer that generates a SVM model (with normalization info) from a dataset and parameters.
+ * 
+ * @author quyin
+ * 
+ */
 public class SVMTrainer extends Debug
 {
 
 	private DataSet			trainSet;
 
+	private Normalizer	normalizer;
+
+	private svm_model		model;
+
 	private svm_problem	problem;
 
 	/**
-	 * Train an SVM given parameters and data, and output results into file(s).
+	 * Construct a trainer with a data set. The data set will be immediately normalized. However the
+	 * training process will not start immediately because you may want to try different parameters.
 	 * 
 	 * @param trainSet
-	 *          The training set. you can load a dataset from a file using DataSet.load().
 	 */
 	public SVMTrainer(DataSet trainSet)
 	{
+		this.normalizer = NormalizerFactory.create();
+		this.normalizer.initialize(trainSet);
+		this.normalizer.normalize(trainSet);
 		this.trainSet = trainSet;
 
 		problem = new svm_problem();
@@ -45,11 +59,10 @@ public class SVMTrainer extends Debug
 	 * 
 	 * @param C
 	 * @param gamma
-	 * @return
 	 */
-	public svm_model train(double C, double gamma)
+	public void train(double C, double gamma)
 	{
-		debug("training the model ...");
+		debug("training the model with params: C=" + C + ", gamma=" + gamma + "...");
 
 		double negWeight = (double) trainSet.getNumberOfPositiveSamples()
 				/ trainSet.getNumberOfNegativeSamples();
@@ -69,38 +82,53 @@ public class SVMTrainer extends Debug
 		param.shrinking = 0; // don't use shrinking to speed up training
 		param.probability = 1; // probability model by default
 		param.nr_weight = 2;
-		param.weight_label = new int[] { ConceptConstants.POS_CLASS_INT_LABEL, ConceptConstants.NEG_CLASS_INT_LABEL };
+		param.weight_label = new int[] { ConceptConstants.POS_CLASS_INT_LABEL,
+				ConceptConstants.NEG_CLASS_INT_LABEL };
 		param.weight = new double[] { 1, negWeight };
 		// inputs
 		param.C = C;
 		param.gamma = gamma;
 
-		return svm.svm_train(problem, param);
+		model = svm.svm_train(problem, param);
+	}
+
+	public svm_model getModel()
+	{
+		return model;
+	}
+
+	public Normalizer getNormalizer()
+	{
+		return normalizer;
 	}
 
 	/**
-	 * save a trained model into a file.
+	 * Save the training results (including the model and normalization parameters) to fiels.
 	 * 
-	 * @param model
-	 * @param modelFilepath
+	 * @param modelPath
+	 * @param normParamsPath
 	 * @throws IOException
 	 */
-	public static void saveModel(svm_model model, String modelFilepath) throws IOException
+	public void saveTrainingResults(String modelPath, String normParamsPath) throws IOException
 	{
-		svm.svm_save_model(modelFilepath, model);
+		svm.svm_save_model(modelPath, model);
+		normalizer.save(new File(normParamsPath));
 	}
 
+	// for test only
 	public static void main(String[] args) throws IOException
 	{
-		DataSet trainSet = DataSet.load("data/disambi-training-balanced.dat");
-		SVMGaussianNormalization norm = new SVMGaussianNormalization(trainSet.getDimension());
-		norm.generateParameters(trainSet);
-		norm.save("model/disambi-norm-params.dat");
-		norm.normalize(trainSet);
-		
+		if (args.length != 2)
+		{
+			System.err.println("args: <training-set-data-file-path> <result-prefix>");
+		}
+		String dataPath = args[0];
+		String prefix = args[1];
+
+		DataSet trainSet = DataSet.load(new File(dataPath));
 		SVMTrainer t = new SVMTrainer(trainSet);
-		svm_model model = t.train(8, 2);
-		saveModel(model, "model/disambi-svm.model");
+		t.train(8, 2);
+		t.saveTrainingResults(prefix + ".model", prefix + ".norm");
 	}
 
 }

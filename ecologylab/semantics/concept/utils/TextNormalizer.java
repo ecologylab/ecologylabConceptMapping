@@ -28,7 +28,7 @@ public class TextNormalizer
 	 * @param text
 	 * @return
 	 */
-	public String normalize(String text)
+	public static String normalize(String text)
 	{
 		if (text == null || text.isEmpty())
 			return text;
@@ -51,7 +51,7 @@ public class TextNormalizer
 			char c2 = sb.charAt(i);
 			char c3 = sb.charAt(i + 1);
 
-			if (c2 >= 'a' && c2 <= 'z' || c2 >= 'A' && c2 <= 'Z' || c2 >= '0' && c2 <= '9')
+			if (c2 >= 'a' && c2 <= 'z' || c2 >= '0' && c2 <= '9')
 //			if (Character.isLetterOrDigit(c2))
 				continue;
 			if (Character.isWhitespace(c2))
@@ -86,4 +86,5 @@ public class TextNormalizer
 		String txt = TextUtils.loadTxtAsString("usa.txt");
 		TextUtils.saveStringToTxt(normalize(txt), "usa1.txt");
 	}
+	
 }
