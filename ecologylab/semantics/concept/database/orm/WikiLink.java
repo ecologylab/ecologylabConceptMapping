@@ -102,4 +102,11 @@ public class WikiLink implements Serializable
 		return q.list();
 	}
 
+	public static List<WikiLink> getBySource(int fromId, Session session)
+	{
+		Criteria q = session.createCriteria(WikiLink.class);
+		q.add(Property.forName("fromId").eq(fromId)).addOrder(Order.asc("toId"));
+		return q.list();
+	}
+
 }

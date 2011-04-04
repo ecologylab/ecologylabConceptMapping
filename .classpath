@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="data/|lib/|model/|scripts/|target/|scripts/|bliki-core/java/|bliki-core/java/|bliki-core/resources/|bliki-core/resources/|resources/" kind="src" path=""/>
-	<classpathentry kind="src" path="scripts"/>
+	<classpathentry excluding="data/|lib/|model/|target/|bliki-core/java/|bliki-core/java/|bliki-core/resources/|bliki-core/resources/|resources/|scripts/" kind="src" path=""/>
 	<classpathentry kind="src" path="bliki-core/java"/>
 	<classpathentry kind="src" path="bliki-core/resources"/>
 	<classpathentry kind="src" path="resources"/>
