@@ -9,6 +9,7 @@ import ecologylab.collections.Scope;
 import ecologylab.oodss.messages.RequestMessage;
 import ecologylab.semantics.concept.database.orm.Relatedness;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
+import ecologylab.serialization.SIMPLTranslationException;
 import ecologylab.serialization.simpl_inherit;
 
 /**
@@ -69,6 +70,20 @@ public class RelatednessRequest extends RequestMessage
 				resp.getTargets().put(title, respConcept);
 			}
 			resp.setOk(true);
+		}
+
+		try
+		{
+			System.out.println();
+			System.out.println();
+			resp.serialize(System.out);
+			System.out.println();
+			System.out.println();
+		}
+		catch (SIMPLTranslationException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return resp;

@@ -20,10 +20,11 @@ public class RelatednessResponse extends ResponseMessage
 	/**
 	 * Map from target concept title to an object holding returned relatedness values.
 	 */
-	@simpl_map
-	private Map<String, Concept>	targets	= new HashMap<String, Concept>();
+	@simpl_map("target")
+	private HashMap<String, Concept>	targets	= new HashMap<String, Concept>();
 
-	private boolean								ok			= false;
+	@simpl_scalar
+	private boolean										ok			= false;
 
 	public Map<String, Concept> getTargets()
 	{

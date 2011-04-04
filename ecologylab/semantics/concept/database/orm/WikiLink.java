@@ -98,6 +98,7 @@ public class WikiLink implements Serializable
 	public static List<WikiLink> getByDestination(int toId, Session session)
 	{
 		Criteria q = session.createCriteria(WikiLink.class);
+		q.setCacheable(true);
 		q.add(Property.forName("toId").eq(toId)).addOrder(Order.asc("fromId"));
 		return q.list();
 	}
@@ -105,6 +106,7 @@ public class WikiLink implements Serializable
 	public static List<WikiLink> getBySource(int fromId, Session session)
 	{
 		Criteria q = session.createCriteria(WikiLink.class);
+		q.setCacheable(true);
 		q.add(Property.forName("fromId").eq(fromId)).addOrder(Order.asc("toId"));
 		return q.list();
 	}

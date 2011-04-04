@@ -21,15 +21,16 @@ public class SuggestionResponse extends ResponseMessage
 	 * The total number of suggested concepts. (Not the number of groups)
 	 */
 	@simpl_scalar
-	private int									totalSize;
+	private int											totalSize;
 
 	/**
 	 * Suggested concepts, organized in groups.
 	 */
-	@simpl_collection
-	private List<ConceptGroup>	groups	= new ArrayList<ConceptGroup>();
+	@simpl_collection("group")
+	private ArrayList<ConceptGroup>	groups	= new ArrayList<ConceptGroup>();
 
-	private boolean							ok			= false;
+	@simpl_scalar
+	private boolean									ok			= false;
 
 	public void setOk(boolean ok)
 	{
@@ -39,7 +40,7 @@ public class SuggestionResponse extends ResponseMessage
 	@Override
 	public boolean isOK()
 	{
-		return false;
+		return ok;
 	}
 
 	public void setTotalSize(int totalSize)

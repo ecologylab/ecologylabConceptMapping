@@ -132,6 +132,7 @@ public class Relatedness implements Serializable
 		rel.setConceptId2(id2);
 		rel.setRelatedness(r);
 		session.save(rel);
+		session.flush();
 		
 		return r;
 	}

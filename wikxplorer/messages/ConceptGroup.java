@@ -20,20 +20,20 @@ public class ConceptGroup extends ElementState
 	/**
 	 * Concepts in this group.
 	 */
-	@simpl_map
-	private Map<String, Concept>	concepts	= new HashMap<String, Concept>();
+	@simpl_map("concept")
+	private HashMap<String, Concept>	concepts	= new HashMap<String, Concept>();
 
 	/**
 	 * The title of the top (most representative) concept in this group.
 	 */
 	@simpl_scalar
-	private String								topTitle;
+	private String										topTitle;
 
 	/**
 	 * The average relatedness of concepts in this group.
 	 */
 	@simpl_scalar
-	private double								averageRelatedness;
+	private double										averageRelatedness;
 
 	public String getTopTitle()
 	{

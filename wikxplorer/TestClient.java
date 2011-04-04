@@ -1,11 +1,9 @@
 package wikxplorer;
 
 import java.io.IOException;
-import java.net.InetAddress;
 
 import wikxplorer.messages.RelatednessRequest;
 import wikxplorer.messages.SuggestionRequest;
-import wikxplorer.messages.SuggestionResponse;
 import wikxplorer.messages.UpdateContextRequest;
 import wikxplorer.messages.WikxplorerMessageTranslationScope;
 import ecologylab.collections.Scope;
@@ -31,18 +29,19 @@ public class TestClient
 		{
 			UpdateContextRequest ucr = new UpdateContextRequest();
 			ucr.setAction(UpdateContextRequest.ACTION_ADD);
-			ucr.setTitle("United States");
-			client.sendMessage(ucr);
-			Thread.sleep(2000);
+			ucr.setTitle("Creativity");
+			client.sendMessage(ucr, 2000);
 			
 			RelatednessRequest rr = new RelatednessRequest();
-			rr.setSource("White House");
+			rr.setSource("Cognitive science");
 			client.sendMessage(rr);
 			Thread.sleep(2000);
 			
 			SuggestionRequest sr = new SuggestionRequest();
-			sr.setSource("Constitution");
+			sr.setSource("Psychology");
 			client.sendMessage(sr);
+			
+			client.disconnect();
 		}
 	}
 	
