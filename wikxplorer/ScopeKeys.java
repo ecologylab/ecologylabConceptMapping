@@ -13,4 +13,6 @@ public class ScopeKeys
 
 	public static final String	CLIPPING_CONTEXT	= "clipping_context";
 
+	public static final String	TEST_CLIENT				= "test_client";
+
 }

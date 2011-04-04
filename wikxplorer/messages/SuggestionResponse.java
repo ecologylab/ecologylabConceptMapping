@@ -3,6 +3,7 @@ package wikxplorer.messages;
 import java.util.ArrayList;
 import java.util.List;
 
+import ecologylab.collections.Scope;
 import ecologylab.oodss.messages.ResponseMessage;
 import ecologylab.serialization.simpl_inherit;
 
@@ -54,6 +55,24 @@ public class SuggestionResponse extends ResponseMessage
 	public List<ConceptGroup> getGroups()
 	{
 		return groups;
+	}
+
+	@Override
+	public void processResponse(Scope objectRegistry)
+	{
+		// just for testing
+		System.out.println("SuggestionResponse: [" + totalSize + "]");
+		for (ConceptGroup group : groups)
+		{
+			System.out.println("\tGroup: [" + group.getConcepts().size() + "]");
+			System.out.println("\t\tAverage Relatedness: " + group.getAverageRelatedness());
+			System.out.println("\t\tTop Title: " + group.getTopTitle());
+			for (String title : group.getConcepts().keySet())
+			{
+				Concept concept = group.getConcepts().get(title);
+				System.out.println(String.format("\t%s: %f", title, concept.getRelatedness()));
+			}
+		}
 	}
 
 }

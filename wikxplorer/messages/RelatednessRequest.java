@@ -26,6 +26,16 @@ public class RelatednessRequest extends RequestMessage
 	@simpl_scalar
 	private String	source;
 
+	public String getSource()
+	{
+		return source;
+	}
+
+	public void setSource(String source)
+	{
+		this.source = source;
+	}
+
 	@Override
 	public RelatednessResponse performService(Scope clientSessionScope)
 	{

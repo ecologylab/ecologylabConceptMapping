@@ -33,6 +33,26 @@ public class UpdateContextRequest extends RequestMessage
 	@simpl_scalar
 	private String					title;
 
+	public int getAction()
+	{
+		return action;
+	}
+
+	public void setAction(int action)
+	{
+		this.action = action;
+	}
+
+	public String getTitle()
+	{
+		return title;
+	}
+
+	public void setTitle(String title)
+	{
+		this.title = title;
+	}
+
 	@Override
 	public ResponseMessage performService(Scope clientSessionScope)
 	{
