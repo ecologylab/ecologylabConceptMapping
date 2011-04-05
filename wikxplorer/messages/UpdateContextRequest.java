@@ -6,6 +6,7 @@ import org.hibernate.Session;
 
 import wikxplorer.ScopeKeys;
 import ecologylab.collections.Scope;
+import ecologylab.oodss.messages.OkResponse;
 import ecologylab.oodss.messages.RequestMessage;
 import ecologylab.oodss.messages.ResponseMessage;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
@@ -75,7 +76,7 @@ public class UpdateContextRequest extends RequestMessage
 			break;
 		}
 
-		return null;
+		return new OkResponse();
 	}
 
 }

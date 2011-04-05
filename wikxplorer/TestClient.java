@@ -21,8 +21,8 @@ public class TestClient
 		Scope clientScope = new Scope();
 		
 		NIOClient client = new NIOClient("localhost", 11355, tscope, clientScope);
-		client.allowCompression(true);
-		client.useRequestCompression(true);
+		client.allowCompression(false);
+		client.useRequestCompression(false);
 		client.connect();
 		
 		if (client.connected())
@@ -30,7 +30,7 @@ public class TestClient
 			UpdateContextRequest ucr = new UpdateContextRequest();
 			ucr.setAction(UpdateContextRequest.ACTION_ADD);
 			ucr.setTitle("Creativity");
-			client.sendMessage(ucr, 2000);
+			client.sendMessage(ucr);
 			
 			RelatednessRequest rr = new RelatednessRequest();
 			rr.setSource("Cognitive science");
@@ -38,7 +38,7 @@ public class TestClient
 			Thread.sleep(2000);
 			
 			SuggestionRequest sr = new SuggestionRequest();
-			sr.setSource("Psychology");
+			sr.setSource("Information visualization");
 			client.sendMessage(sr);
 			
 			client.disconnect();
