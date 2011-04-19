@@ -19,6 +19,7 @@ import ecologylab.serialization.simpl_inherit;
  * 
  */
 @simpl_inherit
+// TODO this request should add the source concept into the context if it is not there
 public class RelatednessRequest extends RequestMessage
 {
 	/**

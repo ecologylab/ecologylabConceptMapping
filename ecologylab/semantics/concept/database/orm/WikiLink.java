@@ -99,7 +99,7 @@ public class WikiLink implements Serializable
 	{
 		Criteria q = session.createCriteria(WikiLink.class);
 		q.setCacheable(true);
-		q.add(Property.forName("toId").eq(toId)).addOrder(Order.asc("fromId"));
+		q.add(Property.forName("toId").eq(toId)).addOrder(Order.asc("fromId")).setMaxResults(100);
 		return q.list();
 	}
 
@@ -107,7 +107,7 @@ public class WikiLink implements Serializable
 	{
 		Criteria q = session.createCriteria(WikiLink.class);
 		q.setCacheable(true);
-		q.add(Property.forName("fromId").eq(fromId)).addOrder(Order.asc("toId"));
+		q.add(Property.forName("fromId").eq(fromId)).addOrder(Order.asc("toId")).setMaxResults(100);
 		return q.list();
 	}
 

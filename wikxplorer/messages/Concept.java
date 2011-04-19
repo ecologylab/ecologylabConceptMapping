@@ -25,9 +25,11 @@ public class Concept extends ElementState implements Mappable<String>
 
 	public static final int	NONE		= 0;
 
-	public static final int	OUTLINK	= 1;
+	// use bits as flags
+	
+	public static final int	OUTLINK	= 0x1;
 
-	public static final int	INLINK	= 2;
+	public static final int	INLINK	= 0x2;
 
 	/**
 	 * The title of this concept.
