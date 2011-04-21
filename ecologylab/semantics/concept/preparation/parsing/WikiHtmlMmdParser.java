@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing;
+package ecologylab.semantics.concept.preparation.parsing;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -107,7 +107,7 @@ public class WikiHtmlMmdParser implements WikiHtmlParser
 	@Test
 	public void test() throws IOException, SIMPLTranslationException
 	{
-		String wikiHtml = TextUtils.loadTxtAsString("usa1.html");
+		String wikiHtml = TextUtils.loadTxtAsString(new File("usa1.html"));
 		WikipediaPageType md = parse(wikiHtml);
 		md.serialize(System.out);
 	}

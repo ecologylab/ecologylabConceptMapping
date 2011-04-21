@@ -5,9 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import ecologylab.semantics.concept.database.orm.Commonness;
 import ecologylab.semantics.concept.database.orm.Keyphraseness;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
+import ecologylab.semantics.concept.preparation.postparsing.Commonness;
 
 /**
  * Represents a surface (local to a Doc).

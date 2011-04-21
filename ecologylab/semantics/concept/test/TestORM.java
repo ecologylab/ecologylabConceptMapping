@@ -3,65 +3,60 @@ package ecologylab.semantics.concept.test;
 import org.hibernate.Session;
 
 import ecologylab.semantics.concept.database.SessionManager;
-import ecologylab.semantics.concept.database.orm.Commonness;
-import ecologylab.semantics.concept.database.orm.WikiLink;
+import ecologylab.semantics.concept.database.orm.WikiConcept;
+import ecologylab.semantics.concept.database.orm.WikiSurface;
 
 public class TestORM
 {
 
-	static void test1()
+	static void test()
 	{
 		Session sess = SessionManager.newSession();
-		sess.beginTransaction();
-
-		Commonness comm = new Commonness();
-		comm.setSurface("abc");
-		comm.setConceptId(123);
-		comm.setCommonness(0.5);
-		sess.save(comm);
-
-		sess.getTransaction().commit();
-
-		sess.beginTransaction();
-
-		Commonness query = new Commonness();
-		query.setSurface("abc");
-		query.setConceptId(123);
-		query = (Commonness) sess.get(Commonness.class, query);
-		System.out.println(query.getCommonness());
-
-		sess.getTransaction().commit();
-		sess.close();
-	}
-
-	static void test2()
-	{
-		org.hibernate.Session sess = SessionManager.newSession();
+		
+		try
+		{
+			Thread.sleep(2000);
+		}
+		catch (InterruptedException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		sess.beginTransaction();
-		WikiLink wl1 = new WikiLink();
-		wl1.setFromId(1);
-		wl1.setToId(2);
-		wl1.setSurface("abc");
-		sess.save(wl1);
-		sess.getTransaction().commit();
-		System.out.println("wiki_link1.seq_id: " + wl1.getSeqId());
+		WikiConcept c1 = WikiConcept.getByTitle("Cognitive science", sess);
+		WikiConcept c2 = WikiConcept.getByTitle("Cognitive behavioral therapy", sess);
 		
-		sess.beginTransaction();
-		WikiLink wl2 = new WikiLink();
-		wl2.setFromId(1);
-		wl2.setToId(2);
-		wl2.setSurface("abc");
-		sess.save(wl2);
+		System.out.print("Surfaces: ");
+		for (WikiSurface s : c1.getSurfaces().keySet())
+		{
+			System.out.print(s.getSurface() + ", ");
+		}
+		System.out.println();
+		
+		System.out.print("Inlinks: ");
+		for (WikiConcept inl : c1.getInlinks().keySet())
+		{
+			System.out.print(inl.getId() + ", ");
+		}
+		System.out.println();
+		
+		System.out.print("Outlinks: ");
+		for (WikiConcept oul : c1.getOutlinks().keySet())
+		{
+			System.out.print(oul.getId() + ", ");
+		}
+		System.out.println();
+		
+		System.out.println(c1.getRelatedness(c2, sess));
 		sess.getTransaction().commit();
-		System.out.println("wiki_link2.seq_id: " + wl2.getSeqId());
-
+		
 		sess.close();
 	}
 
 	public static void main(String[] args)
 	{
-		test1();
+		test();
 	}
 
 }

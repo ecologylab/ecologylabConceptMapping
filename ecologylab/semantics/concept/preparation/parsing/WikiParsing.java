@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing;
+package ecologylab.semantics.concept.preparation.parsing;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,8 +8,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
-
-import ecologylab.semantics.concept.database.SessionManager;
 
 /**
  * The entry class to parsing Wikipedia dump.

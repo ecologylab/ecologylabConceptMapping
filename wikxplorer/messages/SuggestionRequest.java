@@ -11,7 +11,7 @@ import ecologylab.collections.Scope;
 import ecologylab.oodss.messages.RequestMessage;
 import ecologylab.semantics.concept.database.orm.Relatedness;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
-import ecologylab.semantics.concept.database.orm.WikiLink;
+import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
 import ecologylab.serialization.simpl_inherit;
 
 /**

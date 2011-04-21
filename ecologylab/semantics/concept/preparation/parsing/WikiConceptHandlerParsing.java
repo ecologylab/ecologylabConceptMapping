@@ -1,14 +1,13 @@
-package ecologylab.semantics.concept.wikiparsing;
+package ecologylab.semantics.concept.preparation.parsing;
 
 import java.util.ArrayList;
 
-import org.hibernate.Query;
 import org.hibernate.Session;
 
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
-import ecologylab.semantics.concept.database.orm.WikiLink;
-import ecologylab.semantics.concept.database.orm.WikiRedirect;
+import ecologylab.semantics.concept.database.orm.WikiSurface;
+import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
 import ecologylab.semantics.concept.utils.TextNormalizer;
 import ecologylab.semantics.generated.library.Anchor;
 import ecologylab.semantics.generated.library.Paragraph;
@@ -49,17 +48,17 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 			return;
 
 		Session session = SessionManager.newSession();
-		Query query = session.createQuery("SELECT c FROM WikiConcept c WHERE c.title = ?");
+		WikiConcept concept = WikiConcept.getById(id, session);
 
-		if (WikiRedirect.getRedirected(title, session) == null)
+		if (concept != null)
 		{
 			// render html
 			String html = renderer.render(markups);
 			String html1 = htmlPreprocessor.preprocess(html);
 
 			// process texts and links
-			StringBuilder sb = new StringBuilder();
 			WikipediaPageType page = htmlParser.parse(html1);
+			StringBuilder sb = new StringBuilder();
 			if (page != null)
 			{
 				session.beginTransaction();
@@ -83,19 +82,27 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 									if (anchor != null)
 									{
 										String surface = anchor.getAnchorText();
+										String normSurface = TextNormalizer.normalize(surface);
 										String target = anchor.getTargetTitle();
-										int toId = getIdForTitle(target, session, query);
-										if (toId >= 0)
+										// WikiConcept.getByTitle() will handle redirects
+										WikiConcept targetConcept = WikiConcept.getByTitle(target, session);
+
+										if (normSurface != null && !normSurface.isEmpty() && targetConcept != null
+												&& concept.getId() != targetConcept.getId())
 										{
-											WikiLink link = new WikiLink();
-											link.setFromId(id);
-											link.setToId(toId);
-											String normSurface = TextNormalizer.normalize(surface);
-											if (normSurface != null && !normSurface.isEmpty())
+											WikiSurface ws = WikiSurface.get(normSurface, session);
+											if (ws == null)
 											{
-												link.setSurface(normSurface);
-												session.save(link);
+												ws = new WikiSurface();
+												ws.setSurface(normSurface);
+												session.save(ws);
 											}
+
+											WikiLink link = new WikiLink();
+											link.setFromId(concept.getId());
+											link.setToId(targetConcept.getId());
+											link.setSurface(normSurface);
+											session.save(link);
 										}
 									}
 								}
@@ -104,38 +111,18 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 					}
 				}
 
-				WikiConcept concept = (WikiConcept) session.get(WikiConcept.class, id);
-				if (concept != null)
+				String normText = TextNormalizer.normalize(sb.toString());
+				if (normText != null && !normText.isEmpty())
 				{
-					String normText = TextNormalizer.normalize(sb.toString());
-					if (normText != null && !normText.isEmpty())
-					{
-						concept.setText(normText);
-						session.update(concept);
-					}
+					concept.setText(normText);
 				}
+				session.update(concept);
 
 				session.getTransaction().commit();
 			}
 		}
 
 		session.close();
-	}
-
-	private int getIdForTitle(String target, Session openSession, Query query)
-	{
-		if (target == null || target.isEmpty())
-			return -1;
-
-		char c0 = target.charAt(0);
-		if (Character.isLowerCase(c0))
-			target = Character.toUpperCase(c0) + target.substring(1);
-		String redirect = WikiRedirect.getRedirected(target, openSession);
-		String trueTarget = redirect == null ? target : redirect;
-
-		query.setString(0, trueTarget);
-		WikiConcept c = (WikiConcept) query.uniqueResult();
-		return c == null ? -1 : c.getId();
 	}
 
 	@Override

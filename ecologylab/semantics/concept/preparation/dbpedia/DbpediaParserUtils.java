@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing.dbpedia;
+package ecologylab.semantics.concept.preparation.dbpedia;
 
 /**
  * Holding useful information for Dbpedia parsers.

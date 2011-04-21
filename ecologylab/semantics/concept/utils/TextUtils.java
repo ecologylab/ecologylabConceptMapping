@@ -109,11 +109,18 @@ public class TextUtils
 		return count;
 	}
 
-	public static String loadTxtAsString(String filePath) throws IOException
+	/**
+	 * load a whole text file into a string.
+	 * 
+	 * @param f
+	 * @return
+	 * @throws IOException
+	 */
+	public static String loadTxtAsString(File f) throws IOException
 	{
 		StringBuilder sb = new StringBuilder();
 		String line = null;
-		BufferedReader br = new BufferedReader(new FileReader(filePath));
+		BufferedReader br = new BufferedReader(new FileReader(f));
 		while ((line = br.readLine()) != null)
 		{
 			sb.append(line);

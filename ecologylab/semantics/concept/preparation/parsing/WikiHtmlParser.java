@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing;
+package ecologylab.semantics.concept.preparation.parsing;
 
 import ecologylab.semantics.generated.library.WikipediaPageType;
 

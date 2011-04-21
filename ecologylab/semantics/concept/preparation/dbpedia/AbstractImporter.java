@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing.dbpedia;
+package ecologylab.semantics.concept.preparation.dbpedia;
 
 import java.io.BufferedReader;
 import java.io.File;

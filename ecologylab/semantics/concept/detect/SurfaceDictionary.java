@@ -64,8 +64,10 @@ public class SurfaceDictionary extends Debug
 								if (surface != null && !surface.isEmpty())
 								{
 									int count = Integer.parseInt(parts[1]);
-									dict.surfaces.put(surface + " ", count); // add a whitespace to denote word
-																														// boundary
+
+									// add a trailing whitespace to denote word boundary
+									dict.surfaces.put(surface + " ", count);
+
 									continue;
 								}
 							}
@@ -95,7 +97,7 @@ public class SurfaceDictionary extends Debug
 	{
 
 	}
-
+	
 	/**
 	 * How many senses does this surface have?
 	 * 
@@ -120,26 +122,55 @@ public class SurfaceDictionary extends Debug
 	{
 		List<String> rst = new ArrayList<String>();
 
-		List<Integer> currentResult = new ArrayList<Integer>();
-		List<Integer> bestResult = new ArrayList<Integer>();
+		int offset = 0;
 
-		extractSurfacesHelper(text, 0, currentResult, bestResult);
-
-		if (bestResult.size() > 0)
+		while (offset < text.length())
 		{
-			int p = 0;
-			for (int i = 0; i < bestResult.size(); ++i)
+			// results of this iteration
+			List<Integer> currentResult = new ArrayList<Integer>();
+			List<Integer> bestResult = new ArrayList<Integer>();
+
+			// extract
+			extractSurfacesHelper(text, 0, currentResult, bestResult);
+
+			// cumulate results
+			if (bestResult.size() > 0)
 			{
-				int q = bestResult.get(i);
-				String result = text.substring(p, q);
-				rst.add(result.trim());
+				int p = 0;
+				for (int i = 0; i < bestResult.size(); ++i)
+				{
+					int q = bestResult.get(i);
+					String result = text.substring(p, q);
+					rst.add(result.trim());
+				}
+
+				// update offset
+				offset += bestResult.get(bestResult.size() - 1);
 			}
+
+			// the word at offset is not a prefix of a surface, move to the next whitespace
+			while (offset < text.length() && text.charAt(offset) != ' ')
+				offset++;
+			// skip the whitespace to the beginning of the next word
+			offset++;
 		}
 
 		return rst;
 	}
 
-	public void extractSurfacesHelper(String text, int offset, List<Integer> currentResult,
+	/**
+	 * extract surfaces from input text in an optimized way, and save result in bestResult.
+	 * 
+	 * the goal is to match as longer text with as fewer surfaces as possible.
+	 * 
+	 * note that the last integer in bestResult is the offset of not-yet-extracted text.
+	 * 
+	 * @param text
+	 * @param offset
+	 * @param currentResult
+	 * @param bestResult
+	 */
+	private void extractSurfacesHelper(String text, int offset, List<Integer> currentResult,
 			List<Integer> bestResult)
 	{
 		Map<String, Integer> matches = new HashMap<String, Integer>();

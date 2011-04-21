@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing.dbpedia;
+package ecologylab.semantics.concept.preparation.dbpedia;
 
 import java.io.IOException;
 import java.sql.SQLException;

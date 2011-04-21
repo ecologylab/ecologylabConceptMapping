@@ -1,7 +1,6 @@
-package ecologylab.semantics.concept.database.orm;
+package ecologylab.semantics.concept.preparation.postparsing;
 
 import java.io.Serializable;
-import java.util.List;
 
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
@@ -11,13 +10,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.hibernate.Criteria;
-import org.hibernate.Session;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Property;
 
+/**
+ * (Used only in parsing, for efficiency)
+ * 
+ * @author quyin
+ *
+ */
 @Entity
 @Table(name = "wiki_links")
 @Cacheable
@@ -45,6 +46,26 @@ public class WikiLink implements Serializable
 		return seqId;
 	}
 
+	public int getFromId()
+	{
+		return fromId;
+	}
+
+	public void setFromId(int fromId)
+	{
+		this.fromId = fromId;
+	}
+
+	public int getToId()
+	{
+		return toId;
+	}
+
+	public void setToId(int toId)
+	{
+		this.toId = toId;
+	}
+
 	public String getSurface()
 	{
 		return surface;
@@ -53,26 +74,6 @@ public class WikiLink implements Serializable
 	public void setSurface(String surface)
 	{
 		this.surface = surface;
-	}
-
-	public void setFromId(int fromId)
-	{
-		this.fromId = fromId;
-	}
-
-	public int getFromId()
-	{
-		return fromId;
-	}
-
-	public void setToId(int toId)
-	{
-		this.toId = toId;
-	}
-
-	public int getToId()
-	{
-		return toId;
 	}
 
 	@Override
@@ -93,22 +94,6 @@ public class WikiLink implements Serializable
 		// Cantor pairing function
 		long pairing = (long) (fromId + toId) * (fromId + toId + 1) / 2 + toId;
 		return (int) (pairing % 2147483647);
-	}
-
-	public static List<WikiLink> getByDestination(int toId, Session session)
-	{
-		Criteria q = session.createCriteria(WikiLink.class);
-		q.setCacheable(true);
-		q.add(Property.forName("toId").eq(toId)).addOrder(Order.asc("fromId")).setMaxResults(100);
-		return q.list();
-	}
-
-	public static List<WikiLink> getBySource(int fromId, Session session)
-	{
-		Criteria q = session.createCriteria(WikiLink.class);
-		q.setCacheable(true);
-		q.add(Property.forName("fromId").eq(fromId)).addOrder(Order.asc("toId")).setMaxResults(100);
-		return q.list();
 	}
 
 }

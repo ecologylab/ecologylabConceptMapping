@@ -5,7 +5,7 @@
     <session-factory>
         <!-- Database connection settings -->
         <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
-        <property name="hibernate.connection.url">jdbc:postgresql://ecolab-chevron-1.cse.tamu.edu/wikiparsing3</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing3</property>
         <property name="hibernate.connection.username">quyin</property>
         <property name="hibernate.connection.password">quyindbpwd</property>
 
@@ -29,13 +29,10 @@
         <property name="hibernate.cache.use_query_cache">true</property>
         
         <!-- Names the annotated entity class -->
-				<mapping class="ecologylab.semantics.concept.database.orm.Commonness" />
 				<mapping class="ecologylab.semantics.concept.database.orm.DbpRecord" />
-				<mapping class="ecologylab.semantics.concept.database.orm.Keyphraseness" />
-				<mapping class="ecologylab.semantics.concept.database.orm.Relatedness" />
-				<mapping class="ecologylab.semantics.concept.database.orm.SurfaceOccurrence" />
 				<mapping class="ecologylab.semantics.concept.database.orm.WikiConcept" />
-				<mapping class="ecologylab.semantics.concept.database.orm.WikiLink" />
 				<mapping class="ecologylab.semantics.concept.database.orm.WikiRedirect" />
+				<mapping class="ecologylab.semantics.concept.database.orm.WikiSurface" />
+				<mapping class="ecologylab.semantics.concept.preparation.parsing.WikiLink" />
     </session-factory>
 </hibernate-configuration>

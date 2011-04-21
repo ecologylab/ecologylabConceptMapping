@@ -11,7 +11,7 @@ import java.util.Set;
 import ecologylab.semantics.concept.ConceptConstants;
 import ecologylab.semantics.concept.database.DatabaseFacade;
 import ecologylab.semantics.concept.detect.SurfaceDictionary;
-import ecologylab.semantics.concept.prepare.KeyphrasenessCalculator;
+import ecologylab.semantics.concept.preparation.postparsing.KeyphrasenessCalculator;
 
 public class TestKeyphraseness extends KeyphrasenessCalculator
 {

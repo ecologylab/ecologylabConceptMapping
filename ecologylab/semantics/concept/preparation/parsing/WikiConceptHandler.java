@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing;
+package ecologylab.semantics.concept.preparation.parsing;
 
 /**
  * Handling a wiki concept in the data preparation phase.

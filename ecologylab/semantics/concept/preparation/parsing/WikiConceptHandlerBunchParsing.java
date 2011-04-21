@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.wikiparsing;
+package ecologylab.semantics.concept.preparation.parsing;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +19,7 @@ public class WikiConceptHandlerBunchParsing implements WikiConceptHandler
 	private static class ParsingClosure implements Runnable
 	{
 
-		private WikiConceptHandlerParsing				worker;
+		private WikiConceptHandler							worker;
 
 		private WikiConceptHandlerBunchParsing	listener;
 
@@ -29,8 +29,8 @@ public class WikiConceptHandlerBunchParsing implements WikiConceptHandler
 
 		private String													markups;
 
-		public ParsingClosure(WikiConceptHandlerParsing worker,
-				WikiConceptHandlerBunchParsing listener, int id, String title, String markups)
+		public ParsingClosure(WikiConceptHandler worker, WikiConceptHandlerBunchParsing listener,
+				int id, String title, String markups)
 		{
 			this.worker = worker;
 			this.id = id;
@@ -57,13 +57,13 @@ public class WikiConceptHandlerBunchParsing implements WikiConceptHandler
 	/**
 	 * parser must be thread safe!!!
 	 */
-	private WikiConceptHandlerParsing	parser;
+	private WikiConceptHandler	parser;
 
-	private Set<ParsingClosure>				pool								= new HashSet<ParsingClosure>();
+	private Set<ParsingClosure>	pool			= new HashSet<ParsingClosure>();
 
-	private Object										lockPool						= new Object();
+	private Object							lockPool	= new Object();
 
-	private int												nThreads						= 1;
+	private int									nThreads	= 1;
 
 	public WikiConceptHandlerBunchParsing() throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException
@@ -110,7 +110,7 @@ public class WikiConceptHandlerBunchParsing implements WikiConceptHandler
 	public void finish()
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
