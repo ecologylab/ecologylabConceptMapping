@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <pref_set>
+  <pref_file name="prep.mmd_repository" value="../ecologylabSemantics/repository" />
   <pref_string name="prep.wiki_concept_handler" value="ecologylab.semantics.concept.wikiparsing.WikiConceptHandlerBunchParsing" />
   <pref_int name="prep.wiki_concept_handler.number_of_threads" value="10" />
-  
+
   <pref_int name="db.total_concept_count" value="6449818" />
-  
-  <!--
-  <pref_file name="prep.mmd_repository" value="../ecologylabSemantics/repository" />
-  <pref_string name="train.trainset_preparer" value="ecologylab.semantics.concept.train.DetectionTrainingSetPreparer" />
-  -->
+
+  <pref_file name="surface_dictionary_path" value="data/surfaces.dic" />
+
+  <!-- <pref_string name="train.trainset_preparer" value="ecologylab.semantics.concept.train.DetectionTrainingSetPreparer" /> -->
 </pref_set>

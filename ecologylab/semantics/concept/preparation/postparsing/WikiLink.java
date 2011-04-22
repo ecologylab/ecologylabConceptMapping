@@ -28,9 +28,9 @@ public class WikiLink implements Serializable
 
 	// @Generated(value = GenerationTime.INSERT)
 	@Id
-	@Column(name = "seq_id", nullable = false, insertable = false, updatable = false)
+	@Column(name = "link_id", nullable = false, insertable = false, updatable = false)
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int	seqId;
+	private int	linkId;
 
 	@Column(name = "from_id", nullable = false)
 	private int	fromId;
@@ -41,9 +41,9 @@ public class WikiLink implements Serializable
 	@Column(name = "surface", nullable = false)
 	String			surface;
 
-	public int getSeqId()
+	public int getLinkId()
 	{
-		return seqId;
+		return linkId;
 	}
 
 	public int getFromId()
@@ -95,5 +95,5 @@ public class WikiLink implements Serializable
 		long pairing = (long) (fromId + toId) * (fromId + toId + 1) / 2 + toId;
 		return (int) (pairing % 2147483647);
 	}
-
+	
 }

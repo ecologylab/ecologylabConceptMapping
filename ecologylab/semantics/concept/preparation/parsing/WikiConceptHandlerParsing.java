@@ -6,7 +6,6 @@ import org.hibernate.Session;
 
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
-import ecologylab.semantics.concept.database.orm.WikiSurface;
 import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
 import ecologylab.semantics.concept.utils.TextNormalizer;
 import ecologylab.semantics.generated.library.Anchor;
@@ -90,14 +89,6 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 										if (normSurface != null && !normSurface.isEmpty() && targetConcept != null
 												&& concept.getId() != targetConcept.getId())
 										{
-											WikiSurface ws = WikiSurface.get(normSurface, session);
-											if (ws == null)
-											{
-												ws = new WikiSurface();
-												ws.setSurface(normSurface);
-												session.save(ws);
-											}
-
 											WikiLink link = new WikiLink();
 											link.setFromId(concept.getId());
 											link.setToId(targetConcept.getId());

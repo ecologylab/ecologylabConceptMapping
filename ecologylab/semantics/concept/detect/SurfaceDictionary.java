@@ -49,7 +49,7 @@ public class SurfaceDictionary extends Debug
 				if (the == null)
 				{
 					SurfaceDictionary dict = new SurfaceDictionary();
-					File dictPath = Configs.getFile("surface_dictionary.path");
+					File dictPath = Configs.getFile("surface_dictionary_path");
 					dict.debug("loading surface dictionary from " + dictPath + " ...");
 					try
 					{

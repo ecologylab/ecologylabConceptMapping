@@ -33,6 +33,7 @@
 				<mapping class="ecologylab.semantics.concept.database.orm.WikiConcept" />
 				<mapping class="ecologylab.semantics.concept.database.orm.WikiRedirect" />
 				<mapping class="ecologylab.semantics.concept.database.orm.WikiSurface" />
-				<mapping class="ecologylab.semantics.concept.preparation.parsing.WikiLink" />
+				<mapping class="ecologylab.semantics.concept.preparation.postparsing.Commonness" />
+				<mapping class="ecologylab.semantics.concept.preparation.postparsing.WikiLink" />
     </session-factory>
 </hibernate-configuration>

@@ -1,9 +1,6 @@
 package ecologylab.semantics.concept.utils;
 
-import java.io.IOException;
 import java.util.regex.Pattern;
-
-import org.junit.Test;
 
 /**
  * Normalize texts.
@@ -52,7 +49,7 @@ public class TextNormalizer
 			char c3 = sb.charAt(i + 1);
 
 			if (c2 >= 'a' && c2 <= 'z' || c2 >= '0' && c2 <= '9')
-//			if (Character.isLetterOrDigit(c2))
+				// if (Character.isLetterOrDigit(c2))
 				continue;
 			if (Character.isWhitespace(c2))
 				continue;
@@ -76,15 +73,8 @@ public class TextNormalizer
 
 		// remove extra whitespaces
 		t = t.replaceAll("\\s+", " ").trim();
-		
+
 		return t;
 	}
 
-	@Test
-	public void test() throws IOException
-	{
-		String txt = TextUtils.loadTxtAsString("usa.txt");
-		TextUtils.saveStringToTxt(normalize(txt), "usa1.txt");
-	}
-	
 }
