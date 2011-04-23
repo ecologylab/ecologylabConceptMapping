@@ -12,8 +12,9 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Property;
 
-import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.SessionPool;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
+import ecologylab.semantics.concept.utils.CollectionUtils;
 
 /**
  * calculate commonness using wiki_links and wiki_surfaces.
@@ -39,7 +40,7 @@ public class CommonnessCalculator
 
 	public void calculateCommonness()
 	{
-		Session session = SessionManager.newSession();
+		Session session = SessionPool.getSession();
 
 		Criteria q = session.createCriteria(WikiSurface.class);
 		q.add(Property.forName("linkedOccurrence").gt(LINKED_OCCURRENCE_THRESHOLD));
@@ -64,7 +65,6 @@ public class CommonnessCalculator
 			}
 		}
 		results.close();
-		session.close();
 
 		try
 		{
@@ -75,11 +75,14 @@ public class CommonnessCalculator
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		session.close();
+
 	}
 
 	private void processSurface(String surface)
 	{
-		Session session = SessionManager.newSession();
+		Session session = SessionPool.getSession();
 
 		Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
 
@@ -98,10 +101,7 @@ public class CommonnessCalculator
 		}
 		sr.close();
 
-		int sum = 0;
-		for (int value : counts.values())
-			sum += value;
-
+		int sum = CollectionUtils.sum(counts.values());
 		for (int cid : counts.keySet())
 		{
 			double commonness = counts.get(cid) * 1.0 / sum;
@@ -116,7 +116,6 @@ public class CommonnessCalculator
 		}
 
 		session.getTransaction().commit();
-		session.close();
 	}
 
 	public static void main(String[] args)

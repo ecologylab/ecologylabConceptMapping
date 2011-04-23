@@ -8,7 +8,7 @@ import java.util.HashMap;
 import ecologylab.collections.Scope;
 import ecologylab.net.NetTools;
 import ecologylab.oodss.distributed.server.DoubleThreadedNIOServer;
-import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.SessionPool;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.serialization.TranslationScope;
 import wikxplorer.messages.WikxplorerMessageTranslationScope;
@@ -21,7 +21,7 @@ public class Server
 		TranslationScope tscope = WikxplorerMessageTranslationScope.get();
 
 		Scope serverClientScope = new Scope();
-		serverClientScope.put(ScopeKeys.SESSION, SessionManager.newSession());
+		serverClientScope.put(ScopeKeys.SESSION, SessionPool.getSession());
 		serverClientScope.put(ScopeKeys.CLIPPING_CONTEXT, new HashMap<String, WikiConcept>());
 
 		InetAddress[] locals = NetTools.getAllInetAddressesForLocalhost();

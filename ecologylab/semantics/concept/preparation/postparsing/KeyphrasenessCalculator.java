@@ -9,7 +9,7 @@ import org.hibernate.Criteria;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.SessionPool;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
 import ecologylab.semantics.concept.detect.SurfaceDictionary;
@@ -33,7 +33,7 @@ public class KeyphrasenessCalculator
 		total = number;
 		counter = 0;
 
-		Session session = SessionManager.newSession();
+		Session session = SessionPool.getSession();
 		Criteria q = session.createCriteria(WikiConcept.class);
 		q.setFirstResult(offset);
 		q.setMaxResults(number);
@@ -60,7 +60,7 @@ public class KeyphrasenessCalculator
 
 	private void processConcept(WikiConcept concept)
 	{
-		Session session = SessionManager.newSession();
+		Session session = SessionPool.getSession();
 
 		session.beginTransaction();
 

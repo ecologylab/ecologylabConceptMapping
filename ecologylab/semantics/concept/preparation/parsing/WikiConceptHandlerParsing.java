@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.SessionPool;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
 import ecologylab.semantics.concept.utils.TextNormalizer;
@@ -46,7 +46,7 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 		if (markups == null || markups.isEmpty())
 			return;
 
-		Session session = SessionManager.newSession();
+		Session session = SessionPool.getSession();
 		WikiConcept concept = WikiConcept.getById(id, session);
 
 		if (concept != null)

@@ -1,9 +1,11 @@
 package ecologylab.semantics.concept.detect;
 
 import ecologylab.semantics.concept.database.orm.WikiConcept;
+import ecologylab.semantics.concept.database.orm.WikiSurface;
 
 /**
- * Instance augments Surface with extracted features & prediction results.
+ * an instance is an occurrence of a surface in an article, which may be mapped to a concept for
+ * disambiguation. it also contains features and classification results (confidence).
  * 
  * @author quyin
  * 
@@ -11,19 +13,28 @@ import ecologylab.semantics.concept.database.orm.WikiConcept;
 public class Instance
 {
 
-	public Surface			surface;
+	private WikiSurface	surface;
 
-	public WikiConcept	concept;
+	private WikiConcept	concept;
 
-	public Instance(Surface surface, WikiConcept concept)
+	public Instance(WikiSurface surface)
 	{
 		this.surface = surface;
-		this.concept = concept;
 	}
 
-	// for disambiguation
+	public WikiSurface getSurface()
+	{
+		return surface;
+	}
 
-	public double	commonness;
+	public WikiConcept getConcept()
+	{
+		return concept;
+	}
+
+	// features for disambiguation
+
+	/* commonness omitted */
 
 	public double	contextualRelatedness;
 
@@ -31,9 +42,9 @@ public class Instance
 
 	public double	disambiguationConfidence;
 
-	// for detection
+	// features for detection
 
-	public double	keyphraseness;
+	/* keyphraseness omitted */
 
 	public double	occurrence;							// number of occurrence
 
@@ -44,8 +55,11 @@ public class Instance
 	@Override
 	public String toString()
 	{
-		String s = String.format("instance[surface:%s, concept:%s, confidences:%f,%f]", surface,
-				concept.getTitle(), disambiguationConfidence, detectionConfidence);
+		String s = String.format("instance[surface:%s, concept:%s, confidences:%f,%f]",
+				surface,
+				concept.getTitle(),
+				disambiguationConfidence,
+				detectionConfidence);
 		return s;
 	}
 

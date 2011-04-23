@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.SessionPool;
 import ecologylab.semantics.concept.database.orm.DbpRecord;
 import ecologylab.semantics.concept.database.orm.WikiRedirect;
 
@@ -51,7 +51,7 @@ public class RedirectImporter extends AbstractImporter
 
 	private void addRedirect(String from, String to) throws SQLException
 	{
-		Session session = SessionManager.newSession();
+		Session session = SessionPool.getSession();
 		session.beginTransaction();
 		
 		DbpRecord drFrom = (DbpRecord) session.get(DbpRecord.class, from);

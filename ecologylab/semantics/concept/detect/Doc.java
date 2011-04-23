@@ -10,6 +10,8 @@ import java.util.Set;
 import org.hibernate.Session;
 
 import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.database.SessionPool;
+import ecologylab.semantics.concept.database.orm.WikiSurface;
 import ecologylab.semantics.concept.utils.TextNormalizer;
 import ecologylab.semantics.concept.utils.TextUtils;
 
@@ -29,22 +31,20 @@ public class Doc
 
 	private final int							totalWords;
 
-	private Set<Surface>					surfaces;
-
-	private Map<Surface, Integer>	surfaceOccurrences	= new HashMap<Surface, Integer>();
-
-	private Session								session;
+	private Map<String, Instance>	instances;
 
 	public Doc(String title, String text)
 	{
 		this.title = title;
 		this.text = TextNormalizer.normalize(text);
 		this.totalWords = TextUtils.count(text, " ") + 1;
+		
+		Session session = SessionPool.getSession();
 
 		// extract surfaces
-		for (String surfaceWord : SurfaceDictionary.get().extractSurfaces(text))
+		for (String surface : SurfaceDictionary.get().extractSurfaces(text))
 		{
-			Surface surface = new Surface(this, surfaceWord);
+			WikiSurface ws = WikiSurface.get(surface, session);
 			surfaces.add(surface);
 			if (!surfaceOccurrences.containsKey(surface))
 				surfaceOccurrences.put(surface, 1);

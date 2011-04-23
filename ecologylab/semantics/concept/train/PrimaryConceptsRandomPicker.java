@@ -1,15 +1,19 @@
-package ecologylab.semantics.concept.utils;
+package ecologylab.semantics.concept.train;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import ecologylab.semantics.concept.database.DatabaseFacade;
+import org.hibernate.Criteria;
+import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
+
+import ecologylab.semantics.concept.database.SessionPool;
+import ecologylab.semantics.concept.database.orm.WikiConcept;
+import ecologylab.semantics.concept.utils.CollectionUtils;
 
 public class PrimaryConceptsRandomPicker
 {
@@ -18,16 +22,17 @@ public class PrimaryConceptsRandomPicker
 	{
 		List<String> picked = new ArrayList<String>();
 		
-		String sql = "SELECT title FROM dbp_primary_concepts, dbp_titles WHERE dbp_primary_concepts.name = dbp_titles.name;";
-		Statement st = DatabaseFacade.get().getStatement();
-		ResultSet rs = st.executeQuery(sql);
-		while (rs.next())
+		Session session = SessionPool.getSession();
+		Criteria q = session.createCriteria(WikiConcept.class);
+		ScrollableResults results = q.scroll();
+		while (results.next())
 		{
-			String concept = rs.getString("title");
-			picked.add(concept);
+			WikiConcept concept = (WikiConcept) results.get(0);
+			String title = concept.getTitle();
+			picked.add(title);
 		}
-		rs.close();
-		st.close();
+		results.close();
+		session.close();
 		
 		CollectionUtils.randomPermute(picked, n);
 		return picked.subList(0, n);

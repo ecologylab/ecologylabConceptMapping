@@ -2,7 +2,7 @@ package ecologylab.semantics.concept.test;
 
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.SessionPool;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
 
@@ -11,7 +11,7 @@ public class TestORM
 
 	static void test()
 	{
-		Session sess = SessionManager.newSession();
+		Session sess = SessionPool.getSession();
 		
 		try
 		{

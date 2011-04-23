@@ -9,7 +9,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 
-import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.SessionPool;
 import ecologylab.semantics.concept.service.Configs;
 
 /**
@@ -26,7 +26,7 @@ public class SurfaceDictionaryBuilder
 		File dictFile = Configs.getFile("surface_dictionary_path");
 		FileWriter out = new FileWriter(dictFile);
 
-		Session session = SessionManager.newSession();
+		Session session = SessionPool.getSession();
 
 		Criteria q = session.createCriteria(Commonness.class);
 		q.setProjection(Projections.projectionList()
