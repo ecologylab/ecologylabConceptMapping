@@ -18,7 +18,7 @@ import ecologylab.semantics.concept.database.orm.DbpRecord;
  * article title.
  * 
  * @author quyin
- *
+ * 
  */
 public class LabelImporter extends AbstractImporter
 {
@@ -53,9 +53,9 @@ public class LabelImporter extends AbstractImporter
 
 	private void addTitle(String dbpName, String wikiTitle) throws SQLException
 	{
-		Session session = SessionPool.getSession();
+		Session session = SessionPool.get().getSession();
 		session.beginTransaction();
-		
+
 		DbpRecord dr = (DbpRecord) session.get(DbpRecord.class, dbpName);
 		if (dr == null)
 		{
@@ -64,8 +64,9 @@ public class LabelImporter extends AbstractImporter
 			dr.setWikiTitle(wikiTitle);
 			session.save(dr);
 		}
-		
+
 		session.getTransaction().commit();
+		SessionPool.get().releaseSession(session);
 	}
 
 	@Test
@@ -87,6 +88,7 @@ public class LabelImporter extends AbstractImporter
 	{
 		LabelImporter li = new LabelImporter();
 		li.parse("D:/wikidata/dbpedia/labels_en.nt");
+		SessionPool.get().closeAllSessions();
 	}
 
 }

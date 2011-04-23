@@ -11,7 +11,7 @@ public class TestORM
 
 	static void test()
 	{
-		Session sess = SessionPool.getSession();
+		Session sess = SessionPool.get().getSession();
 		
 		try
 		{
@@ -51,12 +51,13 @@ public class TestORM
 		System.out.println(c1.getRelatedness(c2, sess));
 		sess.getTransaction().commit();
 		
-		sess.close();
+		SessionPool.get().releaseSession(sess);
 	}
 
 	public static void main(String[] args)
 	{
 		test();
+		SessionPool.get().closeAllSessions();
 	}
 
 }

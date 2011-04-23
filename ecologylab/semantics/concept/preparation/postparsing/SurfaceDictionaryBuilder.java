@@ -26,7 +26,7 @@ public class SurfaceDictionaryBuilder
 		File dictFile = Configs.getFile("surface_dictionary_path");
 		FileWriter out = new FileWriter(dictFile);
 
-		Session session = SessionPool.getSession();
+		Session session = SessionPool.get().getSession();
 
 		Criteria q = session.createCriteria(Commonness.class);
 		q.setProjection(Projections.projectionList()
@@ -50,7 +50,7 @@ public class SurfaceDictionaryBuilder
 		}
 		results.close();
 
-		session.close();
+		SessionPool.get().releaseSession(session);
 
 		out.close();
 	}
@@ -59,6 +59,7 @@ public class SurfaceDictionaryBuilder
 	{
 		SurfaceDictionaryBuilder builder = new SurfaceDictionaryBuilder();
 		builder.buildDictionary();
+		SessionPool.get().closeAllSessions();
 	}
 
 }

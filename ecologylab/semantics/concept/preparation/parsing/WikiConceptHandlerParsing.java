@@ -46,7 +46,7 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 		if (markups == null || markups.isEmpty())
 			return;
 
-		Session session = SessionPool.getSession();
+		Session session = SessionPool.get().getSession();
 		WikiConcept concept = WikiConcept.getById(id, session);
 
 		if (concept != null)
@@ -113,14 +113,13 @@ public class WikiConceptHandlerParsing implements WikiConceptHandler
 			}
 		}
 
-		session.close();
+		SessionPool.get().releaseSession(session);
 	}
 
 	@Override
 	public void finish()
 	{
-		// TODO Auto-generated method stub
-
+		SessionPool.get().closeAllSessions();
 	}
 
 }

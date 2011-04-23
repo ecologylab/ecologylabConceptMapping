@@ -22,7 +22,7 @@ public class PrimaryConceptsRandomPicker
 	{
 		List<String> picked = new ArrayList<String>();
 		
-		Session session = SessionPool.getSession();
+		Session session = SessionPool.get().getSession();
 		Criteria q = session.createCriteria(WikiConcept.class);
 		ScrollableResults results = q.scroll();
 		while (results.next())
@@ -32,7 +32,7 @@ public class PrimaryConceptsRandomPicker
 			picked.add(title);
 		}
 		results.close();
-		session.close();
+		SessionPool.get().releaseSession(session);
 		
 		CollectionUtils.randomPermute(picked, n);
 		return picked.subList(0, n);
@@ -53,6 +53,8 @@ public class PrimaryConceptsRandomPicker
 			out.println(concept);
 		}
 		out.close();
+		
+		SessionPool.get().closeAllSessions();
 	}
 
 }

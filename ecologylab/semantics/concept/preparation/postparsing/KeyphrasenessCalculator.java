@@ -33,7 +33,8 @@ public class KeyphrasenessCalculator
 		total = number;
 		counter = 0;
 
-		Session session = SessionPool.getSession();
+		Session session = SessionPool.get().getSession();
+		
 		Criteria q = session.createCriteria(WikiConcept.class);
 		q.setFirstResult(offset);
 		q.setMaxResults(number);
@@ -55,12 +56,12 @@ public class KeyphrasenessCalculator
 		}
 		results.close();
 
-		session.close();
+		SessionPool.get().releaseSession(session);
 	}
 
 	private void processConcept(WikiConcept concept)
 	{
-		Session session = SessionPool.getSession();
+		Session session = SessionPool.get().getSession();
 
 		session.beginTransaction();
 
@@ -77,7 +78,7 @@ public class KeyphrasenessCalculator
 		}
 
 		session.getTransaction().commit();
-		session.close();
+		SessionPool.get().releaseSession(session);
 	}
 
 	public static void main(String[] args) throws IOException
@@ -94,6 +95,7 @@ public class KeyphrasenessCalculator
 
 		KeyphrasenessCalculator kc = new KeyphrasenessCalculator(nT);
 		kc.calculateKeyphraseness(offset, number);
+		SessionPool.get().closeAllSessions();
 	}
 
 }

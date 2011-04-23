@@ -51,7 +51,7 @@ public class RedirectImporter extends AbstractImporter
 
 	private void addRedirect(String from, String to) throws SQLException
 	{
-		Session session = SessionPool.getSession();
+		Session session = SessionPool.get().getSession();
 		session.beginTransaction();
 		
 		DbpRecord drFrom = (DbpRecord) session.get(DbpRecord.class, from);
@@ -66,12 +66,14 @@ public class RedirectImporter extends AbstractImporter
 		}
 		
 		session.getTransaction().commit();
+		SessionPool.get().releaseSession(session);
 	}
 	
 	public static void main(String[] args) throws IOException, SQLException
 	{
 		RedirectImporter ri = new RedirectImporter();
 		ri.parse("D:/wikidata/dbpedia/redirects_en.nt");
+		SessionPool.get().closeAllSessions();
 	}
 
 }

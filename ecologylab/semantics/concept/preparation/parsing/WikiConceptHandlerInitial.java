@@ -18,8 +18,7 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 	@Override
 	public void handle(int id, String title, String markups)
 	{
-		Session session = SessionPool.getSession();
-
+		Session session = SessionPool.get().getSession();
 		session.beginTransaction();
 
 		WikiConcept concept = null;
@@ -36,14 +35,13 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 		}
 
 		session.getTransaction().commit();
-		session.close();
+		SessionPool.get().releaseSession(session);
 	}
 
 	@Override
 	public void finish()
 	{
-		// TODO Auto-generated method stub
-
+		SessionPool.get().closeAllSessions();
 	}
 
 }

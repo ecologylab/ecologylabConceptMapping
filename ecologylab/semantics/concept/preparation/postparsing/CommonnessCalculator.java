@@ -40,7 +40,7 @@ public class CommonnessCalculator
 
 	public void calculateCommonness()
 	{
-		Session session = SessionPool.getSession();
+		Session session = SessionPool.get().getSession();
 
 		Criteria q = session.createCriteria(WikiSurface.class);
 		q.add(Property.forName("linkedOccurrence").gt(LINKED_OCCURRENCE_THRESHOLD));
@@ -76,17 +76,16 @@ public class CommonnessCalculator
 			e.printStackTrace();
 		}
 
-		session.close();
-
+		SessionPool.get().releaseSession(session);
 	}
 
 	private void processSurface(String surface)
 	{
-		Session session = SessionPool.getSession();
-
 		Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
 
+		Session session = SessionPool.get().getSession();
 		session.beginTransaction();
+		
 		Criteria q2 = session.createCriteria(WikiLink.class);
 		q2.add(Property.forName("surface").eq(surface));
 
@@ -116,6 +115,7 @@ public class CommonnessCalculator
 		}
 
 		session.getTransaction().commit();
+		SessionPool.get().releaseSession(session);
 	}
 
 	public static void main(String[] args)
@@ -128,6 +128,7 @@ public class CommonnessCalculator
 		int numThreads = Integer.parseInt(args[0]);
 		CommonnessCalculator cc = new CommonnessCalculator(numThreads);
 		cc.calculateCommonness();
+		SessionPool.get().closeAllSessions();
 	}
 
 }

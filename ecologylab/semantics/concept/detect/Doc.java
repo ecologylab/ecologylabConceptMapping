@@ -39,7 +39,7 @@ public class Doc
 		this.text = TextNormalizer.normalize(text);
 		this.totalWords = TextUtils.count(text, " ") + 1;
 		
-		Session session = SessionPool.getSession();
+		Session session = SessionPool.get().getSession();
 
 		// extract surfaces
 		for (String surface : SurfaceDictionary.get().extractSurfaces(text))
@@ -51,6 +51,8 @@ public class Doc
 			else
 				surfaceOccurrences.put(surface, surfaceOccurrences.get(surface) + 1);
 		}
+		
+		SessionPool.get().releaseSession(session);
 	}
 
 	public String getTitle()

@@ -21,7 +21,7 @@ public class Server
 		TranslationScope tscope = WikxplorerMessageTranslationScope.get();
 
 		Scope serverClientScope = new Scope();
-		serverClientScope.put(ScopeKeys.SESSION, SessionPool.getSession());
+		serverClientScope.put(ScopeKeys.SESSION, SessionPool.get().getSession());
 		serverClientScope.put(ScopeKeys.CLIPPING_CONTEXT, new HashMap<String, WikiConcept>());
 
 		InetAddress[] locals = NetTools.getAllInetAddressesForLocalhost();
