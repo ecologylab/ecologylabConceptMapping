@@ -5,7 +5,9 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
+import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
+import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
@@ -35,9 +37,9 @@ public class CommonnessCalculator
 		String lastSurface = null;
 
 		Criteria q = session.createCriteria(WikiLink.class);
-		// q.setCacheMode(CacheMode.IGNORE);
+		q.setCacheMode(CacheMode.IGNORE);
 		q.addOrder(Order.asc("surface"));
-		ScrollableResults results = q.scroll();
+		ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY);
 		while (results.next())
 		{
 			WikiLink link = (WikiLink) results.get(0);

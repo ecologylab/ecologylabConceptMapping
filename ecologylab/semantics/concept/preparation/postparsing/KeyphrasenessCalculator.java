@@ -3,7 +3,9 @@ package ecologylab.semantics.concept.preparation.postparsing;
 import java.io.IOException;
 import java.util.List;
 
+import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
+import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 
@@ -27,11 +29,11 @@ public class KeyphrasenessCalculator
 		Session session = SessionManager.newSession();
 
 		Criteria q = session.createCriteria(WikiConcept.class);
-		// q.setCacheMode(CacheMode.IGNORE);
+		q.setCacheMode(CacheMode.IGNORE);
 		q.setFirstResult(offset);
 		q.setMaxResults(number);
 
-		ScrollableResults results = q.scroll();
+		ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY);
 		while (results.next())
 		{
 			final WikiConcept concept = (WikiConcept) results.get(0);
