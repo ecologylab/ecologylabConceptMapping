@@ -2,7 +2,7 @@ package ecologylab.semantics.concept.preparation.parsing;
 
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.database.SessionPool;
+import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiRedirect;
 
@@ -18,7 +18,7 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 	@Override
 	public void handle(int id, String title, String markups)
 	{
-		Session session = SessionPool.get().getSession();
+		Session session = SessionManager.newSession();
 		session.beginTransaction();
 
 		WikiConcept concept = null;
@@ -35,13 +35,13 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 		}
 
 		session.getTransaction().commit();
-		SessionPool.get().releaseSession(session);
+		session.close();
 	}
 
 	@Override
 	public void finish()
 	{
-		SessionPool.get().closeAllSessions();
+
 	}
 
 }

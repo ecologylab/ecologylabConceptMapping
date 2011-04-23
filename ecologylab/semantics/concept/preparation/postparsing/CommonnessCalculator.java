@@ -1,20 +1,16 @@
 package ecologylab.semantics.concept.preparation.postparsing;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Queue;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Property;
 
-import ecologylab.semantics.concept.database.SessionPool;
-import ecologylab.semantics.concept.database.orm.WikiSurface;
-import ecologylab.semantics.concept.utils.CollectionUtils;
+import ecologylab.semantics.concept.database.SessionManager;
 
 /**
  * calculate commonness using wiki_links and wiki_surfaces.
@@ -29,106 +25,85 @@ public class CommonnessCalculator
 
 	public static final double	COMMONNESS_THRESHOLD				= 0.001;
 
-	private ExecutorService			pool;
-
-	private int									counter											= 0;
-
-	public CommonnessCalculator(int numThreads)
-	{
-		pool = Executors.newFixedThreadPool(numThreads);
-	}
+	private int									counter											= 1;
 
 	public void calculateCommonness()
 	{
-		Session session = SessionPool.get().getSession();
+		Session session = SessionManager.newSession();
 
-		Criteria q = session.createCriteria(WikiSurface.class);
-		q.add(Property.forName("linkedOccurrence").gt(LINKED_OCCURRENCE_THRESHOLD));
-		q.addOrder(Order.desc("linkedOccurrence"));
+		Queue<WikiLink> queue = new LinkedList<WikiLink>();
+		String lastSurface = null;
+
+		Criteria q = session.createCriteria(WikiLink.class);
+		// q.setCacheMode(CacheMode.IGNORE);
+		q.addOrder(Order.asc("surface"));
 		ScrollableResults results = q.scroll();
 		while (results.next())
 		{
-			WikiSurface ws = (WikiSurface) results.get(0);
-			final String surface = ws.getSurface();
-			if (SurfaceFilter.containsLetter(surface) && !SurfaceFilter.filter(surface))
+			WikiLink link = (WikiLink) results.get(0);
+			queue.add(link);
+			if (lastSurface != null && !lastSurface.equals(link.getSurface()))
 			{
-				pool.submit(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						processSurface(surface);
-						counter++;
-						System.out.println(counter + ": processed " + surface);
-					}
-				});
+				processQueue(queue, lastSurface);
+				counter++;
 			}
+			lastSurface = link.getSurface();
+			session.evict(link);
 		}
 		results.close();
 
-		try
-		{
-			pool.awaitTermination(7, TimeUnit.DAYS);
-		}
-		catch (InterruptedException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		processQueue(queue, lastSurface);
 
-		SessionPool.get().releaseSession(session);
+		session.close();
 	}
 
-	private void processSurface(String surface)
+	private void processQueue(Queue<WikiLink> queue, String surface)
 	{
-		Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
-
-		Session session = SessionPool.get().getSession();
-		session.beginTransaction();
-		
-		Criteria q2 = session.createCriteria(WikiLink.class);
-		q2.add(Property.forName("surface").eq(surface));
-
-		ScrollableResults sr = q2.scroll();
-		while (sr.next())
+		if (SurfaceFilter.containsLetter(surface) && !SurfaceFilter.filter(surface))
 		{
-			WikiLink link = (WikiLink) sr.get(0);
-			int prevCount = 0;
-			if (counts.containsKey(link.getToId()))
-				prevCount = counts.get(link.getToId());
-			counts.put(link.getToId(), prevCount + 1);
-		}
-		sr.close();
+			System.out.println(counter + ": processing " + surface);
 
-		int sum = CollectionUtils.sum(counts.values());
-		for (int cid : counts.keySet())
-		{
-			double commonness = counts.get(cid) * 1.0 / sum;
-			if (commonness > COMMONNESS_THRESHOLD)
+			int totalCount = 0;
+			Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
+
+			while (queue.size() > 0 && queue.peek().getSurface().equals(surface))
 			{
-				Commonness comm = new Commonness();
-				comm.setSurface(surface);
-				comm.setConceptId(cid);
-				comm.setCommonness(commonness);
-				session.save(comm);
+				WikiLink link = queue.poll();
+				int prevCount = 0;
+				if (counts.containsKey(link.getToId()))
+					prevCount = counts.get(link.getToId());
+				counts.put(link.getToId(), prevCount + 1);
+				totalCount++;
+			}
+
+			if (totalCount > LINKED_OCCURRENCE_THRESHOLD)
+			{
+				Session session = SessionManager.newSession();
+				session.beginTransaction();
+
+				for (int cid : counts.keySet())
+				{
+					double commonness = counts.get(cid) * 1.0 / totalCount;
+					if (commonness > COMMONNESS_THRESHOLD)
+					{
+						Commonness comm = new Commonness();
+						comm.setSurface(surface);
+						comm.setConceptId(cid);
+						comm.setCommonness(commonness);
+						session.save(comm);
+					}
+				}
+
+				session.getTransaction().commit();
+				session.close();
 			}
 		}
-
-		session.getTransaction().commit();
-		SessionPool.get().releaseSession(session);
 	}
 
 	public static void main(String[] args)
 	{
-		if (args.length != 1)
-		{
-			System.err.println("args: <num-of-threads>");
-			System.exit(-1);
-		}
-		int numThreads = Integer.parseInt(args[0]);
-		CommonnessCalculator cc = new CommonnessCalculator(numThreads);
+		CommonnessCalculator cc = new CommonnessCalculator();
 		cc.calculateCommonness();
-		SessionPool.get().closeAllSessions();
 	}
 
 }

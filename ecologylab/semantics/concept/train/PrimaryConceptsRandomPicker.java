@@ -11,7 +11,7 @@ import org.hibernate.Criteria;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.database.SessionPool;
+import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 
@@ -22,7 +22,7 @@ public class PrimaryConceptsRandomPicker
 	{
 		List<String> picked = new ArrayList<String>();
 		
-		Session session = SessionPool.get().getSession();
+		Session session = SessionManager.get().newSession();
 		Criteria q = session.createCriteria(WikiConcept.class);
 		ScrollableResults results = q.scroll();
 		while (results.next())
@@ -30,9 +30,10 @@ public class PrimaryConceptsRandomPicker
 			WikiConcept concept = (WikiConcept) results.get(0);
 			String title = concept.getTitle();
 			picked.add(title);
+			session.evict(concept);
 		}
 		results.close();
-		SessionPool.get().releaseSession(session);
+		SessionManager.get().releaseSession(session);
 		
 		CollectionUtils.randomPermute(picked, n);
 		return picked.subList(0, n);
@@ -54,7 +55,7 @@ public class PrimaryConceptsRandomPicker
 		}
 		out.close();
 		
-		SessionPool.get().closeAllSessions();
+		SessionManager.get().closeAllSessions();
 	}
 
 }

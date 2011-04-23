@@ -2,7 +2,7 @@ package ecologylab.semantics.concept.test;
 
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.database.SessionPool;
+import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
 
@@ -11,7 +11,7 @@ public class TestORM
 
 	static void test()
 	{
-		Session sess = SessionPool.get().getSession();
+		Session sess = SessionManager.newSession();
 		
 		try
 		{
@@ -51,13 +51,12 @@ public class TestORM
 		System.out.println(c1.getRelatedness(c2, sess));
 		sess.getTransaction().commit();
 		
-		SessionPool.get().releaseSession(sess);
+		sess.close();
 	}
 
 	public static void main(String[] args)
 	{
 		test();
-		SessionPool.get().closeAllSessions();
 	}
 
 }

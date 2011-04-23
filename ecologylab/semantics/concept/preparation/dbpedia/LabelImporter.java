@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.hibernate.Session;
 import org.junit.Test;
 
-import ecologylab.semantics.concept.database.SessionPool;
+import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.DbpRecord;
 
 /**
@@ -53,7 +53,7 @@ public class LabelImporter extends AbstractImporter
 
 	private void addTitle(String dbpName, String wikiTitle) throws SQLException
 	{
-		Session session = SessionPool.get().getSession();
+		Session session = SessionManager.newSession();
 		session.beginTransaction();
 
 		DbpRecord dr = (DbpRecord) session.get(DbpRecord.class, dbpName);
@@ -66,7 +66,7 @@ public class LabelImporter extends AbstractImporter
 		}
 
 		session.getTransaction().commit();
-		SessionPool.get().releaseSession(session);
+		session.close();
 	}
 
 	@Test
@@ -88,7 +88,6 @@ public class LabelImporter extends AbstractImporter
 	{
 		LabelImporter li = new LabelImporter();
 		li.parse("D:/wikidata/dbpedia/labels_en.nt");
-		SessionPool.get().closeAllSessions();
 	}
 
 }

@@ -2,14 +2,12 @@ package ecologylab.semantics.concept.preparation.postparsing;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.database.SessionPool;
+import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
 import ecologylab.semantics.concept.detect.SurfaceDictionary;
@@ -17,25 +15,19 @@ import ecologylab.semantics.concept.detect.SurfaceDictionary;
 public class KeyphrasenessCalculator
 {
 
-	private ExecutorService	pool;
+	private int	total;
 
-	private int							total;
-
-	private int							counter;
-
-	public KeyphrasenessCalculator(int numThreads)
-	{
-		pool = Executors.newFixedThreadPool(numThreads);
-	}
+	private int	counter;
 
 	private void calculateKeyphraseness(int offset, int number)
 	{
 		total = number;
 		counter = 0;
 
-		Session session = SessionPool.get().getSession();
-		
+		Session session = SessionManager.newSession();
+
 		Criteria q = session.createCriteria(WikiConcept.class);
+		// q.setCacheMode(CacheMode.IGNORE);
 		q.setFirstResult(offset);
 		q.setMaxResults(number);
 
@@ -43,26 +35,19 @@ public class KeyphrasenessCalculator
 		while (results.next())
 		{
 			final WikiConcept concept = (WikiConcept) results.get(0);
-			pool.submit(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					processConcept(concept);
-					counter++;
-					System.out.println(counter + "/" + total + ": processed " + concept.getTitle());
-				}
-			});
+			System.out.println(counter + "/" + total + ": processing " + concept.getTitle());
+			processConcept(concept);
+			counter++;
+			session.evict(concept);
 		}
 		results.close();
 
-		SessionPool.get().releaseSession(session);
+		session.close();
 	}
 
 	private void processConcept(WikiConcept concept)
 	{
-		Session session = SessionPool.get().getSession();
-
+		Session session = SessionManager.newSession();
 		session.beginTransaction();
 
 		String text = concept.getText();
@@ -78,24 +63,22 @@ public class KeyphrasenessCalculator
 		}
 
 		session.getTransaction().commit();
-		SessionPool.get().releaseSession(session);
+		session.close();
 	}
 
 	public static void main(String[] args) throws IOException
 	{
-		if (args.length != 3)
+		if (args.length != 2)
 		{
-			System.err.println("args: <offset> <number> <num-of-threads>");
+			System.err.println("args: <offset> <number>");
 			System.exit(-1);
 		}
 
 		int offset = Integer.parseInt(args[0]);
 		int number = Integer.parseInt(args[1]);
-		int nT = Integer.parseInt(args[2]);
 
-		KeyphrasenessCalculator kc = new KeyphrasenessCalculator(nT);
+		KeyphrasenessCalculator kc = new KeyphrasenessCalculator();
 		kc.calculateKeyphraseness(offset, number);
-		SessionPool.get().closeAllSessions();
 	}
 
 }

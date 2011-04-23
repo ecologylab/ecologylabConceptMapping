@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.database.SessionPool;
+import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.DbpRecord;
 import ecologylab.semantics.concept.database.orm.WikiRedirect;
 
@@ -17,7 +17,7 @@ import ecologylab.semantics.concept.database.orm.WikiRedirect;
  * from Wikipedia Article 1 to Wikipedia Article 2.
  * 
  * @author quyin
- *
+ * 
  */
 public class RedirectImporter extends AbstractImporter
 {
@@ -51,9 +51,9 @@ public class RedirectImporter extends AbstractImporter
 
 	private void addRedirect(String from, String to) throws SQLException
 	{
-		Session session = SessionPool.get().getSession();
+		Session session = SessionManager.newSession();
 		session.beginTransaction();
-		
+
 		DbpRecord drFrom = (DbpRecord) session.get(DbpRecord.class, from);
 		DbpRecord drTo = (DbpRecord) session.get(DbpRecord.class, to);
 		WikiRedirect wr = (WikiRedirect) session.get(WikiRedirect.class, drFrom.getWikiTitle());
@@ -64,16 +64,15 @@ public class RedirectImporter extends AbstractImporter
 			wr.setToTitle(drTo.getWikiTitle());
 			session.save(wr);
 		}
-		
+
 		session.getTransaction().commit();
-		SessionPool.get().releaseSession(session);
+		session.close();
 	}
-	
+
 	public static void main(String[] args) throws IOException, SQLException
 	{
 		RedirectImporter ri = new RedirectImporter();
 		ri.parse("D:/wikidata/dbpedia/redirects_en.nt");
-		SessionPool.get().closeAllSessions();
 	}
 
 }

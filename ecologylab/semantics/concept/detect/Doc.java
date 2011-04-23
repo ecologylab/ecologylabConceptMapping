@@ -10,7 +10,7 @@ import java.util.Set;
 import org.hibernate.Session;
 
 import ecologylab.semantics.concept.ConceptConstants;
-import ecologylab.semantics.concept.database.SessionPool;
+import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
 import ecologylab.semantics.concept.utils.TextNormalizer;
 import ecologylab.semantics.concept.utils.TextUtils;
@@ -39,7 +39,7 @@ public class Doc
 		this.text = TextNormalizer.normalize(text);
 		this.totalWords = TextUtils.count(text, " ") + 1;
 		
-		Session session = SessionPool.get().getSession();
+		Session session = SessionManager.get().newSession();
 
 		// extract surfaces
 		for (String surface : SurfaceDictionary.get().extractSurfaces(text))
@@ -52,7 +52,7 @@ public class Doc
 				surfaceOccurrences.put(surface, surfaceOccurrences.get(surface) + 1);
 		}
 		
-		SessionPool.get().releaseSession(session);
+		SessionManager.get().releaseSession(session);
 	}
 
 	public String getTitle()
