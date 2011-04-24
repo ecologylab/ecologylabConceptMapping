@@ -11,11 +11,12 @@ public class WikxplorerMessageTranslationScope
 	private static Class[]			classes	= {
 																			Concept.class,
 																			ConceptGroup.class,
+																			UpdateContextRequest.class,
 																			RelatednessRequest.class,
 																			RelatednessResponse.class,
 																			SuggestionRequest.class,
 																			SuggestionResponse.class,
-																			UpdateContextRequest.class,
+																			SessionShutdownMessage.class,
 																			};
 
 	public static TranslationScope get()

@@ -1,5 +1,6 @@
 package wikxplorer.messages;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.Session;
@@ -67,6 +68,11 @@ public class UpdateContextRequest extends RequestMessage
 
 		Map<String, WikiConcept> clippingContext = (Map<String, WikiConcept>) clientSessionScope
 				.get(ScopeKeys.CLIPPING_CONTEXT);
+		if (clippingContext == null)
+		{
+			clippingContext = new HashMap<String, WikiConcept>();
+			clientSessionScope.put(ScopeKeys.CLIPPING_CONTEXT, clippingContext);
+		}
 
 		switch (action)
 		{

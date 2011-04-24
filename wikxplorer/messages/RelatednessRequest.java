@@ -42,15 +42,9 @@ public class RelatednessRequest extends RequestMessage
 	public RelatednessResponse performService(Scope clientSessionScope)
 	{
 		Session session = (Session) clientSessionScope.get(ScopeKeys.SESSION);
-
 		Map<String, WikiConcept> clippingContext = (Map<String, WikiConcept>) clientSessionScope
 				.get(ScopeKeys.CLIPPING_CONTEXT);
-		if (clippingContext == null)
-		{
-			clippingContext = new HashMap<String, WikiConcept>();
-			clientSessionScope.put(ScopeKeys.CLIPPING_CONTEXT, clippingContext);
-		}
-
+		
 		WikiConcept sourceConcept = null;
 		if (clippingContext.containsKey(source))
 		{
