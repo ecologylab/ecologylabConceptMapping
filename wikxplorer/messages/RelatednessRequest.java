@@ -1,5 +1,6 @@
 package wikxplorer.messages;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.Session;
@@ -7,7 +8,6 @@ import org.hibernate.Session;
 import wikxplorer.ScopeKeys;
 import ecologylab.collections.Scope;
 import ecologylab.oodss.messages.RequestMessage;
-import ecologylab.semantics.concept.database.orm.Relatedness;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.serialization.SIMPLTranslationException;
 import ecologylab.serialization.simpl_inherit;
@@ -45,6 +45,11 @@ public class RelatednessRequest extends RequestMessage
 
 		Map<String, WikiConcept> clippingContext = (Map<String, WikiConcept>) clientSessionScope
 				.get(ScopeKeys.CLIPPING_CONTEXT);
+		if (clippingContext == null)
+		{
+			clippingContext = new HashMap<String, WikiConcept>();
+			clientSessionScope.put(ScopeKeys.CLIPPING_CONTEXT, clippingContext);
+		}
 
 		WikiConcept sourceConcept = null;
 		if (clippingContext.containsKey(source))
@@ -53,7 +58,7 @@ public class RelatednessRequest extends RequestMessage
 		}
 		else
 		{
-			sourceConcept = WikiConcept.get(source, session);
+			sourceConcept = WikiConcept.getByTitle(source, session);
 		}
 
 		RelatednessResponse resp = new RelatednessResponse();
@@ -62,9 +67,8 @@ public class RelatednessRequest extends RequestMessage
 			for (String title : clippingContext.keySet())
 			{
 				WikiConcept target = clippingContext.get(title);
-				int id1 = sourceConcept.getId();
-				int id2 = target.getId();
-				double rel = Relatedness.get(id1, id2, session);
+				double rel = sourceConcept.getRelatedness(target, session);
+
 				Concept respConcept = new Concept();
 				respConcept.setTitle(title);
 				respConcept.setRelatedness(rel);

@@ -9,6 +9,7 @@ import ecologylab.collections.Scope;
 import ecologylab.oodss.messages.OkResponse;
 import ecologylab.oodss.messages.RequestMessage;
 import ecologylab.oodss.messages.ResponseMessage;
+import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.serialization.simpl_inherit;
 
@@ -58,6 +59,11 @@ public class UpdateContextRequest extends RequestMessage
 	public ResponseMessage performService(Scope clientSessionScope)
 	{
 		Session session = (Session) clientSessionScope.get(ScopeKeys.SESSION);
+		if (session == null)
+		{
+			session = SessionManager.newSession();
+			clientSessionScope.put(ScopeKeys.SESSION, session);
+		}
 
 		Map<String, WikiConcept> clippingContext = (Map<String, WikiConcept>) clientSessionScope
 				.get(ScopeKeys.CLIPPING_CONTEXT);
@@ -65,7 +71,7 @@ public class UpdateContextRequest extends RequestMessage
 		switch (action)
 		{
 		case ACTION_ADD:
-			WikiConcept concept = WikiConcept.get(title, session);
+			WikiConcept concept = WikiConcept.getByTitle(title, session);
 			if (concept != null)
 				clippingContext.put(title, concept);
 			break;

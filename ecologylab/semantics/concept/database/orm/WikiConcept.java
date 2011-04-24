@@ -173,7 +173,7 @@ public class WikiConcept implements Serializable
 		double r = (Math.log(smax) - Math.log(scommon)) / (Math.log(total) - Math.log(smin));
 
 		rels.put(concept, r);
-		session.save(this);
+		session.saveOrUpdate(this);
 
 		return r;
 	}

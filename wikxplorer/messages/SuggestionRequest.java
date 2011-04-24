@@ -1,6 +1,5 @@
 package wikxplorer.messages;
 
-import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Session;
@@ -9,9 +8,7 @@ import wikxplorer.ScopeKeys;
 
 import ecologylab.collections.Scope;
 import ecologylab.oodss.messages.RequestMessage;
-import ecologylab.semantics.concept.database.orm.Relatedness;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
-import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
 import ecologylab.serialization.simpl_inherit;
 
 /**
@@ -57,24 +54,22 @@ public class SuggestionRequest extends RequestMessage
 		}
 		else
 		{
-			sourceConcept = WikiConcept.get(source, session);
+			sourceConcept = WikiConcept.getByTitle(source, session);
 		}
 
 		SuggestionResponse resp = new SuggestionResponse();
 		if (sourceConcept != null)
 		{
-			List<WikiLink> inlinks = WikiLink.getByDestination(sourceConcept.getId(), session);
-			List<WikiLink> outlinks = WikiLink.getBySource(sourceConcept.getId(), session);
+			Map<WikiConcept, String> inlinks = sourceConcept.getInlinks();
+			Map<WikiConcept, String> outlinks = sourceConcept.getOutlinks();
 
-			for (WikiLink inlink : inlinks)
+			for (WikiConcept inlink : inlinks.keySet())
 			{
-				int id = inlink.getFromId();
-				double relatedness = Relatedness.get(id, sourceConcept.getId(), session);
+				double relatedness = sourceConcept.getRelatedness(inlink, session);
 				if (relatedness < MIN_DIST_THREASHOLD)
 				{
-					WikiConcept concept = (WikiConcept) session.get(WikiConcept.class, id);
 					Concept c = new Concept();
-					c.setTitle(concept.getTitle());
+					c.setTitle(inlink.getTitle());
 					c.setType(Concept.INLINK);
 					c.setRelatedness(relatedness);
 					ConceptGroup cg = new ConceptGroup();
@@ -85,15 +80,13 @@ public class SuggestionRequest extends RequestMessage
 				}
 			}
 
-			for (WikiLink outlink : outlinks)
+			for (WikiConcept outlink : outlinks.keySet())
 			{
-				int id = outlink.getToId();
-				double relatedness = Relatedness.get(id, sourceConcept.getId(), session);
+				double relatedness = sourceConcept.getRelatedness(outlink, session);
 				if (relatedness < MIN_DIST_THREASHOLD)
 				{
-					WikiConcept concept = (WikiConcept) session.get(WikiConcept.class, id);
 					Concept c = new Concept();
-					c.setTitle(concept.getTitle());
+					c.setTitle(outlink.getTitle());
 					c.setType(Concept.OUTLINK);
 					c.setRelatedness(relatedness);
 					ConceptGroup cg = new ConceptGroup();

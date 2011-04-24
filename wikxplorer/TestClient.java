@@ -3,12 +3,14 @@ package wikxplorer;
 import java.io.IOException;
 
 import wikxplorer.messages.RelatednessRequest;
+import wikxplorer.messages.SessionShutdownMessage;
 import wikxplorer.messages.SuggestionRequest;
 import wikxplorer.messages.UpdateContextRequest;
 import wikxplorer.messages.WikxplorerMessageTranslationScope;
 import ecologylab.collections.Scope;
 import ecologylab.oodss.distributed.client.NIOClient;
 import ecologylab.oodss.distributed.exception.MessageTooLargeException;
+import ecologylab.oodss.messages.CloseMessage;
 import ecologylab.serialization.TranslationScope;
 
 public class TestClient
@@ -40,6 +42,12 @@ public class TestClient
 			SuggestionRequest sr = new SuggestionRequest();
 			sr.setSource("Information visualization");
 			client.sendMessage(sr);
+			
+			SessionShutdownMessage ssm = new SessionShutdownMessage();
+			client.sendMessage(ssm);
+			
+			CloseMessage cm = new CloseMessage();
+			client.sendMessage(cm);
 			
 			client.disconnect();
 		}
