@@ -65,6 +65,8 @@ public class CommonnessCalculator
 		processQueue(queue, lastSurface);
 
 		session1.close();
+		if (session2 != null)
+			session2.close();
 	}
 
 	private void processQueue(Queue<WikiLink> queue, String surface)

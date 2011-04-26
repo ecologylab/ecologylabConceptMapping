@@ -1,17 +1,12 @@
 package wikxplorer.preparation;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 
-import ecologylab.generic.HashMapArrayList;
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
@@ -32,20 +27,27 @@ public class TopLinksPreparer
 		
 		// find top linked concepts
 		Criteria q = session1.createCriteria(WikiLink.class);
+		q.setCacheable(false);
 		q.setProjection(Projections.projectionList()
 				.add(Projections.groupProperty("toId"), "id")
 				.add(Projections.count("toId"), "count")
 				);
-		q.addOrder(Order.desc("count"));
+//		q.addOrder(Order.desc("count"));
 		q.setCacheMode(CacheMode.IGNORE);
 		q.setFetchSize(100);
-		q.setMaxResults(1000);
+		q.setMaxResults(100);
 		ScrollableResults sr = q.scroll(ScrollMode.FORWARD_ONLY);
 		while (sr.next())
 		{
 			int id = sr.getInteger(0);
+			counter++;
 			prepareConcept(id);
 		}
+		sr.close();
+		
+		session1.close();
+		if (session2 != null)
+			session2.close();
 	}
 
 	private void prepareConcept(int id)
@@ -56,8 +58,9 @@ public class TopLinksPreparer
 		WikiConcept concept = WikiConcept.getById(id, session2);
 		if (concept != null)
 		{
-			Map<WikiConcept, String> inlinks = concept.getInlinks();
-			Map<WikiConcept, String> outlinks = concept.getOutlinks();
+			concept.getOrCalculateTopRelatedInlinks(session2);
+			concept.getOrCalculateTopRelatedOutlinks(session2);
+			session2.evict(concept);
 		}
 	}
 

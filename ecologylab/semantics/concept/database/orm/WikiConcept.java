@@ -252,10 +252,11 @@ public class WikiConcept implements Serializable
 		for (WikiConcept inlink : allLinks.keySet())
 		{
 			double rel = this.getRelatedness(inlink);
-			records.add(new RelatedLinkRecord(inlink, rel));
+			if (rel > MIN_DIST)
+				records.add(new RelatedLinkRecord(inlink, rel));
 		}
 		Collections.sort(records);
-		for (int i = 0; i < TOP_LINK_COUNT; ++i)
+		for (int i = 0; i<records.size() && i < TOP_LINK_COUNT; ++i)
 		{
 			RelatedLinkRecord record = records.get(i);
 			buffer.put(record.getRelatedLink(), record.getRelatedness());
