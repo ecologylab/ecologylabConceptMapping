@@ -25,7 +25,7 @@ public class WikiConceptHandlerInitial implements WikiConceptHandler
 
 		// we don't need to handle case problems here, because these titles are true titles (not links
 		// in the markups), so their cases must be correct.
-		if (WikiRedirect.getRedirected(title, session) == null)
+		if (WikiRedirect.getRedirected(title) == null)
 		{
 			concept = new WikiConcept();
 			concept.setId(id);

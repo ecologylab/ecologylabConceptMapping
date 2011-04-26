@@ -12,6 +12,8 @@ import org.hibernate.Session;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import ecologylab.semantics.concept.database.SessionManager;
+
 @Entity
 @Table(name = "wiki_redirects")
 @Cacheable
@@ -63,9 +65,11 @@ public class WikiRedirect implements Serializable
 		return fromTitle.hashCode();
 	}
 
-	public static String getRedirected(String fromTitle, Session openSession)
+	public static String getRedirected(String fromTitle)
 	{
-		WikiRedirect redirect = (WikiRedirect) openSession.get(WikiRedirect.class, fromTitle);
+		Session session = SessionManager.newSession();
+		WikiRedirect redirect = (WikiRedirect) session.get(WikiRedirect.class, fromTitle);
+		session.close();
 		return redirect != null ? redirect.getToTitle() : null;
 	}
 

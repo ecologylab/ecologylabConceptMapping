@@ -23,21 +23,29 @@ import ecologylab.semantics.concept.database.SessionManager;
 public class CommonnessCalculator
 {
 
+	public static final int			FETCH_SIZE									= 100;
+
 	public static final int			LINKED_OCCURRENCE_THRESHOLD	= 5;
 
 	public static final double	COMMONNESS_THRESHOLD				= 0.001;
 
-	private int									counter											= 1;
+	private Session							session1;
+
+	private Session							session2;
+
+	private int									counter;
 
 	public void calculateCommonness()
 	{
-		Session session = SessionManager.newSession();
+		session1 = SessionManager.newSession();
+		counter = 0;
 
 		Queue<WikiLink> queue = new LinkedList<WikiLink>();
 		String lastSurface = null;
 
-		Criteria q = session.createCriteria(WikiLink.class);
+		Criteria q = session1.createCriteria(WikiLink.class);
 		q.setCacheMode(CacheMode.IGNORE);
+		q.setFetchSize(FETCH_SIZE);
 		q.addOrder(Order.asc("surface"));
 		ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY);
 		while (results.next())
@@ -46,21 +54,23 @@ public class CommonnessCalculator
 			queue.add(link);
 			if (lastSurface != null && !lastSurface.equals(link.getSurface()))
 			{
-				processQueue(queue, lastSurface);
 				counter++;
+				processQueue(queue, lastSurface);
 			}
 			lastSurface = link.getSurface();
-			session.evict(link);
 		}
 		results.close();
 
 		processQueue(queue, lastSurface);
 
-		session.close();
+		session1.close();
 	}
 
 	private void processQueue(Queue<WikiLink> queue, String surface)
 	{
+		if (session2 == null)
+			session2 = SessionManager.newSession();
+
 		if (SurfaceFilter.containsLetter(surface) && !SurfaceFilter.filter(surface))
 		{
 			System.out.println(counter + ": processing " + surface);
@@ -80,8 +90,7 @@ public class CommonnessCalculator
 
 			if (totalCount > LINKED_OCCURRENCE_THRESHOLD)
 			{
-				Session session = SessionManager.newSession();
-				session.beginTransaction();
+				session2.beginTransaction();
 
 				for (int cid : counts.keySet())
 				{
@@ -92,12 +101,11 @@ public class CommonnessCalculator
 						comm.setSurface(surface);
 						comm.setConceptId(cid);
 						comm.setCommonness(commonness);
-						session.save(comm);
+						session2.save(comm);
 					}
 				}
 
-				session.getTransaction().commit();
-				session.close();
+				session2.getTransaction().commit();
 			}
 		}
 	}

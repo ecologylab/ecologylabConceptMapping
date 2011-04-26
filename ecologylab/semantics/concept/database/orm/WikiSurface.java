@@ -8,6 +8,7 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyJoinColumn;
@@ -16,6 +17,8 @@ import javax.persistence.Table;
 import org.hibernate.Session;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import ecologylab.semantics.concept.database.SessionManager;
 
 @Entity
 @Table(name = "wiki_surfaces")
@@ -40,7 +43,7 @@ public class WikiSurface implements Serializable
 	@Column(name = "linked_occurrence", nullable = false)
 	private int												linkedOccurrence;
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "commonness", joinColumns = @JoinColumn(name = "surface_id"))
 	@Column(name = "commonness", nullable = true)
 	@MapKeyJoinColumn(name = "concept_id")
@@ -109,5 +112,5 @@ public class WikiSurface implements Serializable
 	{
 		return (WikiSurface) session.get(WikiSurface.class, surface);
 	}
-	
+
 }

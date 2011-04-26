@@ -3,11 +3,13 @@ package ecologylab.semantics.concept.database.orm;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.persistence.Basic;
 import javax.persistence.Cacheable;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyJoinColumn;
@@ -19,6 +21,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.criterion.Property;
 
+import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.service.Configs;
 
 @Entity
@@ -45,32 +48,21 @@ public class WikiConcept implements Serializable
 	/**
 	 * here text are pure text (after rendering to HTML), not wiki markups.
 	 */
+	@Basic(fetch = FetchType.LAZY)
 	@Column(name = "text", nullable = false)
 	private String										text;
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "wiki_links", joinColumns = @JoinColumn(name = "to_id"))
 	@Column(name = "surface", nullable = false)
 	@MapKeyJoinColumn(name = "from_id")
 	private Map<WikiConcept, String>	inlinks;
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "wiki_links", joinColumns = @JoinColumn(name = "from_id"))
 	@Column(name = "surface", nullable = false)
 	@MapKeyJoinColumn(name = "to_id")
 	private Map<WikiConcept, String>	outlinks;
-
-	@ElementCollection
-	@CollectionTable(name = "relatedness", joinColumns = @JoinColumn(name = "concept_id1"))
-	@Column(name = "relatedness", nullable = false)
-	@MapKeyJoinColumn(name = "concept_id2")
-	private Map<WikiConcept, Double>	relatedConcepts;
-
-	@ElementCollection
-	@CollectionTable(name = "commonness", joinColumns = @JoinColumn(name = "concept_id"))
-	@Column(name = "commonness", nullable = false)
-	@MapKeyJoinColumn(name = "surface")
-	private Map<WikiSurface, Double>	surfaces;
 
 	public int getId()
 	{
@@ -112,21 +104,6 @@ public class WikiConcept implements Serializable
 		return outlinks;
 	}
 
-	public void setRelatedConcepts(Map<WikiConcept, Double> relatedConcepts)
-	{
-		this.relatedConcepts = relatedConcepts;
-	}
-
-	public Map<WikiConcept, Double> getRelatedConcepts()
-	{
-		return relatedConcepts;
-	}
-
-	public Map<WikiSurface, Double> getSurfaces()
-	{
-		return surfaces;
-	}
-
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -144,17 +121,25 @@ public class WikiConcept implements Serializable
 		return id;
 	}
 
-	public double getRelatedness(WikiConcept concept, Session session)
+	public double getRelatedness(WikiConcept concept)
 	{
 		if (this.getId() > concept.getId())
-			return concept.getRelatedness(this, session);
+			return concept.getRelatedness(this);
 
 		if (this.getId() == concept.getId())
 			return MIN_DIST;
 
-		Map<WikiConcept, Double> rels = this.getRelatedConcepts();
-		if (rels.containsKey(concept))
-			return rels.get(concept);
+		Session session = SessionManager.newSession();
+
+		Relatedness rel = new Relatedness();
+		rel.setConceptId1(this.getId());
+		rel.setConceptId2(concept.getId());
+		
+		Relatedness existingRel = (Relatedness) session.get(Relatedness.class, rel);
+		if (existingRel != null)
+			return existingRel.getRelatedness();
+
+		session.beginTransaction();
 
 		int scommon = 0;
 		for (WikiConcept c : concept.getInlinks().keySet())
@@ -172,8 +157,11 @@ public class WikiConcept implements Serializable
 
 		double r = (Math.log(smax) - Math.log(scommon)) / (Math.log(total) - Math.log(smin));
 
-		rels.put(concept, r);
-		session.saveOrUpdate(this);
+		rel.setRelatedness(r);
+		session.save(rel);
+		
+		session.getTransaction().commit();
+		session.close();
 
 		return r;
 	}
@@ -187,7 +175,7 @@ public class WikiConcept implements Serializable
 		// TODO possibly other guesses for case problems
 
 		// handle redirects
-		String redirect = WikiRedirect.getRedirected(title, session);
+		String redirect = WikiRedirect.getRedirected(title);
 		String trueTitle = (redirect == null) ? title : redirect;
 
 		Criteria criteria = session.createCriteria(WikiConcept.class);

@@ -61,7 +61,7 @@ public class RelatednessRequest extends RequestMessage
 			for (String title : clippingContext.keySet())
 			{
 				WikiConcept target = clippingContext.get(title);
-				double rel = sourceConcept.getRelatedness(target, session);
+				double rel = sourceConcept.getRelatedness(target);
 
 				Concept respConcept = new Concept();
 				respConcept.setTitle(title);

@@ -65,7 +65,7 @@ public class SuggestionRequest extends RequestMessage
 
 			for (WikiConcept inlink : inlinks.keySet())
 			{
-				double relatedness = sourceConcept.getRelatedness(inlink, session);
+				double relatedness = sourceConcept.getRelatedness(inlink);
 				if (relatedness < MIN_DIST_THREASHOLD)
 				{
 					Concept c = new Concept();
@@ -82,7 +82,7 @@ public class SuggestionRequest extends RequestMessage
 
 			for (WikiConcept outlink : outlinks.keySet())
 			{
-				double relatedness = sourceConcept.getRelatedness(outlink, session);
+				double relatedness = sourceConcept.getRelatedness(outlink);
 				if (relatedness < MIN_DIST_THREASHOLD)
 				{
 					Concept c = new Concept();
