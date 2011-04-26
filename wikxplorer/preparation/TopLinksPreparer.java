@@ -21,17 +21,13 @@ import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
 public class TopLinksPreparer
 {
 
-	private Session	session1;
-
-	private Session	session2;
-
 	private int			total;
 
 	private int			counter;
 
 	public void prepare(int numOfPreparedConcepts)
 	{
-		session1 = SessionManager.newSession();
+		Session session1 = SessionManager.newSession();
 		total = numOfPreparedConcepts;
 		counter = 0;
 
@@ -56,14 +52,11 @@ public class TopLinksPreparer
 		sr.close();
 
 		session1.close();
-		if (session2 != null)
-			session2.close();
 	}
 
 	private void prepareConcept(int id)
 	{
-		if (session2 == null)
-			session2 = SessionManager.newSession();
+		Session session2 = SessionManager.newSession();
 
 		WikiConcept concept = WikiConcept.getById(id, session2);
 		if (concept != null)
@@ -72,8 +65,9 @@ public class TopLinksPreparer
 			System.out.println(msg);
 			concept.getOrCalculateTopRelatedInlinks(session2);
 			concept.getOrCalculateTopRelatedOutlinks(session2);
-			session2.evict(concept);
 		}
+		
+		session2.close();
 	}
 
 	/**
