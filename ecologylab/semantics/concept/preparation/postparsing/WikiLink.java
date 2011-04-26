@@ -96,4 +96,10 @@ public class WikiLink implements Serializable
 		return (int) (pairing % 2147483647);
 	}
 	
+	@Override
+	public String toString()
+	{
+		return String.format("%d->%d:%s", getFromId(), getToId(), getSurface());
+	}
+	
 }

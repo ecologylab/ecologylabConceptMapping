@@ -65,26 +65,28 @@ public class CommonnessCalculator
 
 	private void processQueue(Queue<WikiLink> queue, String surface)
 	{
-		Session session2 = SessionManager.newSession();
+		// anyway we must first pop up links in the queue with that surface
+		int totalCount = 0;
+		Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
 
+		while (queue.size() > 0 && queue.peek().getSurface().equals(surface))
+		{
+			WikiLink link = queue.poll();
+			int prevCount = 0;
+			if (counts.containsKey(link.getToId()))
+				prevCount = counts.get(link.getToId());
+			counts.put(link.getToId(), prevCount + 1);
+			totalCount++;
+		}
+
+		// then check if we want to process it
 		if (SurfaceFilter.containsLetter(surface) && !SurfaceFilter.filter(surface))
 		{
 			System.out.println(counter + ": processing " + surface);
 
-			int totalCount = 0;
-			Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
-
-			while (queue.size() > 0 && queue.peek().getSurface().equals(surface))
-			{
-				WikiLink link = queue.poll();
-				int prevCount = 0;
-				if (counts.containsKey(link.getToId()))
-					prevCount = counts.get(link.getToId());
-				counts.put(link.getToId(), prevCount + 1);
-				totalCount++;
-			}
-
-			if (totalCount > LINKED_OCCURRENCE_THRESHOLD)
+			Session session2 = SessionManager.newSession();
+			
+			if (totalCount >= LINKED_OCCURRENCE_THRESHOLD)
 			{
 				for (int cid : counts.keySet())
 				{
@@ -105,9 +107,9 @@ public class CommonnessCalculator
 					}
 				}
 			}
+			
+			session2.close();
 		}
-
-		session2.close();
 	}
 
 	public static void main(String[] args)

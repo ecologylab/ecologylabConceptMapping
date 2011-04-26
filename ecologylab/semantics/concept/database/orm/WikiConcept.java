@@ -254,15 +254,14 @@ public class WikiConcept implements Serializable
 				records.add(new RelatedLinkRecord(inlink, rel));
 		}
 		Collections.sort(records);
+		Transaction tx = session.beginTransaction();
 		for (int i = 0; i < records.size() && i < TOP_LINK_COUNT; ++i)
 		{
 			RelatedLinkRecord record = records.get(i);
 			buffer.put(record.getRelatedLink(), record.getRelatedness());
-			Transaction tx = session.beginTransaction();
-			session.update(this);
-			tx.commit();
 		}
-
+		session.update(this);
+		tx.commit();
 	}
 
 	/**
