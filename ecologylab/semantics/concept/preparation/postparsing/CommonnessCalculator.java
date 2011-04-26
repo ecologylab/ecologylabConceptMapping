@@ -5,11 +5,11 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 
 import ecologylab.semantics.concept.database.SessionManager;
@@ -44,7 +44,7 @@ public class CommonnessCalculator
 		String lastSurface = null;
 
 		Criteria q = session1.createCriteria(WikiLink.class);
-		q.setCacheMode(CacheMode.IGNORE);
+		q.setCacheable(false);
 		q.setFetchSize(FETCH_SIZE);
 		q.addOrder(Order.asc("surface"));
 		ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY);
@@ -58,6 +58,7 @@ public class CommonnessCalculator
 				processQueue(queue, lastSurface);
 			}
 			lastSurface = link.getSurface();
+			session1.evict(link);
 		}
 		results.close();
 
@@ -90,8 +91,9 @@ public class CommonnessCalculator
 
 			if (totalCount > LINKED_OCCURRENCE_THRESHOLD)
 			{
-				session2.beginTransaction();
-
+				Transaction tx = session2.beginTransaction();
+				
+				tx.begin();
 				for (int cid : counts.keySet())
 				{
 					double commonness = counts.get(cid) * 1.0 / totalCount;
@@ -104,8 +106,10 @@ public class CommonnessCalculator
 						session2.save(comm);
 					}
 				}
+				tx.commit();
 
-				session2.getTransaction().commit();
+				session2.flush();
+				session2.clear();
 			}
 		}
 	}
