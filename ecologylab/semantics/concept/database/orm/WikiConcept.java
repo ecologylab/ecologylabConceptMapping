@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Basic;
 import javax.persistence.Cacheable;
@@ -15,6 +16,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyJoinColumn;
 import javax.persistence.Table;
 
@@ -49,6 +52,10 @@ public class WikiConcept implements Serializable
 	@Column(name = "id", nullable = false)
 	private int												id;
 
+	/**
+	 * concept title (or name).
+	 */
+	@Basic(fetch = FetchType.LAZY)
 	@Column(name = "title", nullable = false)
 	private String										title;
 
@@ -59,24 +66,38 @@ public class WikiConcept implements Serializable
 	@Column(name = "text", nullable = false)
 	private String										text;
 
-	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(name = "wiki_links", joinColumns = @JoinColumn(name = "to_id"))
-	@Column(name = "surface", nullable = false)
-	@MapKeyJoinColumn(name = "from_id")
-	private Map<WikiConcept, String>	inlinks;
+	/**
+	 * inlinks.
+	 */
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(
+			name = "wiki_links",
+			joinColumns = @JoinColumn(name = "to_id", nullable = false),
+			inverseJoinColumns = @JoinColumn(name = "from_id", nullable = false))
+	private Set<WikiConcept>					inlinks;
 
-	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(name = "wiki_links", joinColumns = @JoinColumn(name = "from_id"))
-	@Column(name = "surface", nullable = false)
-	@MapKeyJoinColumn(name = "to_id")
-	private Map<WikiConcept, String>	outlinks;
+	/**
+	 * outlinks.
+	 */
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(
+			name = "wiki_links",
+			joinColumns = @JoinColumn(name = "from_id", nullable = false),
+			inverseJoinColumns = @JoinColumn(name = "to_id", nullable = false))
+	private Set<WikiConcept>					outlinks;
 
+	/**
+	 * most related inlinks.
+	 */
 	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "top_related_links", joinColumns = @JoinColumn(name = "to_id"))
 	@Column(name = "relatedness", nullable = false)
 	@MapKeyJoinColumn(name = "from_id")
 	private Map<WikiConcept, Double>	topRelatedInlinks;
 
+	/**
+	 * most related outlinks.
+	 */
 	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "top_related_links", joinColumns = @JoinColumn(name = "from_id"))
 	@Column(name = "relatedness", nullable = false)
@@ -113,12 +134,12 @@ public class WikiConcept implements Serializable
 		return text;
 	}
 
-	public Map<WikiConcept, String> getInlinks()
+	public Set<WikiConcept> getInlinks()
 	{
 		return inlinks;
 	}
 
-	public Map<WikiConcept, String> getOutlinks()
+	public Set<WikiConcept> getOutlinks()
 	{
 		return outlinks;
 	}
@@ -177,8 +198,8 @@ public class WikiConcept implements Serializable
 		session.beginTransaction();
 
 		int scommon = 0;
-		for (WikiConcept c : concept.getInlinks().keySet())
-			if (this.getInlinks().containsKey(c))
+		for (WikiConcept c : concept.getInlinks())
+			if (this.getInlinks().contains(c))
 				scommon++;
 
 		if (scommon == 0)
@@ -212,7 +233,7 @@ public class WikiConcept implements Serializable
 		Map<WikiConcept, Double> topInlinks = getTopRelatedInlinks();
 		if (topInlinks.size() <= 0)
 		{
-			Map<WikiConcept, String> tmpInlinks = getInlinks();
+			Set<WikiConcept> tmpInlinks = getInlinks();
 			calculateTopRelatedLinks(session, topInlinks, tmpInlinks);
 		}
 		return topInlinks;
@@ -229,7 +250,7 @@ public class WikiConcept implements Serializable
 		Map<WikiConcept, Double> topOutlinks = getTopRelatedOutlinks();
 		if (topOutlinks.size() <= 0)
 		{
-			Map<WikiConcept, String> tmpOutlinks = getOutlinks();
+			Set<WikiConcept> tmpOutlinks = getOutlinks();
 			calculateTopRelatedLinks(session, topOutlinks, tmpOutlinks);
 		}
 		return topOutlinks;
@@ -245,10 +266,10 @@ public class WikiConcept implements Serializable
 	 *          either all inlinks or all outlinks.
 	 */
 	private void calculateTopRelatedLinks(Session session, Map<WikiConcept, Double> buffer,
-			Map<WikiConcept, String> allLinks)
+			Set<WikiConcept> allLinks)
 	{
 		List<RelatedLinkRecord> records = new ArrayList<RelatedLinkRecord>();
-		for (WikiConcept inlink : allLinks.keySet())
+		for (WikiConcept inlink : allLinks)
 		{
 			double rel = this.getRelatedness(inlink);
 			if (rel > MIN_DIST)
@@ -273,7 +294,7 @@ public class WikiConcept implements Serializable
 		return q.list().size() > 0;
 	}
 
-	public boolean isOutlink(String t, Session session)
+	public boolean isOutlink(String title, Session session)
 	{
 		WikiConcept c = getByTitle(title, session);
 		Criteria q = session.createCriteria(WikiLink.class);

@@ -40,7 +40,7 @@ public class KeyphrasenessCalculator
 		while (results.next())
 		{
 			final WikiConcept concept = (WikiConcept) results.get(0);
-			System.out.println(counter + "/" + total + ": processing " + concept.getTitle());
+			System.out.println(counter + "/" + total + ": processing " + concept.getId());
 			processConcept(concept);
 			counter++;
 		}

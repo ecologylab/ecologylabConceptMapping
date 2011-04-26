@@ -18,8 +18,6 @@ import org.hibernate.Session;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import ecologylab.semantics.concept.database.SessionManager;
-
 @Entity
 @Table(name = "wiki_surfaces")
 @Cacheable
@@ -43,6 +41,7 @@ public class WikiSurface implements Serializable
 	@Column(name = "linked_occurrence", nullable = false)
 	private int												linkedOccurrence;
 
+	/* we assume that one surface can relate to only a reasonable number of concepts. */
 	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "commonness", joinColumns = @JoinColumn(name = "surface_id"))
 	@Column(name = "commonness", nullable = true)

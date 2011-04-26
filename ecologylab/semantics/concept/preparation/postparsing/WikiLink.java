@@ -2,9 +2,11 @@ package ecologylab.semantics.concept.preparation.postparsing;
 
 import java.io.Serializable;
 
+import javax.persistence.Basic;
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -17,7 +19,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * (Used only in parsing, for efficiency)
  * 
  * @author quyin
- *
+ * 
  */
 @Entity
 @Table(name = "wiki_links")
@@ -38,6 +40,7 @@ public class WikiLink implements Serializable
 	@Column(name = "to_id", nullable = false)
 	private int	toId;
 
+	@Basic(fetch = FetchType.LAZY)
 	@Column(name = "surface", nullable = false)
 	String			surface;
 
@@ -95,11 +98,11 @@ public class WikiLink implements Serializable
 		long pairing = (long) (fromId + toId) * (fromId + toId + 1) / 2 + toId;
 		return (int) (pairing % 2147483647);
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return String.format("%d->%d:%s", getFromId(), getToId(), getSurface());
 	}
-	
+
 }

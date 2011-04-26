@@ -16,14 +16,14 @@ import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
  * Prepare top related in and out links for most referred concepts.
  * 
  * @author quyin
- *
+ * 
  */
 public class TopLinksPreparer
 {
 
-	private int			total;
+	private int	total;
 
-	private int			counter;
+	private int	counter;
 
 	public void prepare(int numOfPreparedConcepts)
 	{
@@ -61,12 +61,12 @@ public class TopLinksPreparer
 		WikiConcept concept = WikiConcept.getById(id, session2);
 		if (concept != null)
 		{
-			String msg = String.format("%d/%d: processing %s...", counter, total, concept.getTitle());
+			String msg = String.format("%d/%d: processing %d...", counter, total, concept.getId());
 			System.out.println(msg);
 			concept.getOrCalculateTopRelatedInlinks(session2);
 			concept.getOrCalculateTopRelatedOutlinks(session2);
 		}
-		
+
 		session2.close();
 	}
 

@@ -162,7 +162,7 @@ public class SuggestionRequest extends RequestMessage
 	private double getContextuallyRelatedness(Map<String, Concept> context, WikiConcept concept,
 			double r0)
 	{
-		if (context.containsKey(concept.getTitle()))
+		if (context.containsValue(concept))
 			return WikiConcept.MAX_DIST;
 
 		double rc = WikiConcept.MAX_DIST; // min distance to contextual concepts
