@@ -92,7 +92,7 @@ public class CommonnessCalculator
 			if (totalCount > LINKED_OCCURRENCE_THRESHOLD)
 			{
 				Transaction tx = session2.beginTransaction();
-				
+
 				tx.begin();
 				for (int cid : counts.keySet())
 				{
@@ -106,9 +106,9 @@ public class CommonnessCalculator
 						session2.save(comm);
 					}
 				}
+				session2.flush();
 				tx.commit();
 
-				session2.flush();
 				session2.clear();
 			}
 		}

@@ -1,6 +1,9 @@
 package ecologylab.semantics.concept.database.orm;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Basic;
@@ -17,6 +20,7 @@ import javax.persistence.Table;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.criterion.Property;
@@ -31,9 +35,11 @@ import ecologylab.semantics.concept.service.Configs;
 public class WikiConcept implements Serializable
 {
 
-	public static final double				MIN_DIST	= 0;
+	public static final double				MIN_DIST				= 0;
 
-	public static final double				MAX_DIST	= 1;
+	public static final double				MAX_DIST				= 1;
+
+	private static final int					TOP_LINK_COUNT	= 100;
 
 	/**
 	 * (This id comes from wikipedia)
@@ -63,6 +69,18 @@ public class WikiConcept implements Serializable
 	@Column(name = "surface", nullable = false)
 	@MapKeyJoinColumn(name = "to_id")
 	private Map<WikiConcept, String>	outlinks;
+
+	@ElementCollection(fetch = FetchType.LAZY)
+	@CollectionTable(name = "top_related_links", joinColumns = @JoinColumn(name = "to_id"))
+	@Column(name = "relatedness", nullable = false)
+	@MapKeyJoinColumn(name = "from_id")
+	private Map<WikiConcept, Double>	topRelatedInlinks;
+
+	@ElementCollection(fetch = FetchType.LAZY)
+	@CollectionTable(name = "top_related_links", joinColumns = @JoinColumn(name = "from_id"))
+	@Column(name = "relatedness", nullable = false)
+	@MapKeyJoinColumn(name = "to_id")
+	private Map<WikiConcept, Double>	topRelatedOutlinks;
 
 	public int getId()
 	{
@@ -104,6 +122,16 @@ public class WikiConcept implements Serializable
 		return outlinks;
 	}
 
+	public Map<WikiConcept, Double> getTopRelatedInlinks()
+	{
+		return topRelatedInlinks;
+	}
+
+	public Map<WikiConcept, Double> getTopRelatedOutlinks()
+	{
+		return topRelatedOutlinks;
+	}
+
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -121,6 +149,12 @@ public class WikiConcept implements Serializable
 		return id;
 	}
 
+	/**
+	 * get relatedness of this concept to another one from table 'relatedness' or by calculation.
+	 * 
+	 * @param concept
+	 * @return
+	 */
 	public double getRelatedness(WikiConcept concept)
 	{
 		if (this.getId() > concept.getId())
@@ -134,7 +168,7 @@ public class WikiConcept implements Serializable
 		Relatedness rel = new Relatedness();
 		rel.setConceptId1(this.getId());
 		rel.setConceptId2(concept.getId());
-		
+
 		Relatedness existingRel = (Relatedness) session.get(Relatedness.class, rel);
 		if (existingRel != null)
 			return existingRel.getRelatedness();
@@ -159,13 +193,85 @@ public class WikiConcept implements Serializable
 
 		rel.setRelatedness(r);
 		session.save(rel);
-		
+
 		session.getTransaction().commit();
 		session.close();
 
 		return r;
 	}
 
+	/**
+	 * get most related inlinks from table 'top_related_links' or calculate and persist them.
+	 * 
+	 * @param session
+	 * @return
+	 */
+	public Map<WikiConcept, Double> getOrCalculateTopRelatedInlinks(Session session)
+	{
+		Map<WikiConcept, Double> topInlinks = getTopRelatedInlinks();
+		if (topInlinks.size() <= 0)
+		{
+			Map<WikiConcept, String> tmpInlinks = getInlinks();
+			calculateTopRelatedLinks(session, topInlinks, tmpInlinks);
+		}
+		return topInlinks;
+	}
+
+	/**
+	 * get most related outlinks from table 'top_related_links' or calculate and persist them.
+	 * 
+	 * @param session
+	 * @return
+	 */
+	public Map<WikiConcept, Double> getOrCalculateTopRelatedOutlinks(Session session)
+	{
+		Map<WikiConcept, Double> topOutlinks = getTopRelatedOutlinks();
+		if (topOutlinks.size() <= 0)
+		{
+			Map<WikiConcept, String> tmpOutlinks = getOutlinks();
+			calculateTopRelatedLinks(session, topOutlinks, tmpOutlinks);
+		}
+		return topOutlinks;
+	}
+
+	/**
+	 * utility method used by getOrCalculatetopRelated*links().
+	 * 
+	 * @param session
+	 * @param buffer
+	 *          for output.
+	 * @param allLinks
+	 *          either all inlinks or all outlinks.
+	 */
+	private void calculateTopRelatedLinks(Session session, Map<WikiConcept, Double> buffer,
+			Map<WikiConcept, String> allLinks)
+	{
+		Transaction tx = session.beginTransaction();
+
+		List<RelatedLinkRecord> records = new ArrayList<RelatedLinkRecord>();
+		for (WikiConcept inlink : allLinks.keySet())
+		{
+			double rel = this.getRelatedness(inlink);
+			records.add(new RelatedLinkRecord(inlink, rel));
+		}
+		Collections.sort(records);
+		for (int i = 0; i < TOP_LINK_COUNT; ++i)
+		{
+			RelatedLinkRecord record = records.get(i);
+			buffer.put(record.getRelatedLink(), record.getRelatedness());
+		}
+
+		session.update(this);
+		tx.commit();
+	}
+
+	/**
+	 * get concept with given title using given session.
+	 * 
+	 * @param title
+	 * @param session
+	 * @return
+	 */
 	public static WikiConcept getByTitle(String title, Session session)
 	{
 		// guesses for potential case problems
@@ -183,6 +289,13 @@ public class WikiConcept implements Serializable
 		return (WikiConcept) criteria.uniqueResult();
 	}
 
+	/**
+	 * get concept with give id using given session.
+	 * 
+	 * @param conceptId
+	 * @param session
+	 * @return
+	 */
 	public static WikiConcept getById(int conceptId, Session session)
 	{
 		return (WikiConcept) session.get(WikiConcept.class, conceptId);
