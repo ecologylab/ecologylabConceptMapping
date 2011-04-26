@@ -10,9 +10,7 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Property;
 
 import ecologylab.semantics.concept.database.SessionManager;
 
@@ -88,26 +86,27 @@ public class CommonnessCalculator
 
 			if (totalCount > LINKED_OCCURRENCE_THRESHOLD)
 			{
-				Transaction tx = session2.beginTransaction();
-
-				tx.begin();
 				for (int cid : counts.keySet())
 				{
 					double commonness = counts.get(cid) * 1.0 / totalCount;
 					if (commonness > COMMONNESS_THRESHOLD)
 					{
+						Transaction tx = session2.beginTransaction();
+						tx.begin();
 						Commonness comm = new Commonness();
 						comm.setSurface(surface);
 						comm.setConceptId(cid);
 						comm.setCommonness(commonness);
 						session2.save(comm);
+						String msg = String.format("%s, %d: %f", surface, cid, commonness);
+						System.out.println("storing item: " + msg);
+						session2.flush();
+						tx.commit();
 					}
 				}
-				session2.flush();
-				tx.commit();
 			}
 		}
-		
+
 		session2.close();
 	}
 

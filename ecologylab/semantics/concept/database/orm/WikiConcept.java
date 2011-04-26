@@ -246,8 +246,6 @@ public class WikiConcept implements Serializable
 	private void calculateTopRelatedLinks(Session session, Map<WikiConcept, Double> buffer,
 			Map<WikiConcept, String> allLinks)
 	{
-		Transaction tx = session.beginTransaction();
-
 		List<RelatedLinkRecord> records = new ArrayList<RelatedLinkRecord>();
 		for (WikiConcept inlink : allLinks.keySet())
 		{
@@ -256,14 +254,15 @@ public class WikiConcept implements Serializable
 				records.add(new RelatedLinkRecord(inlink, rel));
 		}
 		Collections.sort(records);
-		for (int i = 0; i<records.size() && i < TOP_LINK_COUNT; ++i)
+		for (int i = 0; i < records.size() && i < TOP_LINK_COUNT; ++i)
 		{
 			RelatedLinkRecord record = records.get(i);
 			buffer.put(record.getRelatedLink(), record.getRelatedness());
+			Transaction tx = session.beginTransaction();
+			session.update(this);
+			tx.commit();
 		}
 
-		session.update(this);
-		tx.commit();
 	}
 
 	/**
