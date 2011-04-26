@@ -10,7 +10,9 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Property;
 
 import ecologylab.semantics.concept.database.SessionManager;
 
@@ -29,15 +31,11 @@ public class CommonnessCalculator
 
 	public static final double	COMMONNESS_THRESHOLD				= 0.001;
 
-	private Session							session1;
-
-	private Session							session2;
-
 	private int									counter;
 
 	public void calculateCommonness()
 	{
-		session1 = SessionManager.newSession();
+		Session session1 = SessionManager.newSession();
 		counter = 0;
 
 		Queue<WikiLink> queue = new LinkedList<WikiLink>();
@@ -65,14 +63,11 @@ public class CommonnessCalculator
 		processQueue(queue, lastSurface);
 
 		session1.close();
-		if (session2 != null)
-			session2.close();
 	}
 
 	private void processQueue(Queue<WikiLink> queue, String surface)
 	{
-		if (session2 == null)
-			session2 = SessionManager.newSession();
+		Session session2 = SessionManager.newSession();
 
 		if (SurfaceFilter.containsLetter(surface) && !SurfaceFilter.filter(surface))
 		{
@@ -110,10 +105,10 @@ public class CommonnessCalculator
 				}
 				session2.flush();
 				tx.commit();
-
-				session2.clear();
 			}
 		}
+		
+		session2.close();
 	}
 
 	public static void main(String[] args)
