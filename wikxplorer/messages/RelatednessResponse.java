@@ -1,6 +1,7 @@
 package wikxplorer.messages;
 
 import ecologylab.collections.Scope;
+import ecologylab.generic.HashMapArrayList;
 import ecologylab.oodss.messages.ResponseMessage;
 import ecologylab.serialization.SIMPLTranslationException;
 import ecologylab.serialization.simpl_inherit;
@@ -16,22 +17,38 @@ public class RelatednessResponse extends ResponseMessage
 {
 
 	/**
-	 * The source concept.
+	 * The source concept title from clients.
 	 */
-	@simpl_composite
-	private Concept	concept;
+	@simpl_scalar
+	private String													title;
+
+	/**
+	 * Links to other concepts in the context (note that non-link is seen as a link).
+	 */
+	@simpl_map("contextual_link")
+	private HashMapArrayList<String, Link>	contextualLinks	= new HashMapArrayList<String, Link>();
 
 	@simpl_scalar
-	private boolean	ok	= false;
+	private boolean													ok							= false;
 
-	public Concept getConcept()
+	public String getTitle()
 	{
-		return concept;
+		return title;
 	}
 
-	public void setConcept(Concept concept)
+	public void setTitle(String title)
 	{
-		this.concept = concept;
+		this.title = title;
+	}
+
+	public HashMapArrayList<String, Link> getContextualLinks()
+	{
+		return contextualLinks;
+	}
+
+	public void setContextualLinks(HashMapArrayList<String, Link> contextualLinks)
+	{
+		this.contextualLinks = contextualLinks;
 	}
 
 	public void setOk(boolean ok)

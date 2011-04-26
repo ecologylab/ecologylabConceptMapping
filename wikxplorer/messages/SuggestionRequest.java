@@ -44,10 +44,10 @@ public class SuggestionRequest extends RequestMessage
 	}
 
 	/**
-	 * The source concept.
+	 * The source concept title.
 	 */
-	@simpl_composite
-	private Concept							concept;
+	@simpl_scalar
+	private String							title;
 
 	public SuggestionRequest()
 	{
@@ -56,18 +56,7 @@ public class SuggestionRequest extends RequestMessage
 
 	public SuggestionRequest(String title)
 	{
-		concept = new Concept();
-		concept.setTitle(title);
-	}
-
-	public Concept getConcept()
-	{
-		return concept;
-	}
-
-	public void setConcept(Concept concept)
-	{
-		this.concept = concept;
+		this.title = title;
 	}
 
 	@Override
@@ -75,7 +64,6 @@ public class SuggestionRequest extends RequestMessage
 	{
 		SuggestionResponse resp = new SuggestionResponse();
 
-		String title = concept.getTitle();
 		if (title != null && !title.isEmpty())
 		{
 			Session session = (Session) clientSessionScope.get(ScopeKeys.SESSION);
@@ -149,7 +137,9 @@ public class SuggestionRequest extends RequestMessage
 					respConcept.dirtySuggestedLinks = false;
 				}
 
-				resp.setConcept(respConcept);
+				resp.setTitle(title);
+				resp.setSuggestedLinkCount(respConcept.getSuggestedLinkCount());
+				resp.setSuggestedLinkGroups(respConcept.getSuggestedLinkGroups());
 				resp.setOk(true);
 			}
 		}
@@ -179,9 +169,9 @@ public class SuggestionRequest extends RequestMessage
 		double ra = 0; // average distance to contextual concepts
 		for (Concept c : context.values())
 		{
-			if (c.getTitle().equals(this.concept.getTitle()))
+			if (c.getTitle().equals(this.title))
 				continue;
-			
+
 			double rel = concept.getRelatedness(c.wikiConcept);
 			if (rel < rc)
 				rc = rel;
@@ -196,7 +186,7 @@ public class SuggestionRequest extends RequestMessage
 	private ArrayList<LinkGroup> getLinkGroups(Map<String, Link> links)
 	{
 		// TODO
-		
+
 		ArrayList<Link> linkList = new ArrayList<Link>();
 		for (Link link : links.values())
 		{

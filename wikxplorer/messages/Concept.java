@@ -8,8 +8,9 @@ import ecologylab.serialization.ElementState;
 import ecologylab.serialization.simpl_inherit;
 
 /**
- * The class used to hold information about a concept during transmission between server and
- * clients.
+ * This class holds information about a concept at server side. The same class can be used at client
+ * side. Results of looking up contextual relatedness or suggested links are cached here for
+ * efficiency.
  * 
  * @author quyin
  * 

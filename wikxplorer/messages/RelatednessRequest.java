@@ -27,10 +27,10 @@ public class RelatednessRequest extends RequestMessage
 {
 
 	/**
-	 * The source concept.
+	 * The source concept title.
 	 */
-	@simpl_composite
-	private Concept	concept;
+	@simpl_scalar
+	private String	title;
 
 	public RelatednessRequest()
 	{
@@ -39,18 +39,7 @@ public class RelatednessRequest extends RequestMessage
 
 	public RelatednessRequest(String title)
 	{
-		concept = new Concept();
-		concept.setTitle(title);
-	}
-
-	public Concept getConcept()
-	{
-		return concept;
-	}
-
-	public void setConcept(Concept concept)
-	{
-		this.concept = concept;
+		this.title = title;
 	}
 
 	@Override
@@ -58,7 +47,6 @@ public class RelatednessRequest extends RequestMessage
 	{
 		RelatednessResponse resp = new RelatednessResponse();
 
-		String title = concept.getTitle();
 		if (title != null && !title.isEmpty())
 		{
 			Session session = (Session) clientSessionScope.get(ScopeKeys.SESSION);
@@ -122,7 +110,8 @@ public class RelatednessRequest extends RequestMessage
 					respConcept.dirtyContextualLinks = false;
 				}
 
-				resp.setConcept(respConcept);
+				resp.setTitle(title);
+				resp.setContextualLinks(respConcept.getContextualLinks());
 				resp.setOk(true);
 			}
 		}
