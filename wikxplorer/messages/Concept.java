@@ -1,60 +1,52 @@
 package wikxplorer.messages;
 
+import java.util.ArrayList;
+
+import ecologylab.generic.HashMapArrayList;
+import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.serialization.ElementState;
 import ecologylab.serialization.simpl_inherit;
-import ecologylab.serialization.types.element.Mappable;
 
 /**
  * The class used to hold information about a concept during transmission between server and
  * clients.
- * <p />
- * In cases like SingleSourceRelatedness, clients should fill out the title field and the server
- * will return information in relatedness field. In cases like SuggestedConcepts, the server will
- * fill out all the information.
- * <p />
- * This class implements Mappable so that it can be used with simpl_map. The key will be the title.
  * 
  * @author quyin
  * 
  */
 @simpl_inherit
-public class Concept extends ElementState implements Mappable<String>
+public class Concept extends ElementState
 {
 
-	public static final int	ERROR		= -1;
-
-	public static final int	NONE		= 0;
-
-	// use bits as flags
-	
-	public static final int	OUTLINK	= 0x1;
-
-	public static final int	INLINK	= 0x2;
-
 	/**
-	 * The title of this concept.
+	 * Title of the concept.
 	 */
 	@simpl_scalar
-	private String					title;
+	private String													title;
 
 	/**
-	 * The type of this concept (inlink / outlink). When set to NONE, the type is unclear.
+	 * Links to other concepts in the context (note that non-link is seen as a link).
 	 */
-	@simpl_scalar
-	private int							type		= NONE;
+	@simpl_map("contextual_link")
+	private HashMapArrayList<String, Link>	contextualLinks				= new HashMapArrayList<String, Link>();
 
 	/**
-	 * The returned relatedness value of this concept to a source one (if used with
-	 * SingleSourceRelatedness or SuggestedConcepts).
+	 * How many concepts are suggested from this one. Not the number of groups.
 	 */
 	@simpl_scalar
-	private double					relatedness;
+	private int															suggestedLinkCount;
 
-	@Override
-	public String key()
-	{
-		return title;
-	}
+	/**
+	 * Suggested concepts organized in groups.
+	 */
+	@simpl_collection("suggested_link_group")
+	private ArrayList<LinkGroup>						suggestedLinkGroups		= new ArrayList<LinkGroup>();
+
+	WikiConcept															wikiConcept;
+
+	boolean																	dirtyContextualLinks	= false;
+
+	boolean																	dirtySuggestedLinks		= false;
 
 	public String getTitle()
 	{
@@ -66,24 +58,29 @@ public class Concept extends ElementState implements Mappable<String>
 		this.title = title;
 	}
 
-	public int getType()
+	public HashMapArrayList<String, Link> getContextualLinks()
 	{
-		return type;
+		return contextualLinks;
 	}
 
-	public void setType(int type)
+	public int getSuggestedLinkCount()
 	{
-		this.type = type;
+		return suggestedLinkCount;
 	}
 
-	public double getRelatedness()
+	public void setSuggestedLinkCount(int suggestedLinkCount)
 	{
-		return relatedness;
+		this.suggestedLinkCount = suggestedLinkCount;
 	}
 
-	public void setRelatedness(double relatedness)
+	public void setSuggestedLinkGroups(ArrayList<LinkGroup> suggestedLinkGroups)
 	{
-		this.relatedness = relatedness;
+		this.suggestedLinkGroups = suggestedLinkGroups;
+	}
+
+	public ArrayList<LinkGroup> getSuggestedLinkGroups()
+	{
+		return suggestedLinkGroups;
 	}
 
 }

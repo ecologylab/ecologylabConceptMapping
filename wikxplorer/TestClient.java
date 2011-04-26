@@ -16,41 +16,53 @@ import ecologylab.serialization.TranslationScope;
 public class TestClient
 {
 
-	public static void main(String[] args) throws IOException, MessageTooLargeException, InterruptedException
+	public static void main(String[] args) throws IOException, MessageTooLargeException,
+			InterruptedException
 	{
 		TranslationScope tscope = WikxplorerMessageTranslationScope.get();
 
 		Scope clientScope = new Scope();
-		
+
 		NIOClient client = new NIOClient("localhost", 11355, tscope, clientScope);
 		client.allowCompression(false);
 		client.useRequestCompression(false);
 		client.connect();
-		
+
 		if (client.connected())
 		{
-			UpdateContextRequest ucr = new UpdateContextRequest();
-			ucr.setAction(UpdateContextRequest.ACTION_ADD);
-			ucr.setTitle("Creativity");
-			client.sendMessage(ucr);
+			UpdateContextRequest ucr1 = new UpdateContextRequest(UpdateContextRequest.ACTION_ADD,
+					"creativity");
+			client.sendMessage(ucr1);
+			Thread.sleep(1000);
+
+			UpdateContextRequest ucr2 = new UpdateContextRequest(UpdateContextRequest.ACTION_ADD,
+					"cognitive science");
+			client.sendMessage(ucr2);
+			Thread.sleep(1000);
 			
-			RelatednessRequest rr = new RelatednessRequest();
-			rr.setSource("Cognitive science");
+			UpdateContextRequest ucr3 = new UpdateContextRequest(UpdateContextRequest.ACTION_ADD,
+					"information visualization");
+			client.sendMessage(ucr3);
+			Thread.sleep(1000);
+			
+			RelatednessRequest rr = new RelatednessRequest("cognitive science");
 			client.sendMessage(rr);
-			Thread.sleep(2000);
-			
-			SuggestionRequest sr = new SuggestionRequest();
-			sr.setSource("Information visualization");
+			Thread.sleep(1000);
+
+			SuggestionRequest sr = new SuggestionRequest("information visualization");
 			client.sendMessage(sr);
-			
+			Thread.sleep(1000);
+
 			SessionShutdownMessage ssm = new SessionShutdownMessage();
 			client.sendMessage(ssm);
-			
+			Thread.sleep(1000);
+
 			CloseMessage cm = new CloseMessage();
 			client.sendMessage(cm);
-			
+			Thread.sleep(1000);
+
 			client.disconnect();
 		}
 	}
-	
+
 }

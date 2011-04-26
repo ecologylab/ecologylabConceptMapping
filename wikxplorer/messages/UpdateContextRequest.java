@@ -15,7 +15,7 @@ import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.serialization.simpl_inherit;
 
 /**
- * Update the context (represented by collected clippings).
+ * Update the context (represented by a set of concepts).
  * 
  * @author quyin
  * 
@@ -30,11 +30,28 @@ public class UpdateContextRequest extends RequestMessage
 
 	public static final int	ACTION_REMOVE	= 2;
 
+	/**
+	 * The action (add / remove).
+	 */
 	@simpl_scalar
 	private int							action				= ACTION_NONE;
 
+	/**
+	 * The title of the operand concept. Case insensitive.
+	 */
 	@simpl_scalar
 	private String					title;
+
+	public UpdateContextRequest()
+	{
+
+	}
+
+	public UpdateContextRequest(int action, String title)
+	{
+		this.action = action;
+		this.title = title;
+	}
 
 	public int getAction()
 	{
@@ -66,29 +83,45 @@ public class UpdateContextRequest extends RequestMessage
 			clientSessionScope.put(ScopeKeys.SESSION, session);
 		}
 
-		Map<String, WikiConcept> clippingContext = (Map<String, WikiConcept>) clientSessionScope
+		Map<String, Concept> clippingContext = (Map<String, Concept>) clientSessionScope
 				.get(ScopeKeys.CLIPPING_CONTEXT);
 		if (clippingContext == null)
 		{
-			clippingContext = new HashMap<String, WikiConcept>();
+			clippingContext = new HashMap<String, Concept>();
 			clientSessionScope.put(ScopeKeys.CLIPPING_CONTEXT, clippingContext);
 		}
 
 		switch (action)
 		{
 		case ACTION_ADD:
-			WikiConcept concept = WikiConcept.getByTitle(title, session);
-			if (concept != null)
+			WikiConcept ws = WikiConcept.getByTitle(title, session);
+			if (ws != null)
+			{
+				makeAllDirty(clippingContext);
+				Concept concept = new Concept();
+				concept.setTitle(title);
+				concept.wikiConcept = ws;
 				clippingContext.put(title, concept);
+			}
 			break;
 		case ACTION_REMOVE:
 			clippingContext.remove(title);
+			makeAllDirty(clippingContext);
 			break;
 		default:
 			break;
 		}
 
 		return new OkResponse();
+	}
+
+	private void makeAllDirty(Map<String, Concept> clippingContext)
+	{
+		for (Concept c : clippingContext.values())
+		{
+			c.dirtyContextualLinks = true;
+			c.dirtySuggestedLinks = true;
+		}
 	}
 
 }

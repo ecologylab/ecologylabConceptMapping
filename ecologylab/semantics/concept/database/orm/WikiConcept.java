@@ -26,6 +26,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.criterion.Property;
 
 import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
 import ecologylab.semantics.concept.service.Configs;
 
 @Entity
@@ -262,6 +263,22 @@ public class WikiConcept implements Serializable
 		}
 		session.update(this);
 		tx.commit();
+	}
+
+	public boolean isInlink(String title, Session session)
+	{
+		WikiConcept c = getByTitle(title, session);
+		Criteria q = session.createCriteria(WikiLink.class);
+		q.add(Property.forName("fromId").eq(c.getId())).add(Property.forName("toId").eq(this.getId()));
+		return q.list().size() > 0;
+	}
+
+	public boolean isOutlink(String t, Session session)
+	{
+		WikiConcept c = getByTitle(title, session);
+		Criteria q = session.createCriteria(WikiLink.class);
+		q.add(Property.forName("fromId").eq(this.getId())).add(Property.forName("toId").eq(c.getId()));
+		return q.list().size() > 0;
 	}
 
 	/**

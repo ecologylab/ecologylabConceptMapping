@@ -10,7 +10,8 @@ public class WikxplorerMessageTranslationScope
 
 	private static Class[]			classes	= {
 																			Concept.class,
-																			ConceptGroup.class,
+																			Link.class,
+																			LinkGroup.class,
 																			UpdateContextRequest.class,
 																			RelatednessRequest.class,
 																			RelatednessResponse.class,

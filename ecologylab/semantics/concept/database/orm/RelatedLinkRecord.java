@@ -1,6 +1,6 @@
 package ecologylab.semantics.concept.database.orm;
 
-public class RelatedLinkRecord implements Comparable<RelatedLinkRecord>
+class RelatedLinkRecord implements Comparable<RelatedLinkRecord>
 {
 
 	private WikiConcept	relatedLink;

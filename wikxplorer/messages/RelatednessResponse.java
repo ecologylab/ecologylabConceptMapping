@@ -1,14 +1,12 @@
 package wikxplorer.messages;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import ecologylab.collections.Scope;
 import ecologylab.oodss.messages.ResponseMessage;
+import ecologylab.serialization.SIMPLTranslationException;
 import ecologylab.serialization.simpl_inherit;
 
 /**
- * Relatedness values.
+ * Relatedness values (in concept.contextualLinks).
  * 
  * @author quyin
  * 
@@ -18,17 +16,22 @@ public class RelatednessResponse extends ResponseMessage
 {
 
 	/**
-	 * Map from target concept title to an object holding returned relatedness values.
+	 * The source concept.
 	 */
-	@simpl_map("target")
-	private HashMap<String, Concept>	targets	= new HashMap<String, Concept>();
+	@simpl_composite
+	private Concept	concept;
 
 	@simpl_scalar
-	private boolean										ok			= false;
+	private boolean	ok	= false;
 
-	public Map<String, Concept> getTargets()
+	public Concept getConcept()
 	{
-		return targets;
+		return concept;
+	}
+
+	public void setConcept(Concept concept)
+	{
+		this.concept = concept;
 	}
 
 	public void setOk(boolean ok)
@@ -45,12 +48,17 @@ public class RelatednessResponse extends ResponseMessage
 	@Override
 	public void processResponse(Scope objectRegistry)
 	{
-		// just for testing
-		System.out.println("RelatednessResponse:");
-		for (String targetTitle : targets.keySet())
+		// for debug
+		try
 		{
-			Concept concept = targets.get(targetTitle);
-			System.out.println(String.format("\t%s: %f", targetTitle, concept.getRelatedness()));
+			System.out.println();
+			this.serialize(System.out);
+			System.out.println();
+		}
+		catch (SIMPLTranslationException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

@@ -1,14 +1,12 @@
 package wikxplorer.messages;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ecologylab.collections.Scope;
 import ecologylab.oodss.messages.ResponseMessage;
+import ecologylab.serialization.SIMPLTranslationException;
 import ecologylab.serialization.simpl_inherit;
 
 /**
- * Suggested concepts in groups.
+ * Suggested links in groups (in concept.suggestedLinkGroups).
  * 
  * @author quyin
  * 
@@ -18,19 +16,23 @@ public class SuggestionResponse extends ResponseMessage
 {
 
 	/**
-	 * The total number of suggested concepts. (Not the number of groups)
+	 * The source concept.
 	 */
-	@simpl_scalar
-	private int											totalSize;
-
-	/**
-	 * Suggested concepts, organized in groups.
-	 */
-	@simpl_collection("group")
-	private ArrayList<ConceptGroup>	groups	= new ArrayList<ConceptGroup>();
+	@simpl_composite
+	private Concept	concept;
 
 	@simpl_scalar
-	private boolean									ok			= false;
+	private boolean	ok	= false;
+
+	public Concept getConcept()
+	{
+		return concept;
+	}
+
+	public void setConcept(Concept concept)
+	{
+		this.concept = concept;
+	}
 
 	public void setOk(boolean ok)
 	{
@@ -43,36 +45,20 @@ public class SuggestionResponse extends ResponseMessage
 		return ok;
 	}
 
-	public void setTotalSize(int totalSize)
-	{
-		this.totalSize = totalSize;
-	}
-
-	public int getTotalSize()
-	{
-		return totalSize;
-	}
-
-	public List<ConceptGroup> getGroups()
-	{
-		return groups;
-	}
-
 	@Override
 	public void processResponse(Scope objectRegistry)
 	{
-		// just for testing
-		System.out.println("SuggestionResponse: [" + totalSize + "]");
-		for (ConceptGroup group : groups)
+		// for debug
+		try
 		{
-			System.out.println("\tGroup: [" + group.getConcepts().size() + "]");
-			System.out.println("\t\tAverage Relatedness: " + group.getAverageRelatedness());
-			System.out.println("\t\tTop Title: " + group.getTopTitle());
-			for (String title : group.getConcepts().keySet())
-			{
-				Concept concept = group.getConcepts().get(title);
-				System.out.println(String.format("\t%s: %f", title, concept.getRelatedness()));
-			}
+			System.out.println();
+			this.serialize(System.out);
+			System.out.println();
+		}
+		catch (SIMPLTranslationException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
