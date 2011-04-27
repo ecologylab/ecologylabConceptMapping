@@ -193,9 +193,10 @@ public class WikiConcept implements Serializable
 
 		Relatedness existingRel = (Relatedness) session.get(Relatedness.class, rel);
 		if (existingRel != null)
+		{
+			session.close();
 			return existingRel.getRelatedness();
-
-		session.beginTransaction();
+		}
 
 		int scommon = 0;
 		for (WikiConcept c : concept.getInlinks())
@@ -203,8 +204,13 @@ public class WikiConcept implements Serializable
 				scommon++;
 
 		if (scommon == 0)
+		{
+			session.close();
 			return MAX_DIST;
+		}
 
+		Transaction tx = session.beginTransaction();
+		
 		int s1 = this.getInlinks().size();
 		int s2 = concept.getInlinks().size();
 		int smax = s1 > s2 ? s1 : s2;
@@ -215,8 +221,8 @@ public class WikiConcept implements Serializable
 
 		rel.setRelatedness(r);
 		session.save(rel);
-
-		session.getTransaction().commit();
+		tx.commit();
+		
 		session.close();
 
 		return r;
@@ -233,7 +239,9 @@ public class WikiConcept implements Serializable
 		Map<WikiConcept, Double> topInlinks = getTopRelatedInlinks();
 		if (topInlinks.size() <= 0)
 		{
+			System.out.println("getting inlinks for " + id);
 			Set<WikiConcept> tmpInlinks = getInlinks();
+			System.out.println("calculating top inlinks for " + id);
 			calculateTopRelatedLinks(session, topInlinks, tmpInlinks);
 		}
 		return topInlinks;
