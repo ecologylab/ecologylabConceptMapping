@@ -1,22 +1,35 @@
-DROP FUNCTION IF EXISTS calculate_relatedness(id1 int, id2 int, total int);
-CREATE FUNCTION calculate_relatedness(id1 int, id2 int, total int)
-RETURNS double precision AS $$
+DROP FUNCTION IF EXISTS calculate_relatedness(cid1 int, cid2 int, total int);
+CREATE FUNCTION calculate_relatedness(cid1 int, cid2 int, total int)
+RETURNS relatedness AS $$
 DECLARE
-  r double precision;
+  r relatedness%rowtype;
+  id1 int;
+  id2 int;
+  rel double precision;
   s1 int;
   s2 int;
   s3 int;
+  tmp_id int;
 BEGIN
-  IF id1 = id2 THEN
-    RETURN 0;
+  IF cid1 = cid2 THEN
+    r.concept_id1 := cid1;
+    r.concept_id2 := cid2;
+    r.relatedness := 0;
+    RETURN r;
   END IF;
 
-  IF id1 > id2 THEN
-    RETURN calculate_relatedness(id2, id1, total);
+  IF cid1 < cid2 THEN
+    id1 := cid1;
+    id2 := cid2;
+  ELSE
+    id1 := cid2;
+    id2 := cid1;
   END IF;
   
-  SELECT relatedness INTO r FROM relatedness WHERE concept_id1 = id1 AND concept_id2 = id2;
-  IF NOT FOUND THEN
+  SELECT * INTO r FROM relatedness WHERE concept_id1 = id1 AND concept_id2 = id2;
+  IF FOUND THEN
+    RETURN r;
+  ELSE
     SELECT count(from_id) INTO s1 FROM wiki_links WHERE to_id = id1;
     SELECT count(from_id) INTO s2 FROM wiki_links WHERE to_id = id2;
     WITH t AS (
@@ -26,17 +39,24 @@ BEGIN
     ) SELECT count(*) INTO s3 FROM t;
     
     IF s3 <= 0 THEN
-      RETURN 1;
+      r.concept_id1 := id1;
+      r.concept_id2 := id2;
+      r.relatedness := 1;
+      RETURN r;
     END IF;
     
     IF s1 > s2 THEN
-      r = (ln(s1) - ln(s3)) / (ln(total) - ln(s2));
+      rel = (ln(s1) - ln(s3)) / (ln(total) - ln(s2));
     ELSE
-      r = (ln(s2) - ln(s3)) / (ln(total) - ln(s1));
+      rel = (ln(s2) - ln(s3)) / (ln(total) - ln(s1));
     END IF;
-    INSERT INTO relatedness(concept_id1, concept_id2, relatedness) VALUES (id1, id2, r);
+    INSERT INTO relatedness(concept_id1, concept_id2, relatedness) VALUES (id1, id2, rel);
+
+    r.concept_id1 := id1;
+    r.concept_id2 := id2;
+    r.relatedness := rel;
+    RETURN r;
   END IF;
-  RETURN r;
 End;
 $$ LANGUAGE plpgsql;
 
@@ -95,3 +115,4 @@ BEGIN
   END IF;
 END;
 $$ LANGUAGE plpgsql;
+
