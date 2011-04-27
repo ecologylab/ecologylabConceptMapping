@@ -1,5 +1,7 @@
 package ecologylab.semantics.concept.test;
 
+import java.util.Map;
+
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -35,6 +37,17 @@ public class TestORM
 		
 		System.out.println(r1);
 		System.out.println(r2);
+		
+		Map<WikiConcept, Double> inlinks = c1.getOrCalculateTopRelatedInlinks(session);
+		for (WikiConcept inlink : inlinks.keySet())
+		{
+			System.out.println(inlink.getTitle() + ": " + inlinks.get(inlink));
+		}
+		Map<WikiConcept, Double> outlinks = c1.getOrCalculateTopRelatedOutlinks(session);
+		for (WikiConcept outlink : outlinks.keySet())
+		{
+			System.out.println(outlink.getTitle() + ": " + inlinks.get(outlink));
+		}
 		
 		session.close();
 	}
