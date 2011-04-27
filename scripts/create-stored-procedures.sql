@@ -54,14 +54,14 @@ DECLARE
 BEGIN
   SELECT * INTO r FROM top_inlinks WHERE to_id = id LIMIT 1;
   IF FOUND THEN
-    FOR r IN SELECT DISTINCT ON (from_id, to_id) * FROM top_inlinks WHERE to_id = id ORDER BY (from_id, to_id)
+    FOR r IN SELECT DISTINCT ON (from_id, to_id) * FROM top_inlinks WHERE to_id = id ORDER BY from_id, to_id
     LOOP
       RETURN NEXT r;
     END LOOP;
     RETURN;
   ELSE
     FOR r IN
-    WITH t AS (SELECT DISTINCT ON (from_id, to_id) from_id, to_id FROM wiki_links WHERE to_id = id)
+    WITH t AS (SELECT DISTINCT ON (from_id, to_id) from_id, to_id FROM wiki_links WHERE to_id = id ORDER BY from_id, to_id)
     SELECT from_id, to_id, calculate_relatedness(from_id, id, total) AS relatedness
     FROM t ORDER BY relatedness ASC LIMIT 100
     LOOP
@@ -80,14 +80,14 @@ DECLARE
 BEGIN
   SELECT * INTO r FROM top_outlinks WHERE from_id = id LIMIT 1;
   IF FOUND THEN
-    FOR r IN SELECT DISTINCT ON (from_id, to_id) * FROM top_outlinks WHERE from_id = id ORDER BY (from_id, to_id)
+    FOR r IN SELECT DISTINCT ON (from_id, to_id) * FROM top_outlinks WHERE from_id = id ORDER BY from_id, to_id
     LOOP
       RETURN NEXT r;
     END LOOP;
     RETURN;
   ELSE
     FOR r IN
-    WITH t AS (SELECT DISTINCT ON (from_id, to_id) from_id, to_id FROM wiki_links WHERE from_id = id)
+    WITH t AS (SELECT DISTINCT ON (from_id, to_id) from_id, to_id FROM wiki_links WHERE from_id = id ORDER BY from_id, to_id)
     SELECT from_id, to_id, calculate_relatedness(id, to_id, total) AS relatedness
     FROM t ORDER BY relatedness ASC LIMIT 100
     LOOP

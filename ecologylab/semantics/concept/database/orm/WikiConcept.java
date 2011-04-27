@@ -220,11 +220,10 @@ public class WikiConcept implements Serializable
 		Map<WikiConcept, Double> topInlinks = getTopRelatedInlinks();
 		if (topInlinks.size() <= 0)
 		{
-			Transaction tx = session.beginTransaction();
 			SQLQuery q = session.createSQLQuery("SELECT calculate_top_inlinks(?, ?);");
 			q.setInteger(0, this.getId()).setInteger(1, Configs.getInt(CONFIG_TOTAL_CONCEPT_COUNT));
-			q.executeUpdate();
-			tx.commit();
+			q.setCacheable(false);
+			q.list();
 			session.refresh(this);
 			topInlinks = getTopRelatedInlinks();
 		}
@@ -242,11 +241,10 @@ public class WikiConcept implements Serializable
 		Map<WikiConcept, Double> topOutlinks = getTopRelatedOutlinks();
 		if (topOutlinks.size() <= 0)
 		{
-			Transaction tx = session.beginTransaction();
 			SQLQuery q = session.createSQLQuery("SELECT calculate_top_outlinks(?, ?);");
 			q.setInteger(0, this.getId()).setInteger(1, Configs.getInt(CONFIG_TOTAL_CONCEPT_COUNT));
-			q.executeUpdate();
-			tx.commit();
+			q.setCacheable(false);
+			q.list();
 			session.refresh(this);
 			topOutlinks = getTopRelatedOutlinks();
 		}
