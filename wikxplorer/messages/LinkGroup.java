@@ -61,7 +61,7 @@ public class LinkGroup extends ElementState implements Comparable<LinkGroup>
 	@Override
 	public int compareTo(LinkGroup o)
 	{
-		return Double.compare(o.getAverageRelatedness(), this.getAverageRelatedness());
+		return Double.compare(this.getAverageRelatedness(), o.getAverageRelatedness());
 	}
 
 }

@@ -5,7 +5,7 @@
     <session-factory>
         <!-- Database connection settings -->
         <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
-        <property name="hibernate.connection.url">jdbc:postgresql://ecolab-chevron-1.cse.tamu.edu/wikiparsing3</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://achilles.cse.tamu.edu/wikiparsing3</property>
         <property name="hibernate.connection.username">quyin</property>
         <property name="hibernate.connection.password">quyindbpwd</property>
 

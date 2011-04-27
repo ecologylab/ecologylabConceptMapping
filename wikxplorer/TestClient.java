@@ -39,12 +39,12 @@ public class TestClient
 					"cognitive science");
 			client.sendMessage(ucr2);
 			Thread.sleep(1000);
-			
+
 			UpdateContextRequest ucr3 = new UpdateContextRequest(UpdateContextRequest.ACTION_ADD,
 					"information visualization");
 			client.sendMessage(ucr3);
 			Thread.sleep(1000);
-			
+
 			RelatednessRequest rr = new RelatednessRequest("cognitive science");
 			client.sendMessage(rr);
 			Thread.sleep(1000);
@@ -53,10 +53,19 @@ public class TestClient
 			client.sendMessage(sr);
 			Thread.sleep(1000);
 
+			SuggestionRequest sr2 = new SuggestionRequest("united states");
+			client.sendMessage(sr2);
+			Thread.sleep(1000);
+
+			SuggestionRequest sr3 = new SuggestionRequest("blabla messy things");
+			client.sendMessage(sr3);
+			Thread.sleep(1000);
+
 			SessionShutdownMessage ssm = new SessionShutdownMessage();
 			client.sendMessage(ssm);
 			Thread.sleep(1000);
 
+			// it seems that this will shutdown the server!
 			CloseMessage cm = new CloseMessage();
 			client.sendMessage(cm);
 			Thread.sleep(1000);

@@ -67,6 +67,7 @@ public class RelatednessRequest extends RequestMessage
 					respConcept.setTitle(title);
 					respConcept.wikiConcept = ws;
 				}
+				
 			}
 
 			if (respConcept != null)

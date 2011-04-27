@@ -1,5 +1,9 @@
 package wikxplorer.preparation;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
@@ -9,27 +13,23 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 
 import ecologylab.semantics.concept.database.SessionManager;
-import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
+import ecologylab.semantics.concept.service.Configs;
 
 /**
- * Prepare top related in and out links for most referred concepts.
+ * Generate a SQL script to prepare top related in and out links for most referred concepts.
  * 
  * @author quyin
  * 
  */
 public class TopLinksPreparer
 {
-
-	private int	total;
-
-	private int	counter;
-
-	public void prepare(int numOfPreparedConcepts)
+	
+	public void prepare(int numOfPreparedConcepts, Writer out)
 	{
+		int totalNumOfConcepts = Configs.getInt("db.total_concept_count");
+		
 		Session session1 = SessionManager.newSession();
-		total = numOfPreparedConcepts;
-		counter = 0;
 
 		// find top linked concepts
 		Criteria q = session1.createCriteria(WikiLink.class);
@@ -46,37 +46,42 @@ public class TopLinksPreparer
 		while (sr.next())
 		{
 			int id = sr.getInteger(0);
-			counter++;
-			prepareConcept(id);
+			
+			String sql1 = String.format("SELECT calculate_top_inlinks(%d, %d);\n", id, totalNumOfConcepts);
+			String sql2 = String.format("SELECT calculate_top_outlinks(%d, %d);\n", id, totalNumOfConcepts);
+			try
+			{
+				out.write(sql1);
+				out.write(sql2);
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		sr.close();
 
 		session1.close();
 	}
 
-	private void prepareConcept(int id)
-	{
-		Session session2 = SessionManager.newSession();
-
-		WikiConcept concept = WikiConcept.getById(id, session2);
-		if (concept != null)
-		{
-			String msg = String.format("%d/%d: processing %d...", counter, total, concept.getId());
-			System.out.println(msg);
-			concept.getOrCalculateTopRelatedInlinks(session2);
-			concept.getOrCalculateTopRelatedOutlinks(session2);
-		}
-
-		session2.close();
-	}
-
 	/**
 	 * @param args
+	 * @throws IOException 
 	 */
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
+		if (args.length != 1)
+		{
+			System.err.println("args: <sql-script-path>");
+			System.exit(-1);
+		}
+		
+		String path = args[0];
+		FileWriter fw = new FileWriter(path);
 		TopLinksPreparer tlp = new TopLinksPreparer();
-		tlp.prepare(1000);
+		tlp.prepare(10000, fw);
+		fw.close();
 	}
 
 }

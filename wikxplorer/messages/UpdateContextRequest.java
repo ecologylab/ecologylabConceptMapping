@@ -6,6 +6,9 @@ import java.util.Map;
 import org.hibernate.Session;
 
 import wikxplorer.ScopeKeys;
+import wikxplorer.Server;
+import wikxplorer.model.LinkGroupingStrategy;
+import wikxplorer.model.LinkSuggestionStrategy;
 import ecologylab.collections.Scope;
 import ecologylab.oodss.messages.OkResponse;
 import ecologylab.oodss.messages.RequestMessage;
@@ -76,20 +79,29 @@ public class UpdateContextRequest extends RequestMessage
 	@Override
 	public ResponseMessage performService(Scope clientSessionScope)
 	{
-		Session session = (Session) clientSessionScope.get(ScopeKeys.SESSION);
-		if (session == null)
+		try
 		{
-			session = SessionManager.newSession();
-			clientSessionScope.put(ScopeKeys.SESSION, session);
+			initServerSessionScope(clientSessionScope);
+		}
+		catch (InstantiationException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (IllegalAccessException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (ClassNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
+		Session session = (Session) clientSessionScope.get(ScopeKeys.SESSION);
 		Map<String, Concept> clippingContext = (Map<String, Concept>) clientSessionScope
 				.get(ScopeKeys.CLIPPING_CONTEXT);
-		if (clippingContext == null)
-		{
-			clippingContext = new HashMap<String, Concept>();
-			clientSessionScope.put(ScopeKeys.CLIPPING_CONTEXT, clippingContext);
-		}
 
 		switch (action)
 		{
@@ -115,13 +127,49 @@ public class UpdateContextRequest extends RequestMessage
 		return new OkResponse();
 	}
 
+	private void initServerSessionScope(Scope clientSessionScope) throws InstantiationException,
+			IllegalAccessException, ClassNotFoundException
+	{
+		Session session = (Session) clientSessionScope.get(ScopeKeys.SESSION);
+		if (session == null)
+		{
+			session = SessionManager.newSession();
+			clientSessionScope.put(ScopeKeys.SESSION, session);
+		}
+
+		Map<String, Concept> clippingContext = (Map<String, Concept>) clientSessionScope
+				.get(ScopeKeys.CLIPPING_CONTEXT);
+		if (clippingContext == null)
+		{
+			clippingContext = new HashMap<String, Concept>();
+			clientSessionScope.put(ScopeKeys.CLIPPING_CONTEXT, clippingContext);
+		}
+
+		LinkSuggestionStrategy lss = (LinkSuggestionStrategy) clientSessionScope
+				.get(ScopeKeys.LINK_SUGGESTION_STRATEGY);
+		if (lss == null)
+		{
+			String lssClassName = Server.properties.getProperty("link_suggestion_stratery",
+					"wikxplorer.model.RandomLinkSuggestionStrategy");
+			lss = (LinkSuggestionStrategy) Class.forName(lssClassName).newInstance();
+			clientSessionScope.put(ScopeKeys.LINK_SUGGESTION_STRATEGY, lss);
+		}
+
+		LinkGroupingStrategy lgs = (LinkGroupingStrategy) clientSessionScope
+				.get(ScopeKeys.LINK_GROUPING_STRATEGY);
+		if (lgs == null)
+		{
+			String lgsClassName = Server.properties.getProperty("link_grouping_stratery",
+					"wikxplorer.model.NaiveLinkGroupingStrategy");
+			lgs = (LinkGroupingStrategy) Class.forName(lgsClassName).newInstance();
+			clientSessionScope.put(ScopeKeys.LINK_GROUPING_STRATEGY, lgs);
+		}
+	}
+
 	private void makeAllDirty(Map<String, Concept> clippingContext)
 	{
 		for (Concept c : clippingContext.values())
-		{
 			c.dirtyContextualLinks = true;
-			c.dirtySuggestedLinks = true;
-		}
 	}
 
 }

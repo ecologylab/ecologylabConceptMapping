@@ -8,7 +8,7 @@ import ecologylab.serialization.types.element.Mappable;
  * Represent a link between two concepts.
  * 
  * @author quyin
- *
+ * 
  */
 public class Link extends ElementState implements Mappable<String>, Comparable<Link>
 {
@@ -37,7 +37,7 @@ public class Link extends ElementState implements Mappable<String>, Comparable<L
 	@simpl_scalar
 	private double					relatedness;
 
-	WikiConcept							wikiConcept;
+	public WikiConcept			wikiConcept;
 
 	public String getTitle()
 	{
@@ -78,7 +78,7 @@ public class Link extends ElementState implements Mappable<String>, Comparable<L
 	@Override
 	public int compareTo(Link o)
 	{
-		return Double.compare(o.getRelatedness(), this.getRelatedness());
+		return Double.compare(this.getRelatedness(), o.getRelatedness());
 	}
 
 }

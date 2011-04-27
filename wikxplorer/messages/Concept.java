@@ -31,23 +31,9 @@ public class Concept extends ElementState
 	@simpl_map("contextual_link")
 	private HashMapArrayList<String, Link>	contextualLinks				= new HashMapArrayList<String, Link>();
 
-	/**
-	 * How many concepts are suggested from this one. Not the number of groups.
-	 */
-	@simpl_scalar
-	private int															suggestedLinkCount;
-
-	/**
-	 * Suggested concepts organized in groups.
-	 */
-	@simpl_collection("suggested_link_group")
-	private ArrayList<LinkGroup>						suggestedLinkGroups		= new ArrayList<LinkGroup>();
-
-	WikiConcept															wikiConcept;
+	public WikiConcept											wikiConcept;
 
 	boolean																	dirtyContextualLinks	= false;
-
-	boolean																	dirtySuggestedLinks		= false;
 
 	public String getTitle()
 	{
@@ -64,24 +50,9 @@ public class Concept extends ElementState
 		return contextualLinks;
 	}
 
-	public int getSuggestedLinkCount()
+	public int getId()
 	{
-		return suggestedLinkCount;
-	}
-
-	public void setSuggestedLinkCount(int suggestedLinkCount)
-	{
-		this.suggestedLinkCount = suggestedLinkCount;
-	}
-
-	public void setSuggestedLinkGroups(ArrayList<LinkGroup> suggestedLinkGroups)
-	{
-		this.suggestedLinkGroups = suggestedLinkGroups;
-	}
-
-	public ArrayList<LinkGroup> getSuggestedLinkGroups()
-	{
-		return suggestedLinkGroups;
+		return wikiConcept == null ? 0 : wikiConcept.getId();
 	}
 
 }
