@@ -21,11 +21,9 @@ import wikxplorer.messages.Link;
 public class RandomLinkSuggestionStrategy implements LinkSuggestionStrategy
 {
 
-	private static final int		MIN_LINKS_TO_RETURN	= 10;
+	private static final String	SQL1	= "SELECT from_id FROM wiki_links WHERE to_id = ? AND from_id != to_id ORDER BY random() LIMIT ?;";
 
-	private static final String	SQL1								= "SELECT from_id FROM wiki_links WHERE to_id = ? AND from_id != to_id ORDER BY random() LIMIT ?;";
-
-	private static final String	SQL2								= "SELECT to_id FROM wiki_links WHERE from_id = ? AND from_id != to_id ORDER BY random() LIMIT ?;";
+	private static final String	SQL2	= "SELECT to_id FROM wiki_links WHERE from_id = ? AND from_id != to_id ORDER BY random() LIMIT ?;";
 
 	private final double				WEIGHT_R0;
 
@@ -37,6 +35,8 @@ public class RandomLinkSuggestionStrategy implements LinkSuggestionStrategy
 
 	private final int						RANDOM_LINK_NUMBER;
 
+	private final int						MIN_LINKS_TO_RETURN;
+
 	public RandomLinkSuggestionStrategy()
 	{
 		WEIGHT_R0 = Double.valueOf(Server.properties.getProperty("suggestion.weight_r0"));
@@ -46,6 +46,8 @@ public class RandomLinkSuggestionStrategy implements LinkSuggestionStrategy
 				"suggestion.min_dist_threashold"));
 		RANDOM_LINK_NUMBER = Integer.valueOf(Server.properties.getProperty(
 				"suggestion.random_link_number"));
+		MIN_LINKS_TO_RETURN = Integer.valueOf(Server.properties
+				.getProperty("suggestion.min_links_to_return"));
 	}
 
 	/**

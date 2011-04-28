@@ -25,7 +25,7 @@ public class TestClient
 
 		int port = Integer.valueOf(Server.properties.getProperty("server.port"));
 		
-		NIOClient client = new NIOClient("localhost", port, tscope, clientScope);
+		NIOClient client = new NIOClient("achilles.cse.tamu.edu", port, tscope, clientScope);
 		client.allowCompression(false);
 		client.useRequestCompression(false);
 		client.connect();
