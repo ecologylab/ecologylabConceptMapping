@@ -1,7 +1,7 @@
 # default settings
 
 # link_suggestion_stratery = wikxplorer.model.RandomLinkSuggestionStrategy
-# link_grouping_stratery = wikxplorer.model.NaiveLinkGroupingStrategy
+link_grouping_stratery = wikxplorer.model.KMedoidsLinkGroupingStrategy
 
 # suggestion.weight_r0 = 0.4
 # suggestion.weight_rc = 0.4

@@ -23,9 +23,9 @@ public class RandomLinkSuggestionStrategy implements LinkSuggestionStrategy
 
 	private static final int		MIN_LINKS_TO_RETURN	= 10;
 
-	private static final String	SQL1								= "SELECT from_id FROM wiki_links WHERE to_id = ? ORDER BY random() LIMIT ?;";
+	private static final String	SQL1								= "SELECT from_id FROM wiki_links WHERE to_id = ? AND from_id != to_id ORDER BY random() LIMIT ?;";
 
-	private static final String	SQL2								= "SELECT to_id FROM wiki_links WHERE from_id = ? ORDER BY random() LIMIT ?;";
+	private static final String	SQL2								= "SELECT to_id FROM wiki_links WHERE from_id = ? AND from_id != to_id ORDER BY random() LIMIT ?;";
 
 	private final double				WEIGHT_R0;
 
