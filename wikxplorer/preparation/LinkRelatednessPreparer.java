@@ -36,7 +36,7 @@ public class LinkRelatednessPreparer
 			
 			Session session2 = SessionManager.newSession();
 			Transaction tx = session2.beginTransaction();
-			SQLQuery q1 = session.createSQLQuery("SELECT calculate_relatedness(?, ?, ?);");
+			SQLQuery q1 = session2.createSQLQuery("SELECT calculate_relatedness(?, ?, ?);");
 			q1.setCacheable(false);
 			q1.setInteger(0, link.getFromId());
 			q1.setInteger(1, link.getToId());
