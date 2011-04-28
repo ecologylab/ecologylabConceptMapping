@@ -149,8 +149,7 @@ public class UpdateContextRequest extends RequestMessage
 				.get(ScopeKeys.LINK_SUGGESTION_STRATEGY);
 		if (lss == null)
 		{
-			String lssClassName = Server.properties.getProperty("link_suggestion_stratery",
-					"wikxplorer.model.RandomLinkSuggestionStrategy");
+			String lssClassName = Server.properties.getProperty("link_suggestion_stratery");
 			lss = (LinkSuggestionStrategy) Class.forName(lssClassName).newInstance();
 			clientSessionScope.put(ScopeKeys.LINK_SUGGESTION_STRATEGY, lss);
 		}
@@ -159,8 +158,7 @@ public class UpdateContextRequest extends RequestMessage
 				.get(ScopeKeys.LINK_GROUPING_STRATEGY);
 		if (lgs == null)
 		{
-			String lgsClassName = Server.properties.getProperty("link_grouping_stratery",
-					"wikxplorer.model.NaiveLinkGroupingStrategy");
+			String lgsClassName = Server.properties.getProperty("link_grouping_stratery");
 			lgs = (LinkGroupingStrategy) Class.forName(lgsClassName).newInstance();
 			clientSessionScope.put(ScopeKeys.LINK_GROUPING_STRATEGY, lgs);
 		}

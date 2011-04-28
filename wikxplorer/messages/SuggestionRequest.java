@@ -48,6 +48,21 @@ public class SuggestionRequest extends RequestMessage
 		this.title = title;
 	}
 
+	public String getTitle()
+	{
+		return title;
+	}
+
+	public int getK()
+	{
+		return k;
+	}
+
+	public void setK(int k)
+	{
+		this.k = k;
+	}
+
 	@Override
 	public SuggestionResponse performService(Scope clientSessionScope)
 	{

@@ -41,7 +41,6 @@ public class KMedoidsLinkGroupingStrategy implements LinkGroupingStrategy
 		{
 			changed = false;
 			num++;
-			System.out.println("k-medoid iteration " + num);
 			
 			// init
 			clusters.clear();
@@ -63,15 +62,11 @@ public class KMedoidsLinkGroupingStrategy implements LinkGroupingStrategy
 					{
 						bestM = medoid;
 						bestR = relatedness;
-						changed = true;
 					}
 				}
 				
 				clusters.get(bestM).add(l);
 			}
-			
-			if (!changed)
-				break;
 			
 			// calculate new medoid
 			medoids.clear();
@@ -79,13 +74,20 @@ public class KMedoidsLinkGroupingStrategy implements LinkGroupingStrategy
 			{
 				List<Link> ll = clusters.get(medoid);
 				Link newMedoid = getNewMedoid(medoid, ll);
-				if (!newMedoid.equals(clusters))
+				if (!newMedoid.equals(medoid))
 					changed = true;
 				medoids.add(newMedoid);
 			}
-			for (Link newMedoid : medoids)
-				if (!clusters.keySet().contains(newMedoid))
-					changed = true;
+			
+			if (!changed)
+				break;
+			
+			System.out.print("k-medoid iteration " + num + ":");
+			for (Link medoid : clusters.keySet())
+			{
+				System.out.print(" " + medoid.getTitle() + "/" + (clusters.get(medoid).size() + 1));
+			}
+			System.out.println();
 		}
 
 		// form results

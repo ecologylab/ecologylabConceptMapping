@@ -39,13 +39,13 @@ public class RandomLinkSuggestionStrategy implements LinkSuggestionStrategy
 
 	public RandomLinkSuggestionStrategy()
 	{
-		WEIGHT_R0 = Double.valueOf(Server.properties.getProperty("suggestion.weight_r0", "0.4"));
-		WEIGHT_RC = Double.valueOf(Server.properties.getProperty("suggestion.weight_rc", "0.4"));
-		WEIGHT_RA = Double.valueOf(Server.properties.getProperty("suggestion.weight_ra", "0.2"));
+		WEIGHT_R0 = Double.valueOf(Server.properties.getProperty("suggestion.weight_r0"));
+		WEIGHT_RC = Double.valueOf(Server.properties.getProperty("suggestion.weight_rc"));
+		WEIGHT_RA = Double.valueOf(Server.properties.getProperty("suggestion.weight_ra"));
 		MIN_DIST_THREASHOLD = Double.valueOf(Server.properties.getProperty(
-				"suggestion.min_dist_threashold", "0.5"));
+				"suggestion.min_dist_threashold"));
 		RANDOM_LINK_NUMBER = Integer.valueOf(Server.properties.getProperty(
-				"suggestion.random_link_number", "100"));
+				"suggestion.random_link_number"));
 	}
 
 	/**

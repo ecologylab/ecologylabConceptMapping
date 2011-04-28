@@ -23,7 +23,9 @@ public class TestClient
 
 		Scope clientScope = new Scope();
 
-		NIOClient client = new NIOClient("localhost", 11355, tscope, clientScope);
+		int port = Integer.valueOf(Server.properties.getProperty("server.port"));
+		
+		NIOClient client = new NIOClient("localhost", port, tscope, clientScope);
 		client.allowCompression(false);
 		client.useRequestCompression(false);
 		client.connect();

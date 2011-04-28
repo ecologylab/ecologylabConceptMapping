@@ -1,10 +1,10 @@
-# default settings
+server.port = 11355
 
-# link_suggestion_stratery = wikxplorer.model.RandomLinkSuggestionStrategy
+link_suggestion_stratery = wikxplorer.model.RandomLinkSuggestionStrategy
 link_grouping_stratery = wikxplorer.model.KMedoidsLinkGroupingStrategy
 
-# suggestion.weight_r0 = 0.4
-# suggestion.weight_rc = 0.4
-# suggestion.weight_ra = 0.2
-# suggestion.min_dist_threashold = 0.5
-# suggestion.random_link_number = 100
+suggestion.weight_r0 = 0.4
+suggestion.weight_rc = 0.4
+suggestion.weight_ra = 0.2
+suggestion.min_dist_threashold = 0.5
+suggestion.random_link_number = 100

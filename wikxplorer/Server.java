@@ -43,7 +43,9 @@ public class Server
 
 		InetAddress[] locals = NetTools.getAllInetAddressesForLocalhost();
 
-		DoubleThreadedNIOServer wikxplorerServer = DoubleThreadedNIOServer.getInstance(11355, locals,
+		int port = Integer.valueOf(properties.getProperty("server.port"));
+		
+		DoubleThreadedNIOServer wikxplorerServer = DoubleThreadedNIOServer.getInstance(port, locals,
 				tscope, new Scope(), -1, 40000);
 
 		wikxplorerServer.start();
