@@ -7,5 +7,9 @@ suggestion.weight_r0 = 0.4
 suggestion.weight_rc = 0.4
 suggestion.weight_ra = 0.2
 suggestion.min_dist_threashold = 0.5
+<<<<<<< .mine
+suggestion.random_link_number = 20
+=======
 suggestion.random_link_number = 100
 suggestion.min_links_to_return = 10
+>>>>>>> .r18806

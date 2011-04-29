@@ -40,7 +40,6 @@ public class CommonnessCalculator
 		String lastSurface = null;
 
 		Criteria q = session1.createCriteria(WikiLink.class);
-		q.setCacheable(false);
 		q.setFetchSize(FETCH_SIZE);
 		q.addOrder(Order.asc("surface"));
 		ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY);

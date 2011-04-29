@@ -8,6 +8,7 @@ import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
@@ -32,7 +33,6 @@ public class KeyphrasenessCalculator
 
 		Criteria q = session.createCriteria(WikiConcept.class);
 		q.setFetchSize(FETCH_SIZE);
-		q.setCacheMode(CacheMode.IGNORE);
 		q.setFirstResult(offset);
 		q.setMaxResults(number);
 
@@ -52,7 +52,7 @@ public class KeyphrasenessCalculator
 	private void processConcept(WikiConcept concept)
 	{
 		Session session = SessionManager.newSession();
-		session.beginTransaction();
+		Transaction tx = session.beginTransaction();
 
 		String text = concept.getText();
 		List<String> surfaces = SurfaceDictionary.get().extractSurfaces(text);
@@ -66,7 +66,7 @@ public class KeyphrasenessCalculator
 			}
 		}
 
-		session.getTransaction().commit();
+		tx.commit();
 		session.close();
 	}
 

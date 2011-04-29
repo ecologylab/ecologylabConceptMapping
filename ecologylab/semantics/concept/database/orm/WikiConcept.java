@@ -13,6 +13,7 @@ import javax.persistence.Table;
 import org.hibernate.Criteria;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.criterion.Property;
@@ -28,6 +29,8 @@ import ecologylab.semantics.concept.service.Configs;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class WikiConcept implements Serializable
 {
+
+	private static final double	EPSILON											= 0.000001;
 
 	public static final String	CONFIG_TOTAL_CONCEPT_COUNT	= "db.total_concept_count";
 
@@ -123,19 +126,37 @@ public class WikiConcept implements Serializable
 		relEntity.setConceptId2(concept.getId());
 		relEntity = (Relatedness) session.get(Relatedness.class, relEntity);
 
+		String x = this.getId() + "/" + concept.getId();
 		double r = MAX_DIST;
 		if (relEntity == null)
 		{
-			SQLQuery q = session.createSQLQuery("SELECT calculate_relatedness(?, ?, ?) AS rel;");
+			SQLQuery q = session.createSQLQuery("SELECT calculate_relatedness(?, ?, ?, ?, ?) AS rel;");
+			q.setCacheable(true); // although we don't cache all in table relatedness
 			q.addScalar("rel", StandardBasicTypes.DOUBLE);
 			q.setInteger(0, this.getId());
 			q.setInteger(1, concept.getId());
 			q.setInteger(2, Configs.getInt(CONFIG_TOTAL_CONCEPT_COUNT));
+			q.setDouble(3, MIN_DIST);
+			q.setDouble(4, MAX_DIST);
 			r = (Double) q.uniqueResult();
+
+			if (r + EPSILON < MAX_DIST)
+			{
+				Transaction tx = session.beginTransaction();
+				relEntity = new Relatedness();
+				relEntity.setConceptId1(this.getId());
+				relEntity.setConceptId2(concept.getId());
+				relEntity.setRelatedness(r);
+				session.save(relEntity);
+				tx.commit();
+			}
+			
+			System.out.println("    relatedness not cached for " + x + ": " + r);
 		}
 		else
 		{
 			r = relEntity.getRelatedness();
+			System.out.println("    relatedness cached for " + x + "! " + r);
 		}
 
 		session.close();
@@ -146,6 +167,7 @@ public class WikiConcept implements Serializable
 	{
 		WikiConcept c = getByTitle(title, session);
 		Criteria q = session.createCriteria(WikiLink.class);
+		q.setCacheable(true);
 		q.add(Property.forName("fromId").eq(c.getId())).add(Property.forName("toId").eq(this.getId()));
 		return q.list().size() > 0;
 	}
@@ -154,6 +176,7 @@ public class WikiConcept implements Serializable
 	{
 		WikiConcept c = getByTitle(title, session);
 		Criteria q = session.createCriteria(WikiLink.class);
+		q.setCacheable(true);
 		q.add(Property.forName("fromId").eq(this.getId())).add(Property.forName("toId").eq(c.getId()));
 		return q.list().size() > 0;
 	}
@@ -205,9 +228,10 @@ public class WikiConcept implements Serializable
 		String redirect = WikiRedirect.getRedirected(title);
 		String trueTitle = (redirect == null) ? title : redirect;
 
-		Criteria criteria = session.createCriteria(WikiConcept.class);
-		criteria.add(Property.forName("title").eq(trueTitle));
-		return (WikiConcept) criteria.uniqueResult();
+		Criteria q = session.createCriteria(WikiConcept.class);
+		q.setCacheable(true);
+		q.add(Property.forName("title").eq(trueTitle));
+		return (WikiConcept) q.uniqueResult();
 	}
 
 	/**

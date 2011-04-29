@@ -65,7 +65,6 @@ public class RandomLinkSuggestionStrategy implements LinkSuggestionStrategy
 
 		System.out.println("retrieving inlinks for " + concept.getTitle() + "...");
 		SQLQuery q1 = session.createSQLQuery(SQL1);
-		q1.setCacheable(false);
 		q1.setInteger(0, concept.getId());
 		q1.setInteger(1, RANDOM_LINK_NUMBER);
 		q1.addScalar("from_id", StandardBasicTypes.INTEGER);
@@ -78,7 +77,6 @@ public class RandomLinkSuggestionStrategy implements LinkSuggestionStrategy
 
 		System.out.println("retrieving outlinks for " + concept.getTitle() + "...");
 		SQLQuery q2 = session.createSQLQuery(SQL2);
-		q2.setCacheable(false);
 		q2.setInteger(0, concept.getId());
 		q2.setInteger(1, RANDOM_LINK_NUMBER);
 		q2.addScalar("to_id", StandardBasicTypes.INTEGER);
@@ -129,7 +127,7 @@ public class RandomLinkSuggestionStrategy implements LinkSuggestionStrategy
 		if (n < MIN_LINKS_TO_RETURN)
 			n = MIN_LINKS_TO_RETURN;
 
-		if (n == links.size())
+		if (n >= links.size())
 			return links;
 		else
 			return links.subList(0, n);

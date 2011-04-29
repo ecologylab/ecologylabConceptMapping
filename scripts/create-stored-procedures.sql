@@ -1,8 +1,8 @@
 -- this function calculate relatedness for any two pairs of concept IDs.
 -- note that we cannot put any constraints on the two IDs because this function is used by other functions like those for top links.
 -- this function also stores relatedness value into corresponding table.
-DROP FUNCTION IF EXISTS calculate_relatedness(id1 int, id2 int, total int);
-CREATE FUNCTION calculate_relatedness(id1 int, id2 int, total int)
+DROP FUNCTION IF EXISTS calculate_relatedness(id1 int, id2 int, total int, min_dist double precision, max_dist double precision);
+CREATE FUNCTION calculate_relatedness(id1 int, id2 int, total int, min_dist double precision, max_dist double precision)
 RETURNS double precision AS $$
 DECLARE
   r double precision;
@@ -11,7 +11,7 @@ DECLARE
   s3 int;
 BEGIN
   IF id1 = id2 THEN
-    RETURN 0;
+    RETURN min_dist;
   END IF;
 
   IF id1 > id2 THEN
@@ -29,7 +29,7 @@ BEGIN
     ) SELECT count(*) INTO s3 FROM t;
     
     IF s3 <= 0 THEN
-      RETURN 1;
+      RETURN max_dist;
     END IF;
     
     IF s1 > s2 THEN
@@ -37,7 +37,6 @@ BEGIN
     ELSE
       r = (ln(s2) - ln(s3)) / (ln(total) - ln(s1));
     END IF;
-    INSERT INTO relatedness(concept_id1, concept_id2, relatedness) VALUES (id1, id2, r);
   END IF;
   RETURN r;
 End;
