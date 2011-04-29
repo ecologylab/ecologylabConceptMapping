@@ -29,4 +29,9 @@ public class SessionManager extends Debug
 		return factory.openSession();
 	}
 
+	public static void clearSecondLevelCache()
+	{
+		factory.getCache().evictQueryRegions();
+	}
+
 }

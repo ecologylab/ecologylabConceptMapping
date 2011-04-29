@@ -43,6 +43,9 @@ public class LinkRelatednessPreparer
 			
 			tx.commit();
 			session2.close();
+			
+			if (count % 1000 == 0)
+				SessionManager.clearSecondLevelCache();
 		}
 		sr.close();
 
