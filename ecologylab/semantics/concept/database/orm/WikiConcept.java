@@ -114,13 +114,31 @@ public class WikiConcept implements Serializable
 	 */
 	public double getRelatedness(WikiConcept concept)
 	{
+		if (this.getId() == concept.getId())
+			return MIN_DIST;
+
+		Session session = SessionManager.newSession();
+		double r = getRelatedness(concept, session);
+		session.close();
+		return r;
+	}
+
+	/**
+	 * get relatedness of this concept to another one from table 'relatedness' or by calculation.
+	 * 
+	 * @param concept
+	 * @param session
+	 *          (note that sessions are not thread safe)
+	 * @return
+	 */
+	public double getRelatedness(WikiConcept concept, Session session)
+	{
 		if (this.getId() > concept.getId())
 			return concept.getRelatedness(this);
 
 		if (this.getId() == concept.getId())
 			return MIN_DIST;
 
-		Session session = SessionManager.newSession();
 		Relatedness relEntity = new Relatedness();
 		relEntity.setConceptId1(this.getId());
 		relEntity.setConceptId2(concept.getId());
@@ -140,7 +158,7 @@ public class WikiConcept implements Serializable
 			q.setDouble(4, MAX_DIST);
 			r = (Double) q.uniqueResult();
 
-			if (r + EPSILON < MAX_DIST)
+//			if (r + EPSILON < MAX_DIST) // to cache or not to cache, that is the question
 			{
 				Transaction tx = session.beginTransaction();
 				relEntity = new Relatedness();
@@ -150,7 +168,7 @@ public class WikiConcept implements Serializable
 				session.save(relEntity);
 				tx.commit();
 			}
-			
+
 			System.out.println("    relatedness not cached for " + x + ": " + r);
 		}
 		else
@@ -159,7 +177,6 @@ public class WikiConcept implements Serializable
 			System.out.println("    relatedness cached for " + x + "! " + r);
 		}
 
-		session.close();
 		return r;
 	}
 

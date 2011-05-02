@@ -67,10 +67,12 @@ public class TestClient
 			client.sendMessage(ssm);
 			Thread.sleep(1000);
 
+			/*
 			// it seems that this will shutdown the server!
 			CloseMessage cm = new CloseMessage();
 			client.sendMessage(cm);
 			Thread.sleep(1000);
+			*/
 
 			client.disconnect();
 		}

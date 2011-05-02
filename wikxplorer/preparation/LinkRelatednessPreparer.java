@@ -14,7 +14,9 @@ import ecologylab.semantics.concept.preparation.postparsing.WikiLink;
 
 public class LinkRelatednessPreparer
 {
-	
+
+	public static int	step	= 1000;
+
 	public void prepare(int offset)
 	{
 		Session session = SessionManager.newSession();
@@ -23,12 +25,14 @@ public class LinkRelatednessPreparer
 
 		Criteria q = session.createCriteria(WikiLink.class);
 		q.setFetchSize(100);
-		q.setFirstResult(offset);
 		ScrollableResults sr = q.scroll(ScrollMode.FORWARD_ONLY);
+		long t0 = System.currentTimeMillis();
 		while (sr.next())
 		{
 			count++;
 			System.out.println("processing #" + count + "...");
+			if (count < offset)
+				continue;
 			
 			WikiLink link = (WikiLink) sr.get(0);
 			int id1 = link.getFromId();
@@ -44,8 +48,12 @@ public class LinkRelatednessPreparer
 			tx.commit();
 			session2.close();
 			
-			if (count % 1000 == 0)
-				SessionManager.clearSecondLevelCache();
+			if (count % step == 0)
+			{
+				long t1 = System.currentTimeMillis();
+				System.out.println(step + " relatedness costs " + (t1 -t0) + "ms.");
+				t0 = t1;
+			}
 		}
 		sr.close();
 
@@ -54,12 +62,12 @@ public class LinkRelatednessPreparer
 
 	/**
 	 * @param args
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException
 	{
 		int offset = 0;
-		
+
 		if (args.length != 1)
 		{
 			System.err.println("args: <offset> (default to 0)");
@@ -68,7 +76,7 @@ public class LinkRelatednessPreparer
 		{
 			offset = Integer.valueOf(args[0]);
 		}
-		
+
 		LinkRelatednessPreparer tlp = new LinkRelatednessPreparer();
 		tlp.prepare(offset);
 	}

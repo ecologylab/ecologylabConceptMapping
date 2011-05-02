@@ -1,6 +1,6 @@
 server.port = 11355
 
-link_suggestion_stratery = wikxplorer.model.RandomLinkSuggestionStrategy
+link_suggestion_stratery = wikxplorer.model.InlinkCountLinkSuggestionStrategy
 link_grouping_stratery = wikxplorer.model.KMedoidsLinkGroupingStrategy
 
 suggestion.weight_r0 = 0.4
