@@ -94,7 +94,7 @@ public class SuggestionRequest extends RequestMessage
 			{
 				LinkSuggestionStrategy lss = (LinkSuggestionStrategy) clientSessionScope
 						.get(ScopeKeys.LINK_SUGGESTION_STRATEGY);
-				List<Link> suggestedLinks = lss.suggestLinks(respConcept, clippingContext);
+				List<Link> suggestedLinks = lss.suggestLinks(respConcept, k, clippingContext);
 
 				LinkGroupingStrategy lgs = (LinkGroupingStrategy) clientSessionScope
 						.get(ScopeKeys.LINK_GROUPING_STRATEGY);

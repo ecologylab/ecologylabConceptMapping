@@ -49,12 +49,14 @@ public abstract class LinkSuggestionStrategy
 	 * 
 	 * @param concept
 	 *          The concept whose links are to be suggested.
+	 * @param k
+	 *          The number of clusters. Implementations can use it as a hint.
 	 * @param context
 	 *          The context (in the form of a collection of concepts) that could be used in
 	 *          suggestion.
 	 * @return
 	 */
-	abstract public List<Link> suggestLinks(Concept concept, Map<String, Concept> context);
+	abstract public List<Link> suggestLinks(Concept concept, int k, Map<String, Concept> context);
 
 	protected double getContextuallyRelatedness(Map<String, Concept> context, WikiConcept concept,
 			double r0)

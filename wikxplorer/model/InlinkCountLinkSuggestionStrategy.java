@@ -25,7 +25,7 @@ public class InlinkCountLinkSuggestionStrategy extends LinkSuggestionStrategy
 	private static final String	SQL2	= "SELECT DISTINCT ON (to_id) to_id, inlink_count FROM wiki_links INNER JOIN inlink_count ON to_id = concept_id WHERE from_id = ? AND from_id != to_id ORDER BY to_id LIMIT ?;";
 
 	@Override
-	public List<Link> suggestLinks(Concept concept, Map<String, Concept> context)
+	public List<Link> suggestLinks(Concept concept, int k, Map<String, Concept> context)
 	{
 		Session session = SessionManager.newSession();
 
@@ -41,7 +41,10 @@ public class InlinkCountLinkSuggestionStrategy extends LinkSuggestionStrategy
 		SQLQuery q1 = session.createSQLQuery(SQL1);
 		q1.setCacheable(true);
 		q1.setInteger(0, concept.getId());
-		q1.setInteger(1, RANDOM_LINK_NUMBER);
+		if (k <= 0)
+			q1.setInteger(1, RANDOM_LINK_NUMBER);
+		else
+			q1.setInteger(1, k);
 		q1.addScalar("from_id", StandardBasicTypes.INTEGER);
 		q1.addScalar("inlink_count", StandardBasicTypes.INTEGER);
 		for (Object id : q1.list())
@@ -60,7 +63,10 @@ public class InlinkCountLinkSuggestionStrategy extends LinkSuggestionStrategy
 		SQLQuery q2 = session.createSQLQuery(SQL2);
 		q2.setCacheable(true);
 		q2.setInteger(0, concept.getId());
-		q2.setInteger(1, RANDOM_LINK_NUMBER);
+		if (k <= 0)
+			q2.setInteger(1, RANDOM_LINK_NUMBER);
+		else
+			q2.setInteger(1, k);
 		q2.addScalar("to_id", StandardBasicTypes.INTEGER);
 		q2.addScalar("inlink_count", StandardBasicTypes.INTEGER);
 		for (Object id : q2.list())

@@ -29,7 +29,7 @@ public class RandomLinkSuggestionStrategy extends LinkSuggestionStrategy
 	 * randomness.
 	 */
 	@Override
-	public List<Link> suggestLinks(Concept concept, Map<String, Concept> context)
+	public List<Link> suggestLinks(Concept concept, int k, Map<String, Concept> context)
 	{
 		Session session = SessionManager.newSession();
 
@@ -40,7 +40,10 @@ public class RandomLinkSuggestionStrategy extends LinkSuggestionStrategy
 		System.out.println("retrieving inlinks for " + concept.getTitle() + "...");
 		SQLQuery q1 = session.createSQLQuery(SQL1);
 		q1.setInteger(0, concept.getId());
-		q1.setInteger(1, RANDOM_LINK_NUMBER);
+		if (k <= 0)
+			q1.setInteger(1, RANDOM_LINK_NUMBER);
+		else
+			q1.setInteger(1, k);
 		q1.addScalar("from_id", StandardBasicTypes.INTEGER);
 		for (Object id : q1.list())
 		{
@@ -52,7 +55,10 @@ public class RandomLinkSuggestionStrategy extends LinkSuggestionStrategy
 		System.out.println("retrieving outlinks for " + concept.getTitle() + "...");
 		SQLQuery q2 = session.createSQLQuery(SQL2);
 		q2.setInteger(0, concept.getId());
-		q2.setInteger(1, RANDOM_LINK_NUMBER);
+		if (k <= 0)
+			q2.setInteger(1, RANDOM_LINK_NUMBER);
+		else
+			q2.setInteger(1, k);
 		q2.addScalar("to_id", StandardBasicTypes.INTEGER);
 		for (Object id : q2.list())
 		{
