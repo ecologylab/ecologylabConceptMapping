@@ -1,8 +1,10 @@
 package ecologylab.semantics.concept.detect;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -135,21 +137,22 @@ public class SurfaceDictionary extends Debug
 			List<Integer> bestResult = new ArrayList<Integer>();
 
 			// extract
-			extractSurfacesHelper(text, 0, currentResult, bestResult);
+			extractSurfacesHelper(text, offset, currentResult, bestResult);
 
 			// cumulate results
 			if (bestResult.size() > 0)
 			{
-				int p = 0;
+				int p = offset;
 				for (int i = 0; i < bestResult.size(); ++i)
 				{
 					int q = bestResult.get(i);
 					String result = text.substring(p, q);
 					rst.add(result.trim());
+					p = q;
 				}
 
 				// update offset
-				offset += bestResult.get(bestResult.size() - 1);
+				offset = bestResult.get(bestResult.size() - 1);
 			}
 
 			// the word at offset is not a prefix of a surface, move to the next whitespace
@@ -208,12 +211,17 @@ public class SurfaceDictionary extends Debug
 		WikiConcept concept = WikiConcept.getByTitle("United States", session);
 		String text = concept.getText();
 		session.close();
+		
+		BufferedWriter out = new BufferedWriter(new FileWriter("usa.txt"));
+		out.write(text);
+		out.newLine();
+		out.close();
 
 		SurfaceDictionary dict = SurfaceDictionary.get();
 		List<String> testSurfaces = dict.extractSurfaces(text);
 		for (String s : testSurfaces)
 		{
-			System.out.println(s);
+			System.out.println("'" + s + "'");
 		}
 		System.out.println(testSurfaces.size() + " surface(s) found.");
 	}
