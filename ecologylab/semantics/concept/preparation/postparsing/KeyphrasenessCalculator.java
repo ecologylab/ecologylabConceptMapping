@@ -3,7 +3,6 @@ package ecologylab.semantics.concept.preparation.postparsing;
 import java.io.IOException;
 import java.util.List;
 
-import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -18,11 +17,9 @@ import ecologylab.semantics.concept.detect.SurfaceDictionary;
 public class KeyphrasenessCalculator
 {
 
-	public static final int	FETCH_SIZE	= 100;
+	private int	total;
 
-	private int							total;
-
-	private int							counter;
+	private int	counter;
 
 	private void calculateKeyphraseness(int offset, int number)
 	{
@@ -32,14 +29,15 @@ public class KeyphrasenessCalculator
 		Session session = SessionManager.newSession();
 
 		Criteria q = session.createCriteria(WikiConcept.class);
-		q.setFetchSize(FETCH_SIZE);
+		q.setFetchSize(100);
 		q.setFirstResult(offset);
-		q.setMaxResults(number);
+		if (number > 0)
+			q.setMaxResults(number);
 
 		ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY);
 		while (results.next())
 		{
-			final WikiConcept concept = (WikiConcept) results.get(0);
+			WikiConcept concept = (WikiConcept) results.get(0);
 			System.out.println(counter + "/" + total + ": processing " + concept.getId());
 			processConcept(concept);
 			counter++;
@@ -62,7 +60,6 @@ public class KeyphrasenessCalculator
 			if (ws != null)
 			{
 				ws.setTotalOccurrence(ws.getTotalOccurrence() + 1);
-				session.update(ws);
 			}
 		}
 

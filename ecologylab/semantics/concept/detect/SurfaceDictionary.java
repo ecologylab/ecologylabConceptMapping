@@ -9,7 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.Session;
+
 import ecologylab.generic.Debug;
+import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.PrefixTree;
 
@@ -97,7 +101,7 @@ public class SurfaceDictionary extends Debug
 	{
 
 	}
-	
+
 	/**
 	 * How many senses does this surface have?
 	 * 
@@ -200,9 +204,18 @@ public class SurfaceDictionary extends Debug
 
 	public static void main(String[] args) throws IOException
 	{
+		Session session = SessionManager.newSession();
+		WikiConcept concept = WikiConcept.getByTitle("United States", session);
+		String text = concept.getText();
+		session.close();
+
 		SurfaceDictionary dict = SurfaceDictionary.get();
-		String testString = "we know that united states 2000 census is famous in united states";
-		System.out.println(dict.extractSurfaces(testString));
+		List<String> testSurfaces = dict.extractSurfaces(text);
+		for (String s : testSurfaces)
+		{
+			System.out.println(s);
+		}
+		System.out.println(testSurfaces.size() + " surface(s) found.");
 	}
 
 }
