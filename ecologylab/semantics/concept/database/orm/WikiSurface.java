@@ -43,7 +43,7 @@ public class WikiSurface implements Serializable
 
 	/* we assume that one surface can relate to only a reasonable number of concepts. */
 	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(name = "commonness", joinColumns = @JoinColumn(name = "surface_id"))
+	@CollectionTable(name = "commonness", joinColumns = @JoinColumn(name = "surface"))
 	@Column(name = "commonness", nullable = true)
 	@MapKeyJoinColumn(name = "concept_id")
 	private Map<WikiConcept, Double>	concepts;

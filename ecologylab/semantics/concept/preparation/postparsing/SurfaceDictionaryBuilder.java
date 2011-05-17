@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
+import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.criterion.Projections;
+import org.hibernate.type.StandardBasicTypes;
 
 import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.orm.WikiSurface;
 import ecologylab.semantics.concept.service.Configs;
 
 /**
@@ -21,6 +23,8 @@ import ecologylab.semantics.concept.service.Configs;
 public class SurfaceDictionaryBuilder
 {
 
+	private static final int	LINKED_COUNT_THRESHOLD	= 5;
+
 	public void buildDictionary() throws IOException
 	{
 		File dictFile = Configs.getFile("surface_dictionary_path");
@@ -28,24 +32,39 @@ public class SurfaceDictionaryBuilder
 
 		Session session = SessionManager.newSession();
 
-		Criteria q = session.createCriteria(Commonness.class);
-		q.setProjection(Projections.projectionList()
-				.add(Projections.rowCount())
-				.add(Projections.groupProperty("surface")));
-		ScrollableResults results = q.scroll();
+		SQLQuery q = session
+				.createSQLQuery("SELECT surface, count(*) AS count FROM wiki_links GROUP BY surface ORDER BY surface;");
+		q.addScalar("surface", StandardBasicTypes.STRING);
+		q.addScalar("count", StandardBasicTypes.INTEGER);
+		q.setFetchSize(100);
+		ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY);
 		while (results.next())
 		{
 			String surface = results.getString(0);
 			int count = results.getInteger(1);
-			String line = String.format("%s|%d\n", surface, count);
-			try
+			System.out.println("processing " + surface + "...");
+
+			if (SurfaceFilter.containsLetter(surface) && !SurfaceFilter.filter(surface)
+					&& count >= LINKED_COUNT_THRESHOLD)
 			{
-				out.write(line);
-			}
-			catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Session session2 = SessionManager.newSession();
+				WikiSurface ws = WikiSurface.get(surface, session2);
+				if (ws != null)
+				{
+					int senseCount = ws.getConcepts().size();
+					String line = String.format("%s|%d\n", surface, senseCount);
+					try
+					{
+						System.out.print("writing " + line);
+						out.write(line);
+					}
+					catch (IOException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				session2.close();
 			}
 		}
 		results.close();

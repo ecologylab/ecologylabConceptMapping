@@ -90,7 +90,7 @@ public class SurfaceDictionary extends Debug
 	}
 
 	// surfaces in it have an extra trailing whitespace " " to denote word boundary
-	// but this difference should be transparent to outside this class
+	// but this trick should be transparent to outside of this class
 	private PrefixTree<Integer>	surfaces	= new PrefixTree<Integer>();
 
 	private SurfaceDictionary()
@@ -106,7 +106,7 @@ public class SurfaceDictionary extends Debug
 	 */
 	public int getSenseCount(String surface)
 	{
-		Integer c = surfaces.get(surface);
+		Integer c = surfaces.get(surface + " ");
 		assert c >= 0 : "negative value for surface sense count: " + surface;
 		return c == null ? 0 : c;
 	}
