@@ -7,7 +7,7 @@
 
   <pref_int name="db.total_concept_count" value="6449818" />
 
-  <pref_file name="surface_dictionary_path" value="data/surfaces.dic" />
+  <pref_file name="surface_dictionary_path" value="data/surfaces.dict" />
 
   <!-- <pref_string name="train.trainset_preparer" value="ecologylab.semantics.concept.train.DetectionTrainingSetPreparer" /> -->
 </pref_set>
