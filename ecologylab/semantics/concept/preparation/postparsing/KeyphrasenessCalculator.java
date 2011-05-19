@@ -79,7 +79,10 @@ public class KeyphrasenessCalculator
 		int number = Integer.parseInt(args[1]);
 
 		KeyphrasenessCalculator kc = new KeyphrasenessCalculator();
+		long t0 = System.currentTimeMillis();
 		kc.calculateKeyphraseness(offset, number);
+		long t1 = System.currentTimeMillis();
+		System.out.println("time cost: " + (t1 - t0) + " ms.");
 	}
 
 }
