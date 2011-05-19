@@ -27,7 +27,7 @@ public class SurfaceDictionaryBuilder
 
 	public void buildDictionary() throws IOException
 	{
-		File dictFile = Configs.getFile("surface_dictionary_path");
+		File dictFile = Configs.getFile("surface_dictionary.path");
 		FileWriter out = new FileWriter(dictFile);
 
 		Session session = SessionManager.newSession();

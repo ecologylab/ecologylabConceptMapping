@@ -1,10 +1,8 @@
 package ecologylab.semantics.concept.detect;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +16,7 @@ import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.PrefixTree;
+import ecologylab.semantics.concept.utils.TextUtils;
 
 /**
  * 1. Cache frequent surfaces for use. 2. Extract surfaces from free text using prefix matching.
@@ -38,6 +37,16 @@ public class SurfaceDictionary extends Debug
 	 */
 	public static final String				DELIM_REGEX	= "\\|";
 
+	public static final int						pU;
+
+	public static final int						pM;
+
+	static
+	{
+		pU = Configs.getInt("surface_dictionary.punish_unmatch");
+		pM = Configs.getInt("surface_dictionary.punish_match");
+	}
+
 	private static SurfaceDictionary	the;
 
 	/**
@@ -55,7 +64,7 @@ public class SurfaceDictionary extends Debug
 				if (the == null)
 				{
 					SurfaceDictionary dict = new SurfaceDictionary();
-					File dictPath = Configs.getFile("surface_dictionary_path");
+					File dictPath = Configs.getFile("surface_dictionary.path");
 					dict.debug("loading surface dictionary from " + dictPath + " ...");
 					try
 					{
@@ -70,14 +79,14 @@ public class SurfaceDictionary extends Debug
 								if (surface != null && !surface.isEmpty())
 								{
 									int count = Integer.parseInt(parts[1]);
-
 									// add a trailing whitespace to denote word boundary
 									dict.surfaces.put(surface + " ", count);
-
-									continue;
 								}
 							}
-							dict.warning("ignoring dictionary line: " + line);
+							else
+							{
+								dict.warning("ignoring dictionary line: " + line);
+							}
 						}
 						br.close();
 					}
@@ -126,96 +135,92 @@ public class SurfaceDictionary extends Debug
 	 */
 	public List<String> extractSurfaces(String text)
 	{
-		List<String> rst = new ArrayList<String>();
+		// add trailing whitespace
+		text = text + " ";
 
-		int offset = 0;
-
-		while (offset < text.length())
+		// pre-compute positions of each term
+		int n = TextUtils.count(text, ' ');
+		int[] pos = new int[n + 1];
+		pos[0] = 0;
+		int i0 = 1;
+		for (int i = 0; i < text.length(); ++i)
 		{
-			// results of this iteration
-			List<Integer> currentResult = new ArrayList<Integer>();
-			List<Integer> bestResult = new ArrayList<Integer>();
-
-			// extract
-			extractSurfacesHelper(text, offset, currentResult, bestResult);
-
-			// cumulate results
-			if (bestResult.size() > 0)
+			if (text.charAt(i) == ' ')
 			{
-				int p = offset;
-				for (int i = 0; i < bestResult.size(); ++i)
-				{
-					int q = bestResult.get(i);
-					String result = text.substring(p, q);
-					rst.add(result.trim());
-					p = q;
-				}
+				pos[i0] = i + 1;
+				i0++;
+			}
+		}
 
-				// update offset
-				offset = bestResult.get(bestResult.size() - 1);
+		// optimize cost to segment stream of terms into surfaces, using DP
+		// f[i] = lowest cost of term_i to term_{n-1}
+		int[] f = new int[n + 1];
+		// trace[i] = optimal length of surface at term_i; 0 means no surfaces found from here
+		int[] trace = new int[n + 1];
+		f[n] = 0;
+		trace[n] = -1;
+		for (int i = n - 1; i >= 0; --i)
+		{
+			int c0 = f[i + 1] + pU; // case 0: take the next term as unmatch
+
+			// other cases: match partial text from term i
+			int bestCost = c0;
+			int bestCostTermCount = 0;
+			int p = pos[i];
+			Map<String, Integer> matches = new HashMap<String, Integer>();
+			surfaces.prefixMatch(text, p, matches);
+			for (String match : matches.keySet())
+			{
+				int l = TextUtils.count(match, ' '); // there is a trailing whitespace
+				int cost = f[i + l] + pM;
+				if (cost < bestCost)
+				{
+					bestCost = cost;
+					bestCostTermCount = l;
+				}
 			}
 
-			// the word at offset is not a prefix of a surface, move to the next whitespace
-			while (offset < text.length() && text.charAt(offset) != ' ')
-				offset++;
-			// skip the whitespace to the beginning of the next word
-			offset++;
+			trace[i] = bestCostTermCount;
+			f[i] = bestCost;
+		}
+
+		// rebuild optimal solution from traces
+		List<String> rst = new ArrayList<String>();
+		int i = 0;
+		while (trace[i] >= 0)
+		{
+			if (trace[i] == 0)
+			{
+				// unmatch
+				i++;
+			}
+			else
+			{
+				// match
+				int p0 = pos[i];
+				i += trace[i];
+				int p1 = pos[i];
+				String s = text.substring(p0, p1 - 1); // minus 1 to eliminate the trailing whitespace
+				rst.add(s);
+			}
 		}
 
 		return rst;
 	}
 
-	/**
-	 * extract surfaces from input text in an optimized way, and save result in bestResult.
-	 * 
-	 * the goal is to match as longer text with as fewer surfaces as possible.
-	 * 
-	 * note that the last integer in bestResult is the offset of not-yet-extracted text.
-	 * 
-	 * @param text
-	 * @param offset
-	 * @param currentResult
-	 * @param bestResult
-	 */
-	private void extractSurfacesHelper(String text, int offset, List<Integer> currentResult,
-			List<Integer> bestResult)
-	{
-		Map<String, Integer> matches = new HashMap<String, Integer>();
-		surfaces.prefixMatch(text, offset, matches);
-		if (matches.size() == 0)
-		{
-			if (bestResult.size() > 0)
-			{
-				int bestResultMaxOffset = bestResult.get(bestResult.size() - 1);
-				if (bestResultMaxOffset > offset)
-					return;
-				if (bestResultMaxOffset == offset && bestResult.size() <= currentResult.size())
-					return;
-			}
-			bestResult.clear();
-			bestResult.addAll(currentResult);
-		}
-		for (String match : matches.keySet())
-		{
-			offset += match.length();
-			currentResult.add(offset);
-			extractSurfacesHelper(text, offset, currentResult, bestResult);
-			currentResult.remove(currentResult.size() - 1);
-			offset -= match.length();
-		}
-	}
-
 	public static void main(String[] args) throws IOException
 	{
 		Session session = SessionManager.newSession();
-		WikiConcept concept = WikiConcept.getByTitle("United States", session);
+		WikiConcept concept = WikiConcept.getByTitle("Foreign relations of Colombia", session);
 		String text = concept.getText();
 		session.close();
-		
-		BufferedWriter out = new BufferedWriter(new FileWriter("usa.txt"));
-		out.write(text);
-		out.newLine();
-		out.close();
+
+		// BufferedWriter out = new BufferedWriter(new FileWriter("usa.txt"));
+		// out.write(text);
+		// out.newLine();
+		// out.close();
+
+		// String text1 = "we know that united states 2000 census is famous in united states";
 
 		SurfaceDictionary dict = SurfaceDictionary.get();
 		List<String> testSurfaces = dict.extractSurfaces(text);

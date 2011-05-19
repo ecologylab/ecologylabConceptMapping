@@ -25,6 +25,7 @@ public class Configs extends Debug
 		{
 			configs = PrefSet.load("concept_mapping.xml", translationScope);
 			configs.serialize(System.out, ElementState.FORMAT.XML);
+			System.out.println();
 		}
 		catch (SIMPLTranslationException e)
 		{

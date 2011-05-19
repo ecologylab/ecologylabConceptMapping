@@ -32,10 +32,18 @@ public class PrefixTree<T> extends Debug
 	{
 		public Object	value;
 
-		public Node[]	children	= new Node[allowedCharacters.size()];
+		public Node[]	children;
+		
 	}
 
-	private Node	root	= new Node();
+	private Node	root				= new Node();
+
+	private int		countNodes	= 0;
+
+	public int getCountNodes()
+	{
+		return countNodes;
+	}
 
 	private Node traverse(String key, boolean createNewNodes)
 	{
@@ -49,16 +57,24 @@ public class PrefixTree<T> extends Debug
 				warning("unallowed character (will be replaced by a whitespace): " + ch);
 				p = 0;
 			}
-			if (current.children[p] == null)
+			
+			if (createNewNodes)
 			{
-				if (createNewNodes)
+				if (current.children == null)
+					current.children = new Node[allowedCharacters.size()];
+				if (current.children[p] == null)
 				{
 					Node newNode = new Node();
+					countNodes++;
 					current.children[p] = newNode;
 				}
-				else
+			}
+			else
+			{
+				if (current.children == null || current.children[p] == null)
 					return null;
 			}
+			
 			current = current.children[p];
 		}
 		return current;
@@ -111,7 +127,7 @@ public class PrefixTree<T> extends Debug
 			sb.append(ch);
 
 			int p = allowedCharacters.get(ch);
-			current = current.children[p];
+			current = (current.children == null) ? null : current.children[p];
 			if (current == null)
 				return;
 			if (current.value != null)

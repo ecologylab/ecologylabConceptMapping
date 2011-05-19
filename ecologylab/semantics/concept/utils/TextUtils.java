@@ -76,6 +76,24 @@ public class TextUtils
 	}
 
 	/**
+	 * return the number of a given character occurring in text.
+	 * 
+	 * @param text
+	 * @param c
+	 * @return
+	 */
+	public static int count(String text, char c)
+	{
+		int count = 0;
+		for (int i = 0; i < text.length(); ++i)
+		{
+			if (text.charAt(i) == c)
+				count++;
+		}
+		return count;
+	}
+
+	/**
 	 * load a whole text file into a string.
 	 * 
 	 * @param f
