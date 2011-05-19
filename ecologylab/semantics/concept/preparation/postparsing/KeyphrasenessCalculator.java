@@ -17,14 +17,14 @@ import ecologylab.semantics.concept.detect.SurfaceDictionary;
 public class KeyphrasenessCalculator
 {
 
-	private int	total;
+	private int	target;
 
-	private int	counter;
+	private int	current;
 
 	private void calculateKeyphraseness(int offset, int number)
 	{
-		total = number;
-		counter = 0;
+		target = offset + number;
+		current = offset;
 
 		Session session = SessionManager.newSession();
 
@@ -38,9 +38,9 @@ public class KeyphrasenessCalculator
 		while (results.next())
 		{
 			WikiConcept concept = (WikiConcept) results.get(0);
-			System.out.println(counter + "/" + total + ": processing " + concept.getId());
+			System.out.println(current + "/" + target + ": processing " + concept.getId());
 			processConcept(concept);
-			counter++;
+			current++;
 		}
 		results.close();
 
