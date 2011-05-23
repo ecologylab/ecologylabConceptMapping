@@ -27,15 +27,17 @@ import ecologylab.semantics.concept.utils.TextUtils;
 public class SurfaceDictionary extends Debug
 {
 
+	public static final String				SURFACE_DICTIONARY_PATH	= "surface_dictionary.path";
+
 	/**
 	 * The deliminator between surface and sense count.
 	 */
-	public static final String				DELIM				= "|";
+	public static final String				DELIM										= "|";
 
 	/**
 	 * The regex representation of DELIM.
 	 */
-	public static final String				DELIM_REGEX	= "\\|";
+	public static final String				DELIM_REGEX							= "\\|";
 
 	public static final int						pU;
 
@@ -64,7 +66,7 @@ public class SurfaceDictionary extends Debug
 				if (the == null)
 				{
 					SurfaceDictionary dict = new SurfaceDictionary();
-					File dictPath = Configs.getFile("surface_dictionary.path");
+					File dictPath = Configs.getFile(SURFACE_DICTIONARY_PATH);
 					dict.debug("loading surface dictionary from " + dictPath + " ...");
 					try
 					{

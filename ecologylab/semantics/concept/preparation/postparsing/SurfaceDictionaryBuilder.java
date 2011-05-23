@@ -12,6 +12,7 @@ import org.hibernate.type.StandardBasicTypes;
 
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
+import ecologylab.semantics.concept.detect.SurfaceDictionary;
 import ecologylab.semantics.concept.service.Configs;
 
 /**
@@ -27,7 +28,7 @@ public class SurfaceDictionaryBuilder
 
 	public void buildDictionary() throws IOException
 	{
-		File dictFile = Configs.getFile("surface_dictionary.path");
+		File dictFile = Configs.getFile(SurfaceDictionary.SURFACE_DICTIONARY_PATH);
 		FileWriter out = new FileWriter(dictFile);
 
 		Session session = SessionManager.newSession();
