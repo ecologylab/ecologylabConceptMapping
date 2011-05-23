@@ -62,6 +62,7 @@ public class KeyphrasenessCalculator
 		int n = 1;
 		Session session = SessionManager.newSession();
 		Criteria q = session.createCriteria(WikiConcept.class);
+		q.setCacheable(false);
 		q.setFetchSize(100);
 		ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY);
 		while (results.next())
@@ -76,6 +77,7 @@ public class KeyphrasenessCalculator
 				ptree.put(surface, prevTotalCount + 1);
 			}
 			n++;
+			session.evict(concept);
 		}
 		results.close();
 		session.close();
