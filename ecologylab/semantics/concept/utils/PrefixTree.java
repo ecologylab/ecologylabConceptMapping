@@ -152,7 +152,7 @@ public class PrefixTree<T> extends Debug
 		Node leaf = traverse(key, true);
 		if (warnDuplicateKey && leaf.value != null)
 		{
-			warning("duplicate key found, overwrite: " + key);
+			warning("duplicate key found, overwrite: " + key + " = " + value.toString());
 		}
 		leaf.value = value;
 	}
