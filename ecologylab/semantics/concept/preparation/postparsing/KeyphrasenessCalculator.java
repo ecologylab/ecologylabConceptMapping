@@ -58,6 +58,7 @@ public class KeyphrasenessCalculator
 		}
 
 		// process concepts to count occurrences (in memory)
+		ptree.setWarnDuplicateKey(false);
 		int n = 1;
 		Session session = SessionManager.newSession();
 		Criteria q = session.createCriteria(WikiConcept.class);
