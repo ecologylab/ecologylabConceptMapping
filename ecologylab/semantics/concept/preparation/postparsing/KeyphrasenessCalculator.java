@@ -19,6 +19,7 @@ import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.detect.SurfaceDictionary;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.PrefixTree;
+import ecologylab.semantics.concept.utils.TextUtils;
 
 public class KeyphrasenessCalculator
 {
@@ -90,7 +91,7 @@ public class KeyphrasenessCalculator
 			Integer totalOccur = ptree.get(surface);
 			if (totalOccur != null && totalOccur > 0)
 			{
-				String sql = String.format(sqlTemplate, totalOccur, surface);
+				String sql = String.format(sqlTemplate, totalOccur, TextUtils.sqlEscape(surface));
 				out.write(sql);
 				out.write("\n");
 			}

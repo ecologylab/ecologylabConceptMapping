@@ -150,4 +150,30 @@ public class TextUtils
 		pw.close();
 	}
 
+	/**
+	 * escape an input string according to SQL standard. now only single quote (') escaping is
+	 * implemented.
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static String sqlEscape(String s)
+	{
+		StringBuilder escaped = new StringBuilder();
+		for (int i = 0; i < s.length(); ++i)
+		{
+			char c = s.charAt(i);
+			switch (c)
+			{
+			case '\'':
+				escaped.append("''");
+				break;
+			default:
+				escaped.append(c);
+				break;
+			}
+		}
+		return escaped.toString();
+	}
+
 }
