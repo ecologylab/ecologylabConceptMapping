@@ -1,9 +1,10 @@
 package ecologylab.semantics.concept.preparation.postparsing;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +13,9 @@ import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
-import ecologylab.semantics.concept.database.orm.WikiSurface;
 import ecologylab.semantics.concept.detect.SurfaceDictionary;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.PrefixTree;
@@ -28,8 +27,10 @@ public class KeyphrasenessCalculator
 
 	PrefixTree<Integer>	ptree			= new PrefixTree<Integer>();
 
-	private void calculateKeyphraseness() throws FileNotFoundException
+	private void calculateKeyphraseness(String outPath) throws IOException
 	{
+		BufferedWriter out = new BufferedWriter(new FileWriter(outPath));
+
 		// read surfaces from dictionary file
 		File dictFile = Configs.getFile(SurfaceDictionary.SURFACE_DICTIONARY_PATH);
 		BufferedReader br = new BufferedReader(new FileReader(dictFile));
@@ -82,26 +83,33 @@ public class KeyphrasenessCalculator
 		results.close();
 		session.close();
 
-		// save in-memory counts to the database
+		// save in-memory counts to a script
+		String sqlTemplate = "UPDATE wiki_surfaces SET total_occurrence=%d WHERE surface='%s';";
 		for (String surface : surfaces)
 		{
-			session = SessionManager.newSession();
-			Transaction tx = session.beginTransaction();
-			WikiSurface ws = WikiSurface.get(surface, session);
 			Integer totalOccur = ptree.get(surface);
-			if (ws != null && totalOccur != null && totalOccur > 0)
+			if (totalOccur != null && totalOccur > 0)
 			{
-				ws.setTotalOccurrence(totalOccur);
+				String sql = String.format(sqlTemplate, totalOccur, surface);
+				out.write(sql);
+				out.write("\n");
 			}
-			tx.commit();
-			session.close();
 		}
+
+		out.close();
 	}
 
-	public static void main(String[] args) throws FileNotFoundException
+	public static void main(String[] args) throws IOException
 	{
+		if (args.length != 1)
+		{
+			System.err.println("args: <output-script-path>");
+			System.exit(-1);
+		}
+
+		String outPath = args[0];
 		KeyphrasenessCalculator kc = new KeyphrasenessCalculator();
-		kc.calculateKeyphraseness();
+		kc.calculateKeyphraseness(outPath);
 	}
 
 }
