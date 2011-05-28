@@ -1,17 +1,25 @@
 package ecologylab.semantics.concept.detect;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import libsvm.svm_node;
+
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.Constants;
 import ecologylab.semantics.concept.database.SessionManager;
+import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
+import ecologylab.semantics.concept.learning.svm.LearningUtils;
+import ecologylab.semantics.concept.learning.svm.Normalizer;
+import ecologylab.semantics.concept.learning.svm.NormalizerFactory;
+import ecologylab.semantics.concept.learning.svm.PredicterFactory;
+import ecologylab.semantics.concept.learning.svm.SVMPredicter;
+import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.TextNormalizer;
 import ecologylab.semantics.concept.utils.TextUtils;
 
@@ -25,34 +33,36 @@ import ecologylab.semantics.concept.utils.TextUtils;
 public class Doc
 {
 
-	private final String					title;
+	private static final Normalizer		NORMALIZER;
 
-	private final String					text;
+	private static final SVMPredicter	PREDICTER;
 
-	private final int							totalWords;
+	private static final double				DETECT_CONFIDENCE_THRESHOLD;
 
-	private Map<String, Instance>	instances;
+	static
+	{
+		NORMALIZER = NormalizerFactory.get(Configs.getFile("detection.normalization"));
+		PREDICTER = PredicterFactory.get(Configs.getFile("detection.model"), NORMALIZER);
+		DETECT_CONFIDENCE_THRESHOLD = Configs.getDouble("detection.confidence_threshold");
+	}
+
+	private final String							title;
+
+	private final String							text;
+
+	private final int									totalWords;
+
+	private Map<String, Integer>			surfaceOccurrences;
+
+	private Map<String, Instance>			instances;
+
+	private Map<String, Instance>			detectionResults;
 
 	public Doc(String title, String text)
 	{
 		this.title = title;
 		this.text = TextNormalizer.normalize(text);
 		this.totalWords = TextUtils.count(text, " ") + 1;
-		
-		Session session = SessionManager.get().newSession();
-
-		// extract surfaces
-		for (String surface : SurfaceDictionary.get().extractSurfaces(text))
-		{
-			WikiSurface ws = WikiSurface.get(surface, session);
-			surfaces.add(surface);
-			if (!surfaceOccurrences.containsKey(surface))
-				surfaceOccurrences.put(surface, 1);
-			else
-				surfaceOccurrences.put(surface, surfaceOccurrences.get(surface) + 1);
-		}
-		
-		SessionManager.get().releaseSession(session);
 	}
 
 	public String getTitle()
@@ -70,71 +80,213 @@ public class Doc
 		return totalWords;
 	}
 
-	public Set<Surface> getSurfaces()
-	{
-		return surfaces;
-	}
-
-	public Map<Surface, Integer> getSurfaceOccurrences()
-	{
-		return surfaceOccurrences;
-	}
-
-	public int getNumberOfOccurrences(Surface surface)
-	{
-		if (surfaceOccurrences.containsKey(surface))
-		{
-			return surfaceOccurrences.get(surface);
-		}
-		return 0;
-	}
-
-	Session getSession()
-	{
-		return session;
-	}
-
-	public Set<Instance> detect()
+	/**
+	 * entry of concept mapping.
+	 * 
+	 * @return a map from surfaces to detected concept instances. instances contain features and
+	 *         confidence values.
+	 */
+	public Map<String, Instance> getDetectionResults()
 	{
 		if (detectionResults == null)
 		{
-			Set<Instance> instances = disambiguate();
-			Detector detector = new Detector(this);
-			try
-			{
-				detectionResults = detector.detect(instances);
-			}
-			catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			Session session = SessionManager.newSession();
+			extractSurfaces(session);
+			disambiguateSurfaces(session);
+			detectConcepts();
+			session.close();
 		}
 		return detectionResults;
+	}
+
+	/**
+	 * extract surfaces from the text. expected side effects include establishment of field instances
+	 * and surfaceOccurrences.
+	 * 
+	 * @param session
+	 */
+	protected void extractSurfaces(Session session)
+	{
+		instances = new HashMap<String, Instance>();
+		surfaceOccurrences = new HashMap<String, Integer>();
+		for (String surface : SurfaceDictionary.get().extractSurfaces(text))
+		{
+			WikiSurface ws = WikiSurface.get(surface, session);
+			Instance instance = new Instance(this, ws);
+			instances.put(surface, instance);
+			int occ = surfaceOccurrences.containsKey(surface) ? surfaceOccurrences.get(surface) : 0;
+			surfaceOccurrences.put(surface, occ + 1);
+		}
+	}
+
+	/**
+	 * disambiguate all surfaces. for unambiguous surfaces, use the unique concept it is associated
+	 * with. for ambiguous surfaces, disambiguate them. disambiguation results stored in Instance
+	 * objects directly.
+	 * 
+	 * @param session
+	 */
+	protected void disambiguateSurfaces(Session session)
+	{
+		Context context = new Context(this);
+
+		// set up initial context
+		Set<Instance> unresolved = new HashSet<Instance>();
+		for (String surface : instances.keySet())
+		{
+			Instance instance = instances.get(surface);
+			if (SurfaceDictionary.get().getSenseCount(surface) == 1)
+			{
+				context.add(instance, session);
+			}
+			else
+			{
+				unresolved.add(instance);
+			}
+		}
+		if (context.size() == 0)
+		{
+			// no unambiguous surfaces? do a best guess ...
+			Instance instance = findInstanceWithLargestCommonnessAndDisambiguate(unresolved);
+			context.add(instance, session);
+		}
+
+		while (unresolved.size() > 0)
+		{
+			// find related surfaces
+			Set<Instance> related = new HashSet<Instance>();
+			Instance bestRelatedOne = null;
+			double bestRelatedness = 0;
+			for (Instance instance : unresolved)
+			{
+				double relatedness = getAllSenseRelatedness(context, instance, session);
+				if (relatedness > Configs.getDouble("feature_extraction.related_surface_threshold"))
+				{
+					related.add(instance);
+				}
+				if (bestRelatedOne == null || bestRelatedness < relatedness)
+				{
+					bestRelatedOne = instance;
+					bestRelatedness = relatedness;
+				}
+			}
+			if (related.size() == 0)
+			{
+				// no related surfaces? find the most related one ...
+				related.add(bestRelatedOne);
+			}
+
+			// resolve still ambiguous surfaces
+			Set<Instance> resolved = new HashSet<Instance>();
+			Instance bestConfidentOne = null;
+			double bestConfidence = 0;
+			for (Instance instance : related)
+			{
+				context.disambiguate(instance, session);
+				double confidence = instance.getDisambiguationConfidence();
+				if (confidence > Configs
+						.getDouble("feature_extraction.disambiguation_confidence_threshold"))
+				{
+					resolved.add(instance);
+				}
+				if (bestConfidentOne == null || bestConfidence < confidence)
+				{
+					bestConfidentOne = instance;
+					bestConfidence = confidence;
+				}
+			}
+			if (resolved.size() == 0)
+			{
+				// no surfaces are disambiguated confidently enough? find the most confident one ...
+				resolved.add(bestConfidentOne);
+			}
+
+			for (Instance instance : resolved)
+			{
+				context.add(instance, session);
+				unresolved.remove(instance);
+			}
+		}
+	}
+
+	private Instance findInstanceWithLargestCommonnessAndDisambiguate(Set<Instance> unresolved)
+	{
+		Instance best = null;
+		double bestCommonness = 0;
+
+		for (Instance inst : unresolved)
+		{
+			Map<WikiConcept, Double> concepts = inst.getSurface().getConcepts();
+			for (WikiConcept c : concepts.keySet())
+			{
+				double commonness = concepts.get(c);
+				if (best == null || bestCommonness < commonness)
+				{
+					best = inst;
+					bestCommonness = commonness;
+				}
+			}
+		}
+
+		return best;
+	}
+
+	private double getAllSenseRelatedness(Context context, Instance instance, Session session)
+	{
+		double rst = 0;
+		Set<WikiConcept> concepts = instance.getSurface().getConcepts().keySet();
+		for (WikiConcept concept : concepts)
+		{
+			double rel = context.getContextualRelatedness(concept, session);
+			if (rel > rst)
+				rst = rel;
+		}
+		return rst;
+	}
+
+	/**
+	 * detect concepts. detection results stored in Instance objects directly. prerequisites: surfaces
+	 * extracted and disambiguated. expected side effects: detectionResults established.
+	 */
+	protected void detectConcepts()
+	{
+		detectionResults = new HashMap<String, Instance>();
+
+		double[] kvalueBuffer = null;
+		for (String surface : instances.keySet())
+		{
+			Instance inst = instances.get(surface);
+			inst.setOccurrence(surfaceOccurrences.get(surface));
+			inst.setFrequency(inst.getOccurrence() * 1.0 / getTotalWords());
+
+			svm_node[] svmInst = LearningUtils.constructSVMInstanceForDetection(inst);
+
+			Map<Integer, Double> results = new HashMap<Integer, Double>();
+			if (kvalueBuffer == null)
+				kvalueBuffer = new double[PREDICTER.getNumOfSVs()];
+			PREDICTER.predict(svmInst, results, kvalueBuffer);
+			inst.setDetectionConfidence(results.get(Constants.POS_CLASS_INT_LABEL));
+			if (inst.getDetectionConfidence() > DETECT_CONFIDENCE_THRESHOLD)
+				detectionResults.put(surface, inst);
+		}
 	}
 
 	public static void main(String[] args) throws IOException
 	{
 		// String text = TextUtils.readString("usa.wiki");
 		String text = "we know that united states census 2000 is famous in united states";
-		Doc doc = null;
-
-		int n = 100;
-		long t0 = System.currentTimeMillis();
-		for (int i = 0; i < n; ++i)
-		{
-			doc = new Doc("USA", text);
-		}
-		long t1 = System.currentTimeMillis();
-
+		Doc doc = new Doc("USA", text);
 		if (doc != null)
 		{
-			System.out.println(doc.getSurfaces().size() + " surfaces found.");
-			System.out.println("average time in ms: " + (t1 - t0) * 1.0 / n);
-		}
-		else
-		{
-			System.out.println("oops! failed.");
+			for (String surface : doc.getDetectionResults().keySet())
+			{
+				Instance inst = doc.getDetectionResults().get(surface);
+				System.out.format("%s -> %s (%.4f)",
+						surface,
+						inst.getConcept().getTitle(),
+						inst.getDetectionConfidence());
+				System.out.println();
+			}
 		}
 	}
 

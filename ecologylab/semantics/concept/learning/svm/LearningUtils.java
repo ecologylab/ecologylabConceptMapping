@@ -7,7 +7,7 @@ import libsvm.svm_node;
  * Utility functions for this package.
  * 
  * @author quyin
- *
+ * 
  */
 public class LearningUtils
 {
@@ -38,9 +38,9 @@ public class LearningUtils
 	public static svm_node[] constructSVMInstanceForDisambiguation(Instance inst)
 	{
 		svm_node[] svmInst = LearningUtils.constructSVMInstance(
-					inst.commonness,
-					inst.contextualRelatedness,
-					inst.contextQuality
+					inst.getSurface().getConcepts().get(inst.getConcept()),
+					inst.getContextualRelatedness(),
+					inst.getContextQuality()
 					);
 		return svmInst;
 	}
@@ -48,11 +48,11 @@ public class LearningUtils
 	public static svm_node[] constructSVMInstanceForDetection(Instance inst)
 	{
 		svm_node[] svmInst = LearningUtils.constructSVMInstance(
-					inst.keyphraseness,
-					inst.contextualRelatedness,
-					inst.disambiguationConfidence,
-					inst.occurrence,
-					inst.frequency
+					inst.getSurface().getKeyphraseness(),
+					inst.getContextualRelatedness(),
+					inst.getDisambiguationConfidence(),
+					inst.getOccurrence(),
+					inst.getFrequency()
 					);
 		return svmInst;
 	}

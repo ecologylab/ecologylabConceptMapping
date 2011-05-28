@@ -30,17 +30,24 @@ public class NormalizerFactory
 	/**
 	 * Get a loaded normalizer from the cache. If it is not loaded yet, load it and cache it.
 	 * 
-	 * @param paramsPath
+	 * @param paramsFile
 	 * @return
-	 * @throws IOException
 	 */
-	public static Normalizer get(File paramsPath) throws IOException
+	public static Normalizer get(File paramsFile)
 	{
-		String absolutePath = paramsPath.getAbsolutePath();
+		String absolutePath = paramsFile.getAbsolutePath();
 		if (!theMap.containsKey(absolutePath))
 		{
 			Normalizer normalizer = create();
-			normalizer.load(paramsPath);
+			try
+			{
+				normalizer.load(paramsFile);
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			theMap.put(absolutePath, normalizer);
 		}
 		return theMap.get(absolutePath);

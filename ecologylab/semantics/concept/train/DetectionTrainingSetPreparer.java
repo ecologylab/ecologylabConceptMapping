@@ -6,7 +6,7 @@ import java.util.Set;
 
 import libsvm.svm_node;
 
-import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.Constants;
 import ecologylab.semantics.concept.detect.Context;
 import ecologylab.semantics.concept.detect.Instance;
 import ecologylab.semantics.concept.detect.Surface;
@@ -84,8 +84,8 @@ public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 	{
 		svm_node[] svmInst = LearningUtils.constructSVMInstanceForDetection(instance);
 		StringBuilder sb = new StringBuilder();
-		sb.append(isPositiveSample ? String.valueOf(ConceptConstants.POS_CLASS_INT_LABEL) : String
-				.valueOf(ConceptConstants.NEG_CLASS_INT_LABEL));
+		sb.append(isPositiveSample ? String.valueOf(Constants.POS_CLASS_INT_LABEL) : String
+				.valueOf(Constants.NEG_CLASS_INT_LABEL));
 		for (int i = 0; i < svmInst.length; ++i)
 		{
 			sb.append(",").append(String.valueOf(svmInst[i].value));

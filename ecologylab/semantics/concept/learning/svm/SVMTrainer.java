@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.Constants;
 
 import libsvm.svm;
 import libsvm.svm_model;
@@ -82,8 +82,8 @@ public class SVMTrainer extends Debug
 		param.shrinking = 0; // don't use shrinking to speed up training
 		param.probability = 1; // probability model by default
 		param.nr_weight = 2;
-		param.weight_label = new int[] { ConceptConstants.POS_CLASS_INT_LABEL,
-				ConceptConstants.NEG_CLASS_INT_LABEL };
+		param.weight_label = new int[] { Constants.POS_CLASS_INT_LABEL,
+				Constants.NEG_CLASS_INT_LABEL };
 		param.weight = new double[] { 1, negWeight };
 		// inputs
 		param.C = C;

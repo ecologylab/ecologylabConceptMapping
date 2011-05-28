@@ -5,12 +5,25 @@ import java.util.List;
 
 public class CollectionUtils
 {
-	
+
+	public static interface ValueSelector<ObjectType, ValueType>
+	{
+		ValueType getValue(ObjectType obj);
+	}
+
 	public static int sum(Collection<Integer> collection)
 	{
 		int s = 0;
 		for (int v : collection)
 			s += v;
+		return s;
+	}
+
+	public static <T> double sum(Collection<T> collection, ValueSelector<T, Double> valueSelector)
+	{
+		double s = 0;
+		for (T obj : collection)
+			s += valueSelector.getValue(obj);
 		return s;
 	}
 
@@ -34,7 +47,7 @@ public class CollectionUtils
 			list.set(j, tmp);
 		}
 	}
-	
+
 	/**
 	 * randomly permute a list.
 	 * 
@@ -45,5 +58,5 @@ public class CollectionUtils
 	{
 		randomPermute(list, list.size());
 	}
-	
+
 }

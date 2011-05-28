@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import libsvm.svm_node;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.Constants;
 import ecologylab.semantics.concept.learning.svm.SVMPredicter.Prediction;
 import ecologylab.semantics.concept.service.Configs;
 
@@ -110,7 +110,7 @@ public class SVMTuner extends Debug
 		for (int i = 0; i < size; ++i)
 		{
 			int label = testSet.getLabels().get(i);
-			if (label == ConceptConstants.POS_CLASS_INT_LABEL)
+			if (label == Constants.POS_CLASS_INT_LABEL)
 				nPosSamples++;
 			svm_node[] inst = testSet.getFeatures().get(i);
 			Map<Integer, Double> rst = new HashMap<Integer, Double>();
@@ -124,8 +124,8 @@ public class SVMTuner extends Debug
 			@Override
 			public int compare(Prediction p1, Prediction p2)
 			{
-				double conf1 = p1.result.get(ConceptConstants.POS_CLASS_INT_LABEL);
-				double conf2 = p2.result.get(ConceptConstants.POS_CLASS_INT_LABEL);
+				double conf1 = p1.result.get(Constants.POS_CLASS_INT_LABEL);
+				double conf2 = p2.result.get(Constants.POS_CLASS_INT_LABEL);
 				return Double.compare(conf2, conf1);
 			}
 		});
@@ -136,19 +136,19 @@ public class SVMTuner extends Debug
 		for (int i = 0; i < size; ++i)
 		{
 			Prediction p = preds.get(i);
-			if (p.trueLabel == ConceptConstants.POS_CLASS_INT_LABEL)
+			if (p.trueLabel == Constants.POS_CLASS_INT_LABEL)
 				tp++;
 			else
 				fp++;
 
-			if (p.trueLabel == ConceptConstants.POS_CLASS_INT_LABEL)
+			if (p.trueLabel == Constants.POS_CLASS_INT_LABEL)
 			{
 				double precision = (double) tp / (i + 1);
 				double recall = (double) tp / nPosSamples;
 				sum_precision += precision;
 				ap = sum_precision / tp;
 
-				double conf = p.result.get(ConceptConstants.POS_CLASS_INT_LABEL);
+				double conf = p.result.get(Constants.POS_CLASS_INT_LABEL);
 				bw.write(String.format("%d: %.2f%%, %.2f%%, %.2f%%, %.2f%%",
 						i, conf * 100, precision * 100, recall * 100, ap * 100));
 				bw.newLine();

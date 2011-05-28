@@ -1,5 +1,6 @@
 package ecologylab.semantics.concept.learning.svm;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,15 +26,23 @@ public class PredicterFactory
 	 * @param modelPath
 	 * @param normalizer
 	 * @return
-	 * @throws IOException
 	 */
-	public static SVMPredicter get(String modelPath, Normalizer normalizer) throws IOException
+	public static SVMPredicter get(File modelFile, Normalizer normalizer)
 	{
+		String modelPath = modelFile.getAbsolutePath();
 		if (!pathMap.containsKey(modelPath))
 		{
-			svm_model model = svm.svm_load_model(modelPath);
-			SVMPredicter predicter = new SVMPredicter(model, normalizer);
-			pathMap.put(modelPath, predicter);
+			try
+			{
+				svm_model model = svm.svm_load_model(modelPath);
+				SVMPredicter predicter = new SVMPredicter(model, normalizer);
+				pathMap.put(modelPath, predicter);
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return pathMap.get(modelPath);
 	}

@@ -12,7 +12,7 @@ import java.util.List;
 import libsvm.svm_node;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.Constants;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 
 public class DataSet extends Debug
@@ -89,9 +89,9 @@ public class DataSet extends Debug
 
 			String[] parts = line.split(",");
 			int label = Integer.parseInt(parts[0]);
-			if (label == ConceptConstants.POS_CLASS_INT_LABEL)
+			if (label == Constants.POS_CLASS_INT_LABEL)
 				ds.nPos++;
-			else if (label == ConceptConstants.NEG_CLASS_INT_LABEL)
+			else if (label == Constants.NEG_CLASS_INT_LABEL)
 				ds.nNeg++;
 
 			if (ds.dim == 0)

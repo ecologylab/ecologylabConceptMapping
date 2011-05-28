@@ -8,7 +8,7 @@ import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.List;
 
-import ecologylab.semantics.concept.ConceptConstants;
+import ecologylab.semantics.concept.Constants;
 import ecologylab.semantics.concept.detect.Instance;
 import ecologylab.semantics.concept.detect.SurfaceDictionary;
 import ecologylab.semantics.concept.service.Configs;
@@ -23,7 +23,7 @@ public abstract class TrainingSetPreparer
 	{
 		try
 		{
-			dict = SurfaceDictionary.load(ConceptConstants.DICTIONARY_PATH);
+			dict = SurfaceDictionary.load(Constants.DICTIONARY_PATH);
 		}
 		catch (IOException e)
 		{

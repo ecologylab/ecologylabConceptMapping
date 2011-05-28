@@ -11,5 +11,14 @@
   <pref_int name="surface_dictionary.punish_unmatch" value="2" />
   <pref_int name="surface_dictionary.punish_match" value="1" />
 
+  <pref_file name="disambiguation.parameters" value="model/disambi-norm-params.dat" />
+  <pref_file name="disambiguation.model" value="model/disambi.model" />
+  <pref_file name="detection.parameters" value="model/detect-norm-params.dat" />
+  <pref_file name="detection.model" value="model/detect.model" />
+  <pref_double name="detection.confidence_threshold" value="0.3" />
+
+  <pref_double name="feature_extraction.related_surface_threshold" value="0.00000000" />
+  <pref_double name="feature_extraction.disambiguation_confidence_threshold" value="0.00000000" />
+
   <!-- <pref_string name="train.trainset_preparer" value="ecologylab.semantics.concept.train.DetectionTrainingSetPreparer" /> -->
 </pref_set>
