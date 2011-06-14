@@ -7,7 +7,7 @@ import libsvm.svm;
 import libsvm.svm_model;
 import libsvm.svm_node;
 
-public class SVMPredicter
+public class SVMPredictor
 {
 
 	public static class Prediction
@@ -38,7 +38,7 @@ public class SVMPredicter
 	 *          Path to the normalization parameters file.
 	 * @throws IOException
 	 */
-	public SVMPredicter(svm_model model, Normalizer normalizer) throws IOException
+	public SVMPredictor(svm_model model, Normalizer normalizer) throws IOException
 	{
 		this.model = model;
 		this.normalizer = normalizer;

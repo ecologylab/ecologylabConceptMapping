@@ -18,7 +18,7 @@ import libsvm.svm_node;
 
 import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.Constants;
-import ecologylab.semantics.concept.learning.svm.SVMPredicter.Prediction;
+import ecologylab.semantics.concept.learning.svm.SVMPredictor.Prediction;
 import ecologylab.semantics.concept.service.Configs;
 
 /**
@@ -96,7 +96,7 @@ public class SVMTuner extends Debug
 		trainer.train(C, gamma);
 		trainer.saveTrainingResults(modelPath, normParamsPath);
 
-		SVMPredicter pred = new SVMPredicter(trainer.getModel(), trainer.getNormalizer());
+		SVMPredictor pred = new SVMPredictor(trainer.getModel(), trainer.getNormalizer());
 
 		BufferedWriter bw = new BufferedWriter(new FileWriter(precisionPath));
 		bw.write("idx: confidence, precision, recall, average_precision");

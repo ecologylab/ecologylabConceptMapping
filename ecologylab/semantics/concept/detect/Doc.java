@@ -1,8 +1,10 @@
 package ecologylab.semantics.concept.detect;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,15 +12,16 @@ import libsvm.svm_node;
 
 import org.hibernate.Session;
 
+import ecologylab.generic.Debug;
 import ecologylab.semantics.concept.Constants;
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
-import ecologylab.semantics.concept.learning.svm.LearningUtils;
+import ecologylab.semantics.concept.detect.SurfaceDictionary.SurfaceExtractedCallback;
 import ecologylab.semantics.concept.learning.svm.Normalizer;
 import ecologylab.semantics.concept.learning.svm.NormalizerFactory;
 import ecologylab.semantics.concept.learning.svm.PredicterFactory;
-import ecologylab.semantics.concept.learning.svm.SVMPredicter;
+import ecologylab.semantics.concept.learning.svm.SVMPredictor;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.TextNormalizer;
 import ecologylab.semantics.concept.utils.TextUtils;
@@ -30,33 +33,24 @@ import ecologylab.semantics.concept.utils.TextUtils;
  * @author quyin
  * 
  */
-public class Doc
+public class Doc extends Debug
 {
 
-	private static final Normalizer		NORMALIZER;
+	private static final double		DISAMBIGUATION_CONFIDENCE_THRESHOLD	= Configs.getDouble("feature_extraction.disambiguation_confidence_threshold");
 
-	private static final SVMPredicter	PREDICTER;
+	private static final double		RELATED_SURFACE_THRESHOLD						= Configs.getDouble("feature_extraction.related_surface_threshold");
 
-	private static final double				DETECT_CONFIDENCE_THRESHOLD;
+	private static final double		DETECT_CONFIDENCE_THRESHOLD					= Configs.getDouble("detection.confidence_threshold");
 
-	static
-	{
-		NORMALIZER = NormalizerFactory.get(Configs.getFile("detection.normalization"));
-		PREDICTER = PredicterFactory.get(Configs.getFile("detection.model"), NORMALIZER);
-		DETECT_CONFIDENCE_THRESHOLD = Configs.getDouble("detection.confidence_threshold");
-	}
+	private final String					title;
 
-	private final String							title;
+	private final String					text;
 
-	private final String							text;
+	private final int							totalWords;
 
-	private final int									totalWords;
+	private Map<String, Integer>	surfaceOccurrences;
 
-	private Map<String, Integer>			surfaceOccurrences;
-
-	private Map<String, Instance>			instances;
-
-	private Map<String, Instance>			detectionResults;
+	private List<Instance>				instances;
 
 	public Doc(String title, String text)
 	{
@@ -83,12 +77,11 @@ public class Doc
 	/**
 	 * entry of concept mapping.
 	 * 
-	 * @return a map from surfaces to detected concept instances. instances contain features and
-	 *         confidence values.
+	 * @return a list of (detected) concept Instances.
 	 */
-	public Map<String, Instance> getDetectionResults()
+	public List<Instance> getInstances()
 	{
-		if (detectionResults == null)
+		if (instances == null)
 		{
 			Session session = SessionManager.newSession();
 			extractSurfaces(session);
@@ -96,27 +89,31 @@ public class Doc
 			detectConcepts();
 			session.close();
 		}
-		return detectionResults;
+		return instances;
 	}
 
 	/**
-	 * extract surfaces from the text. expected side effects include establishment of field instances
-	 * and surfaceOccurrences.
+	 * extract surfaces from the text.
 	 * 
 	 * @param session
 	 */
-	protected void extractSurfaces(Session session)
+	protected void extractSurfaces(final Session session)
 	{
-		instances = new HashMap<String, Instance>();
+		instances = new ArrayList<Instance>();
 		surfaceOccurrences = new HashMap<String, Integer>();
-		for (String surface : SurfaceDictionary.get().extractSurfaces(text))
+		final Doc doc = this;
+		SurfaceDictionary.get().extractSurfaces(text, new SurfaceExtractedCallback()
 		{
-			WikiSurface ws = WikiSurface.get(surface, session);
-			Instance instance = new Instance(this, ws);
-			instances.put(surface, instance);
-			int occ = surfaceOccurrences.containsKey(surface) ? surfaceOccurrences.get(surface) : 0;
-			surfaceOccurrences.put(surface, occ + 1);
-		}
+			@Override
+			public void newSurface(String surface, int textOffset)
+			{
+				WikiSurface ws = WikiSurface.get(surface, session);
+				Instance instance = new Instance(doc, textOffset, ws);
+				instances.add(instance);
+				int occ = surfaceOccurrences.containsKey(surface) ? surfaceOccurrences.get(surface) : 0;
+				surfaceOccurrences.put(surface, occ + 1);
+			}
+		});
 	}
 
 	/**
@@ -128,14 +125,13 @@ public class Doc
 	 */
 	protected void disambiguateSurfaces(Session session)
 	{
-		Context context = new Context(this);
+		Context context = createContext();
 
 		// set up initial context
 		Set<Instance> unresolved = new HashSet<Instance>();
-		for (String surface : instances.keySet())
+		for (Instance instance : instances)
 		{
-			Instance instance = instances.get(surface);
-			if (SurfaceDictionary.get().getSenseCount(surface) == 1)
+			if (SurfaceDictionary.get().getSenseCount(instance.getWikiSurface().getSurface()) == 1)
 			{
 				context.add(instance, session);
 			}
@@ -160,7 +156,7 @@ public class Doc
 			for (Instance instance : unresolved)
 			{
 				double relatedness = getAllSenseRelatedness(context, instance, session);
-				if (relatedness > Configs.getDouble("feature_extraction.related_surface_threshold"))
+				if (relatedness > RELATED_SURFACE_THRESHOLD)
 				{
 					related.add(instance);
 				}
@@ -184,8 +180,7 @@ public class Doc
 			{
 				context.disambiguate(instance, session);
 				double confidence = instance.getDisambiguationConfidence();
-				if (confidence > Configs
-						.getDouble("feature_extraction.disambiguation_confidence_threshold"))
+				if (confidence > DISAMBIGUATION_CONFIDENCE_THRESHOLD)
 				{
 					resolved.add(instance);
 				}
@@ -209,6 +204,11 @@ public class Doc
 		}
 	}
 
+	protected Context createContext()
+	{
+		return new Context(this);
+	}
+
 	private Instance findInstanceWithLargestCommonnessAndDisambiguate(Set<Instance> unresolved)
 	{
 		Instance best = null;
@@ -216,7 +216,7 @@ public class Doc
 
 		for (Instance inst : unresolved)
 		{
-			Map<WikiConcept, Double> concepts = inst.getSurface().getConcepts();
+			Map<WikiConcept, Double> concepts = inst.getWikiSurface().getConcepts();
 			for (WikiConcept c : concepts.keySet())
 			{
 				double commonness = concepts.get(c);
@@ -234,7 +234,7 @@ public class Doc
 	private double getAllSenseRelatedness(Context context, Instance instance, Session session)
 	{
 		double rst = 0;
-		Set<WikiConcept> concepts = instance.getSurface().getConcepts().keySet();
+		Set<WikiConcept> concepts = instance.getWikiSurface().getConcepts().keySet();
 		for (WikiConcept concept : concepts)
 		{
 			double rel = context.getContextualRelatedness(concept, session);
@@ -245,29 +245,31 @@ public class Doc
 	}
 
 	/**
-	 * detect concepts. detection results stored in Instance objects directly. prerequisites: surfaces
-	 * extracted and disambiguated. expected side effects: detectionResults established.
+	 * detect concepts. detection results stored in Instance objects directly.
+	 * 
+	 * prerequisites: surfaces extracted and disambiguated.
+	 * 
 	 */
 	protected void detectConcepts()
 	{
-		detectionResults = new HashMap<String, Instance>();
-
 		double[] kvalueBuffer = null;
-		for (String surface : instances.keySet())
+		for (Instance inst : instances)
 		{
-			Instance inst = instances.get(surface);
-			inst.setOccurrence(surfaceOccurrences.get(surface));
+			inst.setOccurrence(surfaceOccurrences.get(inst.getWikiSurface().getSurface()));
 			inst.setFrequency(inst.getOccurrence() * 1.0 / getTotalWords());
 
-			svm_node[] svmInst = LearningUtils.constructSVMInstanceForDetection(inst);
+			svm_node[] svmInst = inst.toSvmInstanceForDetection();
+
+			Normalizer normalizer = NormalizerFactory.get(Configs.getFile("detection.normalization"));
+			SVMPredictor predictor = PredicterFactory.get(Configs.getFile("detection.model"), normalizer);
 
 			Map<Integer, Double> results = new HashMap<Integer, Double>();
 			if (kvalueBuffer == null)
-				kvalueBuffer = new double[PREDICTER.getNumOfSVs()];
-			PREDICTER.predict(svmInst, results, kvalueBuffer);
+				kvalueBuffer = new double[predictor.getNumOfSVs()];
+			predictor.predict(svmInst, results, kvalueBuffer);
 			inst.setDetectionConfidence(results.get(Constants.POS_CLASS_INT_LABEL));
 			if (inst.getDetectionConfidence() > DETECT_CONFIDENCE_THRESHOLD)
-				detectionResults.put(surface, inst);
+				inst.setDetected(true);
 		}
 	}
 
@@ -278,12 +280,13 @@ public class Doc
 		Doc doc = new Doc("USA", text);
 		if (doc != null)
 		{
-			for (String surface : doc.getDetectionResults().keySet())
+			for (Instance inst : doc.getInstances())
 			{
-				Instance inst = doc.getDetectionResults().get(surface);
+				if (!inst.isDetected())
+					continue;
 				System.out.format("%s -> %s (%.4f)",
-						surface,
-						inst.getConcept().getTitle(),
+						inst.getWikiSurface().getSurface(),
+						inst.getWikiConcept().getTitle(),
 						inst.getDetectionConfidence());
 				System.out.println();
 			}

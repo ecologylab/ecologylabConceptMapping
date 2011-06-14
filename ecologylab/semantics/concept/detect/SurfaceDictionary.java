@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Session;
@@ -26,6 +24,11 @@ import ecologylab.semantics.concept.utils.TextUtils;
  */
 public class SurfaceDictionary extends Debug
 {
+
+	public static interface SurfaceExtractedCallback
+	{
+		void newSurface(String surface, int textOffset);
+	}
 
 	public static final String				SURFACE_DICTIONARY_PATH	= "surface_dictionary.path";
 
@@ -129,13 +132,13 @@ public class SurfaceDictionary extends Debug
 	}
 
 	/**
-	 * Extract surfaces using this dictionary.
+	 * Extract surfaces from text using this surface dictionary.
 	 * 
 	 * @param text
-	 *          Normalized text.
-	 * @return
+	 * @param extractCallback
+	 * @return total number of extracted surfaces
 	 */
-	public List<String> extractSurfaces(String text)
+	public int extractSurfaces(String text, SurfaceExtractedCallback extractCallback)
 	{
 		// add trailing whitespace
 		text = text + " ";
@@ -187,7 +190,7 @@ public class SurfaceDictionary extends Debug
 		}
 
 		// rebuild optimal solution from traces
-		List<String> rst = new ArrayList<String>();
+		int count = 0;
 		int i = 0;
 		while (trace[i] >= 0)
 		{
@@ -203,11 +206,11 @@ public class SurfaceDictionary extends Debug
 				i += trace[i];
 				int p1 = pos[i];
 				String s = text.substring(p0, p1 - 1); // minus 1 to eliminate the trailing whitespace
-				rst.add(s);
+				extractCallback.newSurface(s, p0);
+				count++;
 			}
 		}
-
-		return rst;
+		return count;
 	}
 
 	public static void main(String[] args) throws IOException
@@ -225,12 +228,15 @@ public class SurfaceDictionary extends Debug
 		// String text1 = "we know that united states 2000 census is famous in united states";
 
 		SurfaceDictionary dict = SurfaceDictionary.get();
-		List<String> testSurfaces = dict.extractSurfaces(text);
-		for (String s : testSurfaces)
+		int count = dict.extractSurfaces(text, new SurfaceExtractedCallback()
 		{
-			System.out.println("'" + s + "'");
-		}
-		System.out.println(testSurfaces.size() + " surface(s) found.");
+			@Override
+			public void newSurface(String surface, int textOffset)
+			{
+				System.out.println(surface + "@" + textOffset);
+			}
+		});
+		System.out.println(count + " surface(s) found.");
 	}
 
 }

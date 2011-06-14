@@ -17,6 +17,7 @@ import org.hibernate.Session;
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.detect.SurfaceDictionary;
+import ecologylab.semantics.concept.detect.SurfaceDictionary.SurfaceExtractedCallback;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.PrefixTree;
 import ecologylab.semantics.concept.utils.TextUtils;
@@ -72,12 +73,15 @@ public class KeyphrasenessCalculator
 			WikiConcept concept = (WikiConcept) results.get(0);
 			System.out.println(n + ": processing " + concept.getId());
 			String text = concept.getText();
-			List<String> extractedSurfaces = SurfaceDictionary.get().extractSurfaces(text);
-			for (String surface : extractedSurfaces)
+			SurfaceDictionary.get().extractSurfaces(text, new SurfaceExtractedCallback()
 			{
-				int prevTotalCount = ptree.get(surface);
-				ptree.put(surface, prevTotalCount + 1);
-			}
+				@Override
+				public void newSurface(String surface, int textOffset)
+				{
+					int prevTotalCount = ptree.get(surface);
+					ptree.put(surface, prevTotalCount + 1);
+				}
+			});
 			n++;
 			session.evict(concept);
 		}

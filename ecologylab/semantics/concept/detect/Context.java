@@ -16,8 +16,7 @@ import ecologylab.semantics.concept.database.orm.WikiSurface;
 import ecologylab.semantics.concept.learning.svm.Normalizer;
 import ecologylab.semantics.concept.learning.svm.NormalizerFactory;
 import ecologylab.semantics.concept.learning.svm.PredicterFactory;
-import ecologylab.semantics.concept.learning.svm.LearningUtils;
-import ecologylab.semantics.concept.learning.svm.SVMPredicter;
+import ecologylab.semantics.concept.learning.svm.SVMPredictor;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 import ecologylab.semantics.concept.utils.CollectionUtils.ValueSelector;
@@ -27,7 +26,7 @@ import ecologylab.semantics.concept.utils.CollectionUtils.ValueSelector;
  * 
  * @author quyin
  */
-class Context extends Debug
+public class Context extends Debug
 {
 	private static class ContextualInstance
 	{
@@ -49,11 +48,6 @@ class Context extends Debug
 
 	private static final ValueSelector<ContextualInstance, Double>	WEIGHT_SELECTOR;
 
-	private static final Normalizer																	NORMALIZER;
-
-	private static final SVMPredicter																PREDICTER;
-
-
 	static
 	{
 		WEIGHT_KEYPHRASENESS = Configs.getDouble("feature_extraction.weight_keyphraseness");
@@ -66,8 +60,6 @@ class Context extends Debug
 				return obj.weight;
 			}
 		};
-		NORMALIZER = NormalizerFactory.get(Configs.getFile("disambiguation.normalization"));
-		PREDICTER = PredicterFactory.get(Configs.getFile("disambiguation.model"), NORMALIZER);
 	}
 
 	private Doc																											doc;
@@ -114,7 +106,7 @@ class Context extends Debug
 		// update average relatedness and weights
 		for (ContextualInstance ci : contextualInstances)
 		{
-			double rel = newCi.instance.getConcept().getRelatedness(ci.instance.getConcept(), session);
+			double rel = newCi.instance.getWikiConcept().getRelatedness(ci.instance.getWikiConcept(), session);
 			newCi.averageRelatedness += rel;
 			ci.averageRelatedness = (n * ci.averageRelatedness + rel) / (n + 1);
 			ci.weight = getWeight(ci);
@@ -130,7 +122,7 @@ class Context extends Debug
 
 	private double getWeight(ContextualInstance ci)
 	{
-		return ci.instance.getSurface().getKeyphraseness() * WEIGHT_KEYPHRASENESS
+		return ci.instance.getWikiSurface().getKeyphraseness() * WEIGHT_KEYPHRASENESS
 				+ ci.averageRelatedness * WEIGHT_MUTUAL_RELATEDNESS;
 	}
 
@@ -158,7 +150,7 @@ class Context extends Debug
 
 		for (ContextualInstance ci : contextualInstances)
 		{
-			double rel = concept.getRelatedness(ci.instance.getConcept(), session);
+			double rel = concept.getRelatedness(ci.instance.getWikiConcept(), session);
 			sum += ci.weight * rel;
 			sumWeights += ci.weight;
 		}
@@ -177,35 +169,38 @@ class Context extends Debug
 	 */
 	public void disambiguate(Instance instance, Session session)
 	{
-		WikiSurface surface = instance.getSurface();
+		WikiSurface surface = instance.getWikiSurface();
 		Map<WikiConcept, Double> senses = surface.getConcepts();
 
 		WikiConcept bestConcept = null;
 		double bestConfid = 0;
 
+		Normalizer normalizer = NormalizerFactory.get(Configs.getFile("disambiguation.normalization"));
+		SVMPredictor predicter = PredicterFactory.get(Configs.getFile("disambiguation.model"), normalizer);
+
 		double[] kvalueBuffer = null;
 		for (WikiConcept sense : senses.keySet())
 		{
-			instance.setConcept(sense);
-			instance.setContextualRelatedness(getContextualRelatedness(instance.getConcept(), session));
+			instance.setWikiConcept(sense);
+			instance.setContextualRelatedness(getContextualRelatedness(instance.getWikiConcept(), session));
 			instance.setContextQuality(getQuality());
 
-			svm_node[] svmInst = LearningUtils.constructSVMInstanceForDisambiguation(instance);
+			svm_node[] svmInst = instance.toSvmInstanceForDisambiguation();
 
 			Map<Integer, Double> buf = new HashMap<Integer, Double>();
 			if (kvalueBuffer == null)
-				kvalueBuffer = new double[PREDICTER.getNumOfSVs()];
-			PREDICTER.predict(svmInst, buf, kvalueBuffer);
+				kvalueBuffer = new double[predicter.getNumOfSVs()];
+			predicter.predict(svmInst, buf, kvalueBuffer);
 			instance.setDisambiguationConfidence(buf.get(Constants.POS_CLASS_INT_LABEL));
 
 			if (bestConcept == null || instance.getDisambiguationConfidence() > bestConfid)
 			{
-				bestConcept = instance.getConcept();
+				bestConcept = instance.getWikiConcept();
 				bestConfid = instance.getDisambiguationConfidence();
 			}
 		}
 
-		instance.setConcept(bestConcept);
+		instance.setWikiConcept(bestConcept);
 		instance.setDisambiguationConfidence(bestConfid);
 	}
 

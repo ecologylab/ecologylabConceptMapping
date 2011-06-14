@@ -17,8 +17,10 @@
   <pref_file name="detection.model" value="model/detect.model" />
   <pref_double name="detection.confidence_threshold" value="0.3" />
 
-  <pref_double name="feature_extraction.related_surface_threshold" value="0.00000000" />
-  <pref_double name="feature_extraction.disambiguation_confidence_threshold" value="0.00000000" />
+  <pref_double name="feature_extraction.weight_keyphraseness" value="0.3" />
+  <pref_double name="feature_extraction.weight_mutual_relatedness" value="0.7" />
+  <pref_double name="feature_extraction.related_surface_threshold" value="0.0" />
+  <pref_double name="feature_extraction.disambiguation_confidence_threshold" value="0.0" />
 
   <!-- <pref_string name="train.trainset_preparer" value="ecologylab.semantics.concept.train.DetectionTrainingSetPreparer" /> -->
 </pref_set>

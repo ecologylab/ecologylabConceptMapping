@@ -1,6 +1,5 @@
 package ecologylab.semantics.concept.learning.svm;
 
-import ecologylab.semantics.concept.detect.Instance;
 import libsvm.svm_node;
 
 /**
@@ -21,40 +20,6 @@ public class LearningUtils
 					+ String.format("%+.4f", instance[i].value));
 		}
 		return sb.toString();
-	}
-
-	private static svm_node[] constructSVMInstance(double... features)
-	{
-		svm_node[] instance = new svm_node[features.length];
-		for (int i = 0; i < instance.length; ++i)
-		{
-			instance[i] = new svm_node();
-			instance[i].index = i + 1;
-			instance[i].value = features[i];
-		}
-		return instance;
-	}
-
-	public static svm_node[] constructSVMInstanceForDisambiguation(Instance inst)
-	{
-		svm_node[] svmInst = LearningUtils.constructSVMInstance(
-					inst.getSurface().getConcepts().get(inst.getConcept()),
-					inst.getContextualRelatedness(),
-					inst.getContextQuality()
-					);
-		return svmInst;
-	}
-
-	public static svm_node[] constructSVMInstanceForDetection(Instance inst)
-	{
-		svm_node[] svmInst = LearningUtils.constructSVMInstance(
-					inst.getSurface().getKeyphraseness(),
-					inst.getContextualRelatedness(),
-					inst.getDisambiguationConfidence(),
-					inst.getOccurrence(),
-					inst.getFrequency()
-					);
-		return svmInst;
 	}
 
 }

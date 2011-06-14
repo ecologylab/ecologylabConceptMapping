@@ -18,7 +18,7 @@ import libsvm.svm_model;
 public class PredicterFactory
 {
 
-	private static final Map<String, SVMPredicter>	pathMap	= new HashMap<String, SVMPredicter>();
+	private static final Map<String, SVMPredictor>	pathMap	= new HashMap<String, SVMPredictor>();
 
 	/**
 	 * Get a loaded predicter; if not yet loaded, load it.
@@ -27,7 +27,7 @@ public class PredicterFactory
 	 * @param normalizer
 	 * @return
 	 */
-	public static SVMPredicter get(File modelFile, Normalizer normalizer)
+	public static SVMPredictor get(File modelFile, Normalizer normalizer)
 	{
 		String modelPath = modelFile.getAbsolutePath();
 		if (!pathMap.containsKey(modelPath))
@@ -35,7 +35,7 @@ public class PredicterFactory
 			try
 			{
 				svm_model model = svm.svm_load_model(modelPath);
-				SVMPredicter predicter = new SVMPredicter(model, normalizer);
+				SVMPredictor predicter = new SVMPredictor(model, normalizer);
 				pathMap.put(modelPath, predicter);
 			}
 			catch (IOException e)

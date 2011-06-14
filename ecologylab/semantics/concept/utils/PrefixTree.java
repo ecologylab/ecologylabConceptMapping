@@ -5,6 +5,8 @@ import java.util.Map;
 
 import ecologylab.generic.Debug;
 
+// TODO check if this is thread safe!!!
+
 /**
  * A prefix tree implemented as a map. Used to hold frequent surfaces with number of senses.
  * 
