@@ -2,7 +2,7 @@ package ecologylab.semantics.concept.train;
 
 import org.hibernate.Session;
 
-import ecologylab.semantics.concept.detect.Context;
+import ecologylab.semantics.concept.mapping.Context;
 
 public class WikiDocForDisambiguationFeatures extends WikiDoc
 {

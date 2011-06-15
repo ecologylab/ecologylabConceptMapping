@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.detect;
+package ecologylab.semantics.concept.mapping;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,13 +10,13 @@ import org.hibernate.Session;
 import libsvm.svm_node;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.Constants;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
-import ecologylab.semantics.concept.learning.svm.Normalizer;
-import ecologylab.semantics.concept.learning.svm.NormalizerFactory;
-import ecologylab.semantics.concept.learning.svm.PredicterFactory;
-import ecologylab.semantics.concept.learning.svm.SVMPredictor;
+import ecologylab.semantics.concept.learning.Constants;
+import ecologylab.semantics.concept.learning.Normalizer;
+import ecologylab.semantics.concept.learning.svm.old.NormalizerFactory;
+import ecologylab.semantics.concept.learning.svm.old.PredicterFactory;
+import ecologylab.semantics.concept.learning.svm.old.SVMPredictor;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 import ecologylab.semantics.concept.utils.CollectionUtils.ValueSelector;
@@ -30,13 +30,13 @@ public class Context extends Debug
 {
 	private static class ContextualInstance
 	{
-		public Instance	instance;
+		public ExtractedSurface	instance;
 
 		public double		averageRelatedness	= 0;
 
 		public double		weight							= 0;
 
-		public ContextualInstance(Instance instance)
+		public ContextualInstance(ExtractedSurface instance)
 		{
 			this.instance = instance;
 		}
@@ -97,7 +97,7 @@ public class Context extends Debug
 	 * @param instance
 	 * @param session
 	 */
-	public void add(Instance instance, Session session)
+	public void add(ExtractedSurface instance, Session session)
 	{
 		ContextualInstance newCi = new ContextualInstance(instance);
 
@@ -167,7 +167,7 @@ public class Context extends Debug
 	 * @param instance
 	 * @param session
 	 */
-	public void disambiguate(Instance instance, Session session)
+	public void disambiguate(ExtractedSurface instance, Session session)
 	{
 		WikiSurface surface = instance.getWikiSurface();
 		Map<WikiConcept, Double> senses = surface.getConcepts();

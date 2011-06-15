@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.learning.svm;
+package ecologylab.semantics.concept.learning.svm.old;
 
 import libsvm.svm_node;
 

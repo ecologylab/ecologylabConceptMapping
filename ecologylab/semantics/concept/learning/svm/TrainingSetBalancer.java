@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ecologylab.semantics.concept.Constants;
+import ecologylab.semantics.concept.learning.Constants;
 import ecologylab.semantics.concept.utils.CollectionUtils;
 
 public class TrainingSetBalancer

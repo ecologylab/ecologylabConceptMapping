@@ -1,17 +1,17 @@
-package ecologylab.semantics.concept.detect;
+package ecologylab.semantics.concept.mapping;
 
 import libsvm.svm_node;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
 
 /**
- * an instance is an occurrence of a surface in an article, which may be mapped to a concept for
- * disambiguation. it also contains features and classification results (confidences).
+ * an occurrence of a surface in an article, which may be eventually mapped to a concept and
+ * returned.
  * 
  * @author quyin
  * 
  */
-public class Instance
+public class ExtractedSurface
 {
 
 	private Doc					doc;
@@ -22,11 +22,9 @@ public class Instance
 
 	private WikiConcept	concept;
 
-	// features for disambiguation:
+	// features:
 
 	/* commonness omitted */
-
-	private double			windowedContextualRelatedness;
 
 	private double			contextualRelatedness;
 
@@ -34,24 +32,19 @@ public class Instance
 
 	private double			disambiguationConfidence;
 
-	// features for detection:
-
 	/* keyphraseness omitted */
 
-	private double			occurrence;										// number of occurrence
+	private double			occurrence;							// number of occurrence
 
 	private double			frequency;
 
 	private double			detectionConfidence;
 
-	// detection result
-	private boolean			detected;
-
 	// internal use
 
 	private String			toString;
 
-	public Instance(Doc doc, int textOffset, WikiSurface surface)
+	public ExtractedSurface(Doc doc, int textOffset, WikiSurface surface)
 	{
 		this.doc = doc;
 		this.textOffset = textOffset;
@@ -64,7 +57,7 @@ public class Instance
 		if (toString == null)
 		{
 			toString = String.format("instance[surface:%s, concept:%s, confidences:%f,%f]",
-					surface,
+					surface.getSurface(),
 					concept.getTitle(),
 					disambiguationConfidence,
 					detectionConfidence);
@@ -95,16 +88,6 @@ public class Instance
 	void setWikiConcept(WikiConcept concept)
 	{
 		this.concept = concept;
-	}
-
-	public double getWindowedContextualRelatedness()
-	{
-		return windowedContextualRelatedness;
-	}
-
-	void setWindowedContextualRelatedness(double windowedContextualRelatedness)
-	{
-		this.windowedContextualRelatedness = windowedContextualRelatedness;
 	}
 
 	public double getContextualRelatedness()
@@ -167,21 +150,10 @@ public class Instance
 		this.frequency = frequency;
 	}
 
-	public boolean isDetected()
-	{
-		return detected;
-	}
-
-	void setDetected(boolean detected)
-	{
-		this.detected = detected;
-	}
-
 	public svm_node[] toSvmInstanceForDisambiguation()
 	{
 		svm_node[] svmInst = constructSVMInstance(
 					this.getWikiSurface().getConcepts().get(this.getWikiConcept()),
-					this.getWindowedContextualRelatedness(),
 					this.getContextualRelatedness(),
 					this.getContextQuality()
 					);
@@ -192,11 +164,10 @@ public class Instance
 	{
 		svm_node[] svmInst = constructSVMInstance(
 					this.getWikiSurface().getConcepts().get(this.getWikiConcept()),
-					this.getWindowedContextualRelatedness(),
 					this.getContextualRelatedness(),
 					this.getContextQuality(),
-					this.getWikiSurface().getKeyphraseness(),
 					this.getDisambiguationConfidence(),
+					this.getWikiSurface().getKeyphraseness(),
 					this.getOccurrence(),
 					this.getFrequency()
 					);

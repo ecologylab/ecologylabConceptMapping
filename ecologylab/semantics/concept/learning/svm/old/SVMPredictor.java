@@ -1,7 +1,9 @@
-package ecologylab.semantics.concept.learning.svm;
+package ecologylab.semantics.concept.learning.svm.old;
 
 import java.io.IOException;
 import java.util.Map;
+
+import ecologylab.semantics.concept.learning.Normalizer;
 
 import libsvm.svm;
 import libsvm.svm_model;
@@ -9,22 +11,6 @@ import libsvm.svm_node;
 
 public class SVMPredictor
 {
-
-	public static class Prediction
-	{
-		public int									trueLabel;
-
-		public svm_node[]						instance;
-
-		public Map<Integer, Double>	result;
-
-		public Prediction(int trueLabel, svm_node[] instance, Map<Integer, Double> result)
-		{
-			this.trueLabel = trueLabel;
-			this.instance = instance;
-			this.result = result;
-		}
-	}
 
 	private svm_model		model;
 

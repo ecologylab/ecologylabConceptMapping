@@ -1,7 +1,7 @@
 package ecologylab.semantics.concept.train;
 
-import ecologylab.semantics.concept.detect.Context;
-import ecologylab.semantics.concept.detect.Doc;
+import ecologylab.semantics.concept.mapping.Context;
+import ecologylab.semantics.concept.mapping.Doc;
 
 
 public class ContextForPreparingDisambiguationTrainingSet extends Context

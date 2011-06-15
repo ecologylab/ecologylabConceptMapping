@@ -6,11 +6,11 @@ import java.util.Set;
 
 import libsvm.svm_node;
 
-import ecologylab.semantics.concept.Constants;
-import ecologylab.semantics.concept.detect.Context;
-import ecologylab.semantics.concept.detect.Instance;
-import ecologylab.semantics.concept.detect.Surface;
-import ecologylab.semantics.concept.learning.svm.LearningUtils;
+import ecologylab.semantics.concept.learning.Constants;
+import ecologylab.semantics.concept.learning.svm.old.LearningUtils;
+import ecologylab.semantics.concept.mapping.Context;
+import ecologylab.semantics.concept.mapping.ExtractedSurface;
+import ecologylab.semantics.concept.mapping.Surface;
 
 public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 {
@@ -39,7 +39,7 @@ public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 				}
 
 				Context context = doc.getContext();
-				Instance inst = context.disambiguate(surface);
+				ExtractedSurface inst = context.disambiguate(surface);
 				if (inst == null)
 				{
 					System.err.println("warning: null instance!");
@@ -80,7 +80,7 @@ public class DetectionTrainingSetPreparer extends TrainingSetPreparer
 	}
 
 	@Override
-	protected void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance, boolean isPositiveSample)
+	protected void reportInstance(BufferedWriter out, WikiDoc doc, ExtractedSurface instance, boolean isPositiveSample)
 	{
 		svm_node[] svmInst = LearningUtils.constructSVMInstanceForDetection(instance);
 		StringBuilder sb = new StringBuilder();

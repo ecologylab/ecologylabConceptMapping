@@ -1,10 +1,12 @@
-package ecologylab.semantics.concept.detect;
+package ecologylab.semantics.concept.mapping;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Session;
@@ -24,11 +26,6 @@ import ecologylab.semantics.concept.utils.TextUtils;
  */
 public class SurfaceDictionary extends Debug
 {
-
-	public static interface SurfaceExtractedCallback
-	{
-		void newSurface(String surface, int textOffset);
-	}
 
 	public static final String				SURFACE_DICTIONARY_PATH	= "surface_dictionary.path";
 
@@ -132,13 +129,19 @@ public class SurfaceDictionary extends Debug
 	}
 
 	/**
-	 * Extract surfaces from text using this surface dictionary.
+	 * extract surfaces in this dictionary, using a "punishment" method (punishing parameters can be
+	 * tuned), implemented with DP.
+	 * 
+	 * ref: http://www.matrix67.com/blog/archives/4212
 	 * 
 	 * @param text
-	 * @param extractCallback
-	 * @return total number of extracted surfaces
+	 * @param outSurfaces
+	 *          output buffer receiving extracted surfaces. ignored if == null.
+	 * @param outTextOffsets
+	 *          output buffer receiving text offsets of extracted surfaces. ignored if == null.
+	 * @return number of surfaces extracted
 	 */
-	public int extractSurfaces(String text, SurfaceExtractedCallback extractCallback)
+	public int extractSurfaces(String text, List<String> outSurfaces, List<Integer> outTextOffsets)
 	{
 		// add trailing whitespace
 		text = text + " ";
@@ -206,7 +209,10 @@ public class SurfaceDictionary extends Debug
 				i += trace[i];
 				int p1 = pos[i];
 				String s = text.substring(p0, p1 - 1); // minus 1 to eliminate the trailing whitespace
-				extractCallback.newSurface(s, p0);
+				if (outSurfaces != null)
+					outSurfaces.add(s);
+				if (outTextOffsets != null)
+					outTextOffsets.add(p0);
 				count++;
 			}
 		}
@@ -228,14 +234,13 @@ public class SurfaceDictionary extends Debug
 		// String text1 = "we know that united states 2000 census is famous in united states";
 
 		SurfaceDictionary dict = SurfaceDictionary.get();
-		int count = dict.extractSurfaces(text, new SurfaceExtractedCallback()
+		List<String> surfaces = new ArrayList<String>();
+		List<Integer> offsets = new ArrayList<Integer>();
+		int count = dict.extractSurfaces(text, surfaces, offsets);
+		for (int i = 0; i < count; ++i)
 		{
-			@Override
-			public void newSurface(String surface, int textOffset)
-			{
-				System.out.println(surface + "@" + textOffset);
-			}
-		});
+			System.out.println(surfaces.get(i) + "@" + offsets.get(i));
+		}
 		System.out.println(count + " surface(s) found.");
 	}
 

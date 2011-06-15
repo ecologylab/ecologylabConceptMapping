@@ -1,10 +1,12 @@
-package ecologylab.semantics.concept.learning.svm;
+package ecologylab.semantics.concept.learning.svm.old;
 
 import java.io.File;
 import java.io.IOException;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.Constants;
+import ecologylab.semantics.concept.learning.Constants;
+import ecologylab.semantics.concept.learning.Normalizer;
+import ecologylab.semantics.concept.learning.svm.SvmDataSet;
 
 import libsvm.svm;
 import libsvm.svm_model;
@@ -21,7 +23,7 @@ import libsvm.svm_problem;
 public class SVMTrainer extends Debug
 {
 
-	private DataSet			trainSet;
+	private SvmDataSet			trainSet;
 
 	private Normalizer	normalizer;
 
@@ -35,7 +37,7 @@ public class SVMTrainer extends Debug
 	 * 
 	 * @param trainSet
 	 */
-	public SVMTrainer(DataSet trainSet)
+	public SVMTrainer(SvmDataSet trainSet)
 	{
 		this.normalizer = NormalizerFactory.create();
 		this.normalizer.initialize(trainSet);
@@ -125,7 +127,7 @@ public class SVMTrainer extends Debug
 		String dataPath = args[0];
 		String prefix = args[1];
 
-		DataSet trainSet = DataSet.load(new File(dataPath));
+		SvmDataSet trainSet = SvmDataSet.load(new File(dataPath));
 		SVMTrainer t = new SVMTrainer(trainSet);
 		t.train(8, 2);
 		t.saveTrainingResults(prefix + ".model", prefix + ".norm");

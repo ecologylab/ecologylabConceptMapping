@@ -46,14 +46,14 @@ public class ContextForDisambiguationFeatures extends Context
 	}
 
 	@Override
-	public void disambiguate(Instance instance, Session session)
+	public void disambiguate(ExtractedSurface instance, Session session)
 	{
 		// TODO Auto-generated method stub
 		super.disambiguate(instance, session);
 	}
 
 	@Override
-	public void add(Instance instance, Session session)
+	public void add(ExtractedSurface instance, Session session)
 	{
 		// TODO Auto-generated method stub
 		super.add(instance, session);

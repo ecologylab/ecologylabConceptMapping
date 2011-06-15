@@ -6,12 +6,12 @@ import java.util.Set;
 
 import libsvm.svm_node;
 
-import ecologylab.semantics.concept.Constants;
-import ecologylab.semantics.concept.detect.Concept;
-import ecologylab.semantics.concept.detect.Context;
-import ecologylab.semantics.concept.detect.Instance;
-import ecologylab.semantics.concept.detect.Surface;
-import ecologylab.semantics.concept.learning.svm.LearningUtils;
+import ecologylab.semantics.concept.learning.Constants;
+import ecologylab.semantics.concept.learning.svm.old.LearningUtils;
+import ecologylab.semantics.concept.mapping.Concept;
+import ecologylab.semantics.concept.mapping.Context;
+import ecologylab.semantics.concept.mapping.ExtractedSurface;
+import ecologylab.semantics.concept.mapping.Surface;
 
 public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 {
@@ -36,7 +36,7 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 		{
 			for (Concept concept : surface.getSenses())
 			{
-				Instance inst = Instance.getForDisambiguation(context, surface, concept);
+				ExtractedSurface inst = ExtractedSurface.getForDisambiguation(context, surface, concept);
 				boolean isTarget = false;
 				if (concept.equals(doc.getLinkedSurfaces().get(surface)))
 					isTarget = true;
@@ -46,7 +46,7 @@ public class DisambiguationTrainingSetPreparer extends TrainingSetPreparer
 	}
 
 	@Override
-	protected void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance, boolean isPositiveSample)
+	protected void reportInstance(BufferedWriter out, WikiDoc doc, ExtractedSurface instance, boolean isPositiveSample)
 	{
 		svm_node[] svmInst = LearningUtils.constructSVMInstanceForDisambiguation(instance);
 		StringBuilder sb = new StringBuilder();

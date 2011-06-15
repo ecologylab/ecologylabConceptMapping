@@ -8,9 +8,9 @@ import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.List;
 
-import ecologylab.semantics.concept.Constants;
-import ecologylab.semantics.concept.detect.Instance;
-import ecologylab.semantics.concept.detect.SurfaceDictionary;
+import ecologylab.semantics.concept.learning.Constants;
+import ecologylab.semantics.concept.mapping.ExtractedSurface;
+import ecologylab.semantics.concept.mapping.SurfaceDictionary;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.TextUtils;
 
@@ -34,7 +34,7 @@ public abstract class TrainingSetPreparer
 
 	abstract public void prepare(WikiDoc doc, BufferedWriter out);
 
-	abstract protected void reportInstance(BufferedWriter out, WikiDoc doc, Instance instance, boolean isPositiveSample);
+	abstract protected void reportInstance(BufferedWriter out, WikiDoc doc, ExtractedSurface instance, boolean isPositiveSample);
 
 	public static void prepare(String wikiDocTitle, String outputDir, TrainingSetPreparer preparer)
 			throws IOException, SQLException

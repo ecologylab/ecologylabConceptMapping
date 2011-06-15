@@ -26,9 +26,9 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import ecologylab.semantics.concept.detect.Doc;
-import ecologylab.semantics.concept.detect.SurfaceDictionary;
-import ecologylab.semantics.concept.detect.Instance;
+import ecologylab.semantics.concept.mapping.Doc;
+import ecologylab.semantics.concept.mapping.ExtractedSurface;
+import ecologylab.semantics.concept.mapping.SurfaceDictionary;
 
 @SuppressWarnings("serial")
 public class DetectorGUI extends JPanel
@@ -114,8 +114,8 @@ public class DetectorGUI extends JPanel
 					{
 							String text = textArea.getText();
 							Doc doc = new Doc("untitled", text, dictionary);
-							Set<Instance> concepts = doc.detect();
-							for (Instance concept : concepts)
+							Set<ExtractedSurface> concepts = doc.detect();
+							for (ExtractedSurface concept : concepts)
 							{
 								newConcept(concept);
 							}
@@ -184,7 +184,7 @@ public class DetectorGUI extends JPanel
 		setBorder(border);
 	}
 	
-	private void newConcept(Instance concept)
+	private void newConcept(ExtractedSurface concept)
 	{
 		ConceptRecord rec = new ConceptRecord();
 		rec.surface = concept.surface.word;

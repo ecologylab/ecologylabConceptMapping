@@ -12,7 +12,7 @@ import org.hibernate.type.StandardBasicTypes;
 
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
-import ecologylab.semantics.concept.detect.SurfaceDictionary;
+import ecologylab.semantics.concept.mapping.SurfaceDictionary;
 import ecologylab.semantics.concept.service.Configs;
 
 /**

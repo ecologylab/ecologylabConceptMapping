@@ -8,9 +8,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import ecologylab.semantics.concept.learning.Normalizer;
+
 import libsvm.svm_node;
 
-public class GaussianNormalizer implements Normalizer
+public class SvmGaussianNormalizer implements Normalizer<svm_node[]>
 {
 
 	private int				numAttributes;
@@ -20,16 +22,31 @@ public class GaussianNormalizer implements Normalizer
 	private double[]	stds;
 
 	@Override
-	public void initialize(DataSet dataSet)
+	public void calculateNormalizationParameters(SvmDataSet dataSet)
 	{
 		numAttributes = dataSet.getDimension();
 		means = new double[numAttributes];
 		stds = new double[numAttributes];
 		for (int i = 0; i < numAttributes; ++i)
 		{
-			means[i] = getMean(dataSet.getFeatures(), i);
-			stds[i] = getStd(dataSet.getFeatures(), i, means[i]);
+			means[i] = getMean(dataSet.getInstances(), i);
+			stds[i] = getStd(dataSet.getInstances(), i, means[i]);
 		}
+	}
+
+	@Override
+	public void save(File paramsPath) throws IOException
+	{
+		BufferedWriter bw = new BufferedWriter(new FileWriter(paramsPath));
+		bw.write("means:");
+		for (int i = 0; i < numAttributes; ++i)
+			bw.write((i == 0 ? "" : ",") + means[i]);
+		bw.newLine();
+		bw.write("stds:");
+		for (int i = 0; i < numAttributes; ++i)
+			bw.write((i == 0 ? "" : ",") + stds[i]);
+		bw.newLine();
+		bw.close();
 	}
 
 	@Override
@@ -59,6 +76,16 @@ public class GaussianNormalizer implements Normalizer
 	}
 
 	@Override
+	public void normalize(SvmDataSet dataset)
+	{
+		for (int i = 0; i < dataset.getInstances().size(); ++i)
+		{
+			svm_node[] instance = dataset.getInstances().get(i);
+			normalize(instance);
+		}
+	}
+
+	@Override
 	public void normalize(svm_node[] instance)
 	{
 		for (int j = 0; j < instance.length; ++j)
@@ -68,32 +95,7 @@ public class GaussianNormalizer implements Normalizer
 		}
 	}
 
-	@Override
-	public void normalize(DataSet dataset)
-	{
-		for (int i = 0; i < dataset.getFeatures().size(); ++i)
-		{
-			svm_node[] instance = dataset.getFeatures().get(i);
-			normalize(instance);
-		}
-	}
-
-	@Override
-	public void save(File paramsPath) throws IOException
-	{
-		BufferedWriter bw = new BufferedWriter(new FileWriter(paramsPath));
-		bw.write("means:");
-		for (int i = 0; i < numAttributes; ++i)
-			bw.write((i == 0 ? "" : ",") + means[i]);
-		bw.newLine();
-		bw.write("stds:");
-		for (int i = 0; i < numAttributes; ++i)
-			bw.write((i == 0 ? "" : ",") + stds[i]);
-		bw.newLine();
-		bw.close();
-	}
-
-	private double getStd(List<svm_node[]> instances, int i, double mean)
+	private static double getStd(List<svm_node[]> instances, int i, double mean)
 	{
 		double sum_sqr = 0;
 		for (svm_node[] instance : instances)
@@ -104,7 +106,7 @@ public class GaussianNormalizer implements Normalizer
 		return Math.sqrt(sum_sqr / instances.size());
 	}
 
-	private double getMean(List<svm_node[]> instances, int i)
+	private static double getMean(List<svm_node[]> instances, int i)
 	{
 		double sum = 0;
 		for (svm_node[] instance : instances)

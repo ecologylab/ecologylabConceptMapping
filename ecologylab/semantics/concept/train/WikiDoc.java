@@ -3,7 +3,7 @@ package ecologylab.semantics.concept.train;
 import org.hibernate.Session;
 
 import ecologylab.semantics.concept.database.orm.WikiConcept;
-import ecologylab.semantics.concept.detect.Doc;
+import ecologylab.semantics.concept.mapping.Doc;
 
 public abstract class WikiDoc extends Doc
 {

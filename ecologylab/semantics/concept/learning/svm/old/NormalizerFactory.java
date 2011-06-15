@@ -1,9 +1,12 @@
-package ecologylab.semantics.concept.learning.svm;
+package ecologylab.semantics.concept.learning.svm.old;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import ecologylab.semantics.concept.learning.Normalizer;
+import ecologylab.semantics.concept.learning.svm.SvmGaussianNormalizer;
 
 /**
  * A factory of normalizers. It controls the creation of normalizers, and caches all the loaded
@@ -24,7 +27,7 @@ public class NormalizerFactory
 	 */
 	public static Normalizer create()
 	{
-		return new GaussianNormalizer();
+		return new SvmGaussianNormalizer();
 	}
 
 	/**

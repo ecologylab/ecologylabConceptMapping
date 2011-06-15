@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept;
+package ecologylab.semantics.concept.learning;
 
 public class Constants
 {

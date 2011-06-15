@@ -1,4 +1,4 @@
-package ecologylab.semantics.concept.detect;
+package ecologylab.semantics.concept.mapping;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,15 +13,14 @@ import libsvm.svm_node;
 import org.hibernate.Session;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.concept.Constants;
 import ecologylab.semantics.concept.database.SessionManager;
 import ecologylab.semantics.concept.database.orm.WikiConcept;
 import ecologylab.semantics.concept.database.orm.WikiSurface;
-import ecologylab.semantics.concept.detect.SurfaceDictionary.SurfaceExtractedCallback;
-import ecologylab.semantics.concept.learning.svm.Normalizer;
-import ecologylab.semantics.concept.learning.svm.NormalizerFactory;
-import ecologylab.semantics.concept.learning.svm.PredicterFactory;
-import ecologylab.semantics.concept.learning.svm.SVMPredictor;
+import ecologylab.semantics.concept.learning.Constants;
+import ecologylab.semantics.concept.learning.Normalizer;
+import ecologylab.semantics.concept.learning.svm.old.NormalizerFactory;
+import ecologylab.semantics.concept.learning.svm.old.PredicterFactory;
+import ecologylab.semantics.concept.learning.svm.old.SVMPredictor;
 import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.TextNormalizer;
 import ecologylab.semantics.concept.utils.TextUtils;
@@ -36,27 +35,32 @@ import ecologylab.semantics.concept.utils.TextUtils;
 public class Doc extends Debug
 {
 
-	private static final double		DISAMBIGUATION_CONFIDENCE_THRESHOLD	= Configs.getDouble("feature_extraction.disambiguation_confidence_threshold");
+	private static final double			DISAMBIGUATION_CONFIDENCE_THRESHOLD	= Configs.getDouble("feature_extraction.disambiguation_confidence_threshold");
 
-	private static final double		RELATED_SURFACE_THRESHOLD						= Configs.getDouble("feature_extraction.related_surface_threshold");
+	private static final double			RELATED_SURFACE_THRESHOLD						= Configs.getDouble("feature_extraction.related_surface_threshold");
 
-	private static final double		DETECT_CONFIDENCE_THRESHOLD					= Configs.getDouble("detection.confidence_threshold");
+	private static final double			DETECT_CONFIDENCE_THRESHOLD					= Configs.getDouble("detection.confidence_threshold");
 
-	private final String					title;
+	private Session									session;
 
-	private final String					text;
+	private final String						title;
 
-	private final int							totalWords;
+	private final String						text;
 
-	private Map<String, Integer>	surfaceOccurrences;
+	private final int								totalWords;
 
-	private List<Instance>				instances;
+	private List<ExtractedSurface>	extractedSurfaces;
 
-	public Doc(String title, String text)
+	private Map<String, Integer>		surfaceOccurrences;
+
+	public Doc(Session session, String title, String text)
 	{
+		this.session = session;
 		this.title = title;
 		this.text = TextNormalizer.normalize(text);
 		this.totalWords = TextUtils.count(text, " ") + 1;
+		
+		extractSurfaces();
 	}
 
 	public String getTitle()
@@ -79,17 +83,17 @@ public class Doc extends Debug
 	 * 
 	 * @return a list of (detected) concept Instances.
 	 */
-	public List<Instance> getInstances()
+	public List<ExtractedSurface> getInstances()
 	{
-		if (instances == null)
+		if (extractedSurfaces == null)
 		{
 			Session session = SessionManager.newSession();
-			extractSurfaces(session);
+			extractSurfaces();
 			disambiguateSurfaces(session);
 			detectConcepts();
 			session.close();
 		}
-		return instances;
+		return extractedSurfaces;
 	}
 
 	/**
@@ -97,23 +101,24 @@ public class Doc extends Debug
 	 * 
 	 * @param session
 	 */
-	protected void extractSurfaces(final Session session)
+	protected void extractSurfaces()
 	{
-		instances = new ArrayList<Instance>();
+		extractedSurfaces = new ArrayList<ExtractedSurface>();
 		surfaceOccurrences = new HashMap<String, Integer>();
-		final Doc doc = this;
-		SurfaceDictionary.get().extractSurfaces(text, new SurfaceExtractedCallback()
+		List<String> surfaces = new ArrayList<String>();
+		List<Integer> offsets = new ArrayList<Integer>();
+		int n = SurfaceDictionary.get().extractSurfaces(text, surfaces, offsets);
+		for (int i = 0; i < n; ++i)
 		{
-			@Override
-			public void newSurface(String surface, int textOffset)
-			{
-				WikiSurface ws = WikiSurface.get(surface, session);
-				Instance instance = new Instance(doc, textOffset, ws);
-				instances.add(instance);
-				int occ = surfaceOccurrences.containsKey(surface) ? surfaceOccurrences.get(surface) : 0;
-				surfaceOccurrences.put(surface, occ + 1);
-			}
-		});
+			String surface = surfaces.get(i);
+			int offset = offsets.get(i);
+			
+			WikiSurface ws = WikiSurface.get(surface, session);
+			ExtractedSurface instance = new ExtractedSurface(this, offset, ws);
+			extractedSurfaces.add(instance);
+			int occ = surfaceOccurrences.containsKey(surface) ? surfaceOccurrences.get(surface) : 0;
+			surfaceOccurrences.put(surface, occ + 1);
+		}
 	}
 
 	/**
@@ -128,8 +133,8 @@ public class Doc extends Debug
 		Context context = createContext();
 
 		// set up initial context
-		Set<Instance> unresolved = new HashSet<Instance>();
-		for (Instance instance : instances)
+		Set<ExtractedSurface> unresolved = new HashSet<ExtractedSurface>();
+		for (ExtractedSurface instance : extractedSurfaces)
 		{
 			if (SurfaceDictionary.get().getSenseCount(instance.getWikiSurface().getSurface()) == 1)
 			{
@@ -143,17 +148,17 @@ public class Doc extends Debug
 		if (context.size() == 0)
 		{
 			// no unambiguous surfaces? do a best guess ...
-			Instance instance = findInstanceWithLargestCommonnessAndDisambiguate(unresolved);
+			ExtractedSurface instance = findInstanceWithLargestCommonnessAndDisambiguate(unresolved);
 			context.add(instance, session);
 		}
 
 		while (unresolved.size() > 0)
 		{
 			// find related surfaces
-			Set<Instance> related = new HashSet<Instance>();
-			Instance bestRelatedOne = null;
+			Set<ExtractedSurface> related = new HashSet<ExtractedSurface>();
+			ExtractedSurface bestRelatedOne = null;
 			double bestRelatedness = 0;
-			for (Instance instance : unresolved)
+			for (ExtractedSurface instance : unresolved)
 			{
 				double relatedness = getAllSenseRelatedness(context, instance, session);
 				if (relatedness > RELATED_SURFACE_THRESHOLD)
@@ -173,10 +178,10 @@ public class Doc extends Debug
 			}
 
 			// resolve still ambiguous surfaces
-			Set<Instance> resolved = new HashSet<Instance>();
-			Instance bestConfidentOne = null;
+			Set<ExtractedSurface> resolved = new HashSet<ExtractedSurface>();
+			ExtractedSurface bestConfidentOne = null;
 			double bestConfidence = 0;
-			for (Instance instance : related)
+			for (ExtractedSurface instance : related)
 			{
 				context.disambiguate(instance, session);
 				double confidence = instance.getDisambiguationConfidence();
@@ -196,7 +201,7 @@ public class Doc extends Debug
 				resolved.add(bestConfidentOne);
 			}
 
-			for (Instance instance : resolved)
+			for (ExtractedSurface instance : resolved)
 			{
 				context.add(instance, session);
 				unresolved.remove(instance);
@@ -209,12 +214,12 @@ public class Doc extends Debug
 		return new Context(this);
 	}
 
-	private Instance findInstanceWithLargestCommonnessAndDisambiguate(Set<Instance> unresolved)
+	private ExtractedSurface findInstanceWithLargestCommonnessAndDisambiguate(Set<ExtractedSurface> unresolved)
 	{
-		Instance best = null;
+		ExtractedSurface best = null;
 		double bestCommonness = 0;
 
-		for (Instance inst : unresolved)
+		for (ExtractedSurface inst : unresolved)
 		{
 			Map<WikiConcept, Double> concepts = inst.getWikiSurface().getConcepts();
 			for (WikiConcept c : concepts.keySet())
@@ -231,7 +236,7 @@ public class Doc extends Debug
 		return best;
 	}
 
-	private double getAllSenseRelatedness(Context context, Instance instance, Session session)
+	private double getAllSenseRelatedness(Context context, ExtractedSurface instance, Session session)
 	{
 		double rst = 0;
 		Set<WikiConcept> concepts = instance.getWikiSurface().getConcepts().keySet();
@@ -253,7 +258,7 @@ public class Doc extends Debug
 	protected void detectConcepts()
 	{
 		double[] kvalueBuffer = null;
-		for (Instance inst : instances)
+		for (ExtractedSurface inst : extractedSurfaces)
 		{
 			inst.setOccurrence(surfaceOccurrences.get(inst.getWikiSurface().getSurface()));
 			inst.setFrequency(inst.getOccurrence() * 1.0 / getTotalWords());
@@ -280,7 +285,7 @@ public class Doc extends Debug
 		Doc doc = new Doc("USA", text);
 		if (doc != null)
 		{
-			for (Instance inst : doc.getInstances())
+			for (ExtractedSurface inst : doc.getInstances())
 			{
 				if (!inst.isDetected())
 					continue;

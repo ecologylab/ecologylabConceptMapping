@@ -1,9 +1,11 @@
-package ecologylab.semantics.concept.learning.svm;
+package ecologylab.semantics.concept.learning.svm.old;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import ecologylab.semantics.concept.learning.Normalizer;
 
 import libsvm.svm;
 import libsvm.svm_model;
