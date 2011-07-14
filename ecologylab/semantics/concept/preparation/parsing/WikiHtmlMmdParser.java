@@ -13,7 +13,7 @@ import ecologylab.semantics.concept.service.Configs;
 import ecologylab.semantics.concept.utils.TextUtils;
 import ecologylab.semantics.connectors.InfoCollector;
 import ecologylab.semantics.documentparsers.ParserBase;
-import ecologylab.semantics.generated.library.GeneratedMetadataTranslationScope;
+import ecologylab.semantics.generated.library.RepositoryMetadataTranslationScope;
 import ecologylab.semantics.generated.library.WikipediaPageType;
 import ecologylab.semantics.metadata.builtins.Document;
 import ecologylab.semantics.metametadata.MetaMetadata;
@@ -42,7 +42,7 @@ public class WikiHtmlMmdParser implements WikiHtmlParser
 		File repo = Configs.getFile("prep.mmd_repository");
 		MetaMetadataRepository repository = MetaMetadataRepository.load(repo);
 		wikiMmd = repository.getByTagName("wikipedia_page_for_parsing");
-		theInfoCollector = new MyInfoCollector(repository, GeneratedMetadataTranslationScope.get());
+		theInfoCollector = new MyInfoCollector(repository, RepositoryMetadataTranslationScope.get());
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class WikiHtmlMmdParser implements WikiHtmlParser
 		@Override
 		public TranslationScope getMetadataTranslationScope()
 		{
-			return GeneratedMetadataTranslationScope.get();
+			return RepositoryMetadataTranslationScope.get();
 		}
 
 	}
