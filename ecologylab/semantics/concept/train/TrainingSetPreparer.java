@@ -23,7 +23,7 @@ public abstract class TrainingSetPreparer
 	{
 		try
 		{
-			dict = SurfaceDictionary.load(Constants.DICTIONARY_PATH);
+			dict = SurfaceDictionary.loadFromDir(Constants.DICTIONARY_PATH);
 		}
 		catch (IOException e)
 		{
