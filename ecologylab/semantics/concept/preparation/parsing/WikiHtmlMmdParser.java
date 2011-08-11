@@ -40,7 +40,7 @@ public class WikiHtmlMmdParser implements WikiHtmlParser
 	static
 	{
 		File repo = Configs.getFile("prep.mmd_repository");
-		MetaMetadataRepository repository = MetaMetadataRepository.loadFromDir(repo);
+		MetaMetadataRepository repository = MetaMetadataRepository.loadXmlFromDir(repo);
 		wikiMmd = repository.getMMByName("wikipedia_page_for_parsing");
 		theInfoCollector = new MyInfoCollector(repository, RepositoryMetadataTranslationScope.get());
 	}
