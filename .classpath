@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="bliki-core/|data/|lib/|model/|resources/|scripts/|target/" kind="src" path=""/>
 	<classpathentry kind="src" path="bliki-core/java"/>
 	<classpathentry kind="src" path="bliki-core/resources"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/postgresql-9.0-801.jdbc4.jar"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER"/>
+	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.0-beta.jar"/>
+	<classpathentry kind="lib" path="lib/postgresql-9.0-801.jdbc4.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabFundamental"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabGeneratedSemantics"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabSemantics"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabSemanticsExample"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jtidy"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
